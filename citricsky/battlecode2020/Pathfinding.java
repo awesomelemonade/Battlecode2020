@@ -22,6 +22,6 @@ public class Pathfinding {
 				return;
 			}
 		}
-		// Bug pathing
+		// Bug pathing OR dig right through (if landscaper)
 	}
 }

@@ -10,6 +10,9 @@ public class RobotPlayer {
 		RobotPlayer.controller = controller;
 		RunnableBot bot;
 		switch (controller.getType()) {
+			case HQ:
+				bot = new HQBot(controller);
+				break;
 			case MINER:
 				bot = new MinerBot(controller);
 				break;
