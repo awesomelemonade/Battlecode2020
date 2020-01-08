@@ -16,19 +16,18 @@ public class HQBot implements RunnableBot {
 	public void turn() throws GameActionException {
 		MapLocation currentLocation = controller.getLocation();
 		queue.reset();
-		BooleanArray visited = new BooleanArray(4); // 256
+		int[] visited = new int[256];
 		int currentLocationHash = hashAbs(0) << 4 | hashAbs(0);
-		queue.push((currentLocationHash << 8) | currentLocationHash);
-		visited.set(currentLocationHash);
+		queue.push(currentLocationHash);
+		visited[currentLocationHash] = currentLocationHash + 1;
 		int count = 0;
 		while (!queue.isEmpty()) {
 			count++;
 			int sum = 0;
 			int before = Clock.getBytecodeNum();
 			int polled = queue.poll();
-			int bitmasked = polled & 0b11111111;
-			int dx = unhashAbs(bitmasked >>> 4);
-			int dy = unhashAbs(bitmasked & 0b1111);
+			int dx = unhashAbs(polled >>> 4);
+			int dy = unhashAbs(polled & 0b1111);
 			MapLocation location = currentLocation.translate(dx, dy);
 			// stop condition
 			if (controller.senseSoup(location) > 0) {
@@ -41,9 +40,9 @@ public class HQBot implements RunnableBot {
 					int adjacentHash =
 							hashAbs(dx + direction.getDeltaX()) << 4 |
 							hashAbs(dy + direction.getDeltaY());
-					if (!visited.get(adjacentHash)) {
-						queue.push((bitmasked << 8) | adjacentHash);
-						visited.set(adjacentHash);
+					if (visited[adjacentHash] == 0) {
+						queue.push(adjacentHash);
+						visited[adjacentHash] = polled + 1;
 					}
 				}
 			}

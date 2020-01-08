@@ -57,7 +57,7 @@ public class Communication {
 	private static boolean mayContainsAndAdd(int x) {
 		boolean mayContains = true;
 		for (int i = BLOOM_FILTER_SEEDS.length; --i >= 0;) {
-			int index = Hash.hash(BLOOM_FILTER_SEEDS[i], x) % BLOOM_FILTER_SIZE;
+			int index = Math.abs(Hash.hash(BLOOM_FILTER_SEEDS[i], x) % BLOOM_FILTER_SIZE);
 			if (!BLOOM_FILTER.get(index)) {
 				BLOOM_FILTER.set(index);
 				mayContains = false;
