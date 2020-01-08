@@ -10,46 +10,29 @@ public class HQBot implements RunnableBot {
 	}
 	@Override
 	public void init() {
-		queue = new FastDeque(16 * 16);
+		Communication.preload();
 	}
 	@Override
 	public void turn() throws GameActionException {
-		MapLocation currentLocation = controller.getLocation();
-		queue.reset();
-		int[] visited = new int[256];
-		int currentLocationHash = hashAbs(0) << 4 | hashAbs(0);
-		queue.push(currentLocationHash);
-		visited[currentLocationHash] = currentLocationHash + 1;
-		int count = 0;
-		while (!queue.isEmpty()) {
-			count++;
-			int sum = 0;
-			int before = Clock.getBytecodeNum();
-			int polled = queue.poll();
-			int dx = unhashAbs(polled >>> 4);
-			int dy = unhashAbs(polled & 0b1111);
-			MapLocation location = currentLocation.translate(dx, dy);
-			// stop condition
-			if (controller.senseSoup(location) > 0) {
-				System.out.println("Ay: " + location);
-			}
-			// traverses adjacent tiles
-			for (Direction direction : Util.ADJACENT_DIRECTIONS) {
-				MapLocation adjacent = location.add(direction);
-				if (controller.canSenseLocation(adjacent)) {
-					int adjacentHash =
-							hashAbs(dx + direction.getDeltaX()) << 4 |
-							hashAbs(dy + direction.getDeltaY());
-					if (visited[adjacentHash] == 0) {
-						queue.push(adjacentHash);
-						visited[adjacentHash] = polled + 1;
-					}
-				}
-			}
-			sum += (Clock.getBytecodeNum() - before);
-			System.out.println("!!: " + sum + " - " + Clock.getBytecodesLeft());
+		if (!controller.isReady()) {
+			return;
 		}
-		System.out.println("Count: " + count);
+		MapLocation currentLocation = controller.getLocation();
+		for (int i = 0; i < Util.FLOOD_FILL_DX.length; i++) {
+			MapLocation location = currentLocation.translate(Util.FLOOD_FILL_DX[i], Util.FLOOD_FILL_DY[i]);
+			if (!controller.canSenseLocation(location)) {
+				break;
+			}
+			if (controller.senseSoup(location) > 0) {
+				Direction direction = Util.getDirection(Util.FLOOD_FILL_DX_CLAMPED[i], Util.FLOOD_FILL_DY_CLAMPED[i]);
+				System.out.println("Sensed Soup at: " + location);
+				System.out.println("Direction: " + direction);
+				if (controller.canBuildRobot(RobotType.MINER, direction)) {
+					controller.buildRobot(RobotType.MINER, direction);
+				}
+				break;
+			}
+		}
 	}
 	public static int hashAbs(int offset) {
 		return offset + 7;

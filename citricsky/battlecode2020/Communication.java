@@ -7,6 +7,9 @@ public class Communication {
 	private static final int LOWER_BITMASK = 0b00000000111111111111111111111111;
 	private static final int[] PRIMES = new int[] {5113, 15919, 18671, 42101, 61441, 78571, 101531};
 
+	public static void preload() {
+		// Preloads static variables (~5k bytecodes for bloom filter)
+	}
 	/**
 	 * Each transaction can be only verified once
 	 * @param message
