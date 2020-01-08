@@ -8,12 +8,13 @@ import battlecode.common.RobotController;
 public class Pathfinding {
 	private RobotController controller;
 	private boolean bugPathing = false;
+	private Direction currentDirection;
+
 	public Pathfinding(RobotController controller) {
 		this.controller = controller;
 	}
-
-
 	public void reset() {
+		this.currentDirection = null;
 		this.bugPathing = false;
 	}
 	// Assumes landscaping is not a possibility and it's not a simple drone
@@ -33,7 +34,6 @@ public class Pathfinding {
 		bugPath(target);
 		bugPathing = true;
 	}
-	private Direction currentDirection;
 	private void bugPath(MapLocation target) throws GameActionException {
 		MapLocation currentLocation = controller.getLocation();
 		if (currentDirection == null) {

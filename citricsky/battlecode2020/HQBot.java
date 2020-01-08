@@ -27,11 +27,12 @@ public class HQBot implements RunnableBot {
 				break;
 			}
 			if (controller.senseSoup(location) > 0) {
-				Direction direction = Util.getDirection(Util.FLOOD_FILL_DX_CLAMPED[i], Util.FLOOD_FILL_DY_CLAMPED[i]);
-				System.out.println("Sensed Soup at: " + location);
-				System.out.println("Direction: " + direction);
-				if (controller.canBuildRobot(RobotType.MINER, direction)) {
-					controller.buildRobot(RobotType.MINER, direction);
+				Direction idealDirection = Util.getDirection(Util.FLOOD_FILL_DX_CLAMPED[i], Util.FLOOD_FILL_DY_CLAMPED[i]);
+				for (Direction direction : Util.getAttemptOrder(idealDirection)) {
+					if (controller.canBuildRobot(RobotType.MINER, direction)) {
+						controller.buildRobot(RobotType.MINER, direction);
+						break;
+					}
 				}
 				break;
 			}
