@@ -37,10 +37,4 @@ public class HQBot implements RunnableBot {
 			}
 		}
 	}
-	public static int hashAbs(int offset) {
-		return offset + 7;
-	}
-	public static int unhashAbs(int hash) {
-		return hash - 7;
-	}
 }
