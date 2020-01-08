@@ -1,4 +1,4 @@
-package citricsky.battlecode2020;
+package citricsky.battlecode2020.util;
 
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;

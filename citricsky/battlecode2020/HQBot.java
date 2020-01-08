@@ -1,6 +1,9 @@
 package citricsky.battlecode2020;
 
 import battlecode.common.*;
+import citricsky.battlecode2020.util.Communication;
+import citricsky.battlecode2020.util.FastDeque;
+import citricsky.battlecode2020.util.Util;
 
 public class HQBot implements RunnableBot {
 	private RobotController controller;

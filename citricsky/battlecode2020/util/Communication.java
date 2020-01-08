@@ -1,4 +1,4 @@
-package citricsky.battlecode2020;
+package citricsky.battlecode2020.util;
 
 public class Communication {
 	private static final int seed = 154820275;

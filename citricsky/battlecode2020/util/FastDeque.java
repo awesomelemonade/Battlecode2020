@@ -1,4 +1,4 @@
-package citricsky.battlecode2020;
+package citricsky.battlecode2020.util;
 
 public class FastDeque {
 	private int[] array;
