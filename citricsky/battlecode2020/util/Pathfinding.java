@@ -25,7 +25,7 @@ public class Pathfinding {
 		MapLocation currentLocation = controller.getLocation();
 		if (!bugPathing) {
 			Direction direction = currentLocation.directionTo(target);
-			if (controller.canMove(direction)) {
+			if (Util.canSafeMove(direction)) {
 				controller.move(direction);
 				return;
 			}
@@ -40,17 +40,18 @@ public class Pathfinding {
 			currentDirection = currentLocation.directionTo(target);
 			// Follows the wall with left hand
 			// This for loop ensures we're not in an infinite loop (stuck in a 1x1 square)
-			for (int i = 0; i < 8 && (!controller.canMove(currentDirection)); i++) {
+			for (int i = 0; i < 8 && (!Util.canSafeMove(currentDirection)); i++) {
 				currentDirection = currentDirection.rotateRight();
 			}
 		} else {
 			Direction start = currentDirection.opposite().rotateRight();
-			for (int i = 0; i < 8 && !(!controller.canMove(start.rotateLeft()) && controller.canMove(start)); i++) {
+			for (int i = 0; i < 8 && !(!Util.canSafeMove(start.rotateLeft()) &&
+					Util.canSafeMove(start)); i++) {
 				start = start.rotateRight();
 			}
 			currentDirection = start;
 		}
-		if (controller.canMove(currentDirection)) {
+		if (Util.canSafeMove(currentDirection)) {
 			controller.move(currentDirection);
 		}
 	}

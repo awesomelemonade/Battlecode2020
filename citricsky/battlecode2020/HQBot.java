@@ -1,19 +1,16 @@
 package citricsky.battlecode2020;
 
 import battlecode.common.*;
-import citricsky.battlecode2020.util.Communication;
-import citricsky.battlecode2020.util.FastDeque;
 import citricsky.battlecode2020.util.Util;
 
 public class HQBot implements RunnableBot {
 	private RobotController controller;
-	private FastDeque queue;
 	public HQBot(RobotController controller) {
 		this.controller = controller;
 	}
 	@Override
 	public void init() {
-		Communication.preload();
+
 	}
 	@Override
 	public void turn() throws GameActionException {
@@ -29,7 +26,7 @@ public class HQBot implements RunnableBot {
 			if (controller.senseSoup(location) > 0) {
 				Direction idealDirection = Util.getDirection(Util.FLOOD_FILL_DX_CLAMPED[i], Util.FLOOD_FILL_DY_CLAMPED[i]);
 				for (Direction direction : Util.getAttemptOrder(idealDirection)) {
-					if (controller.canBuildRobot(RobotType.MINER, direction)) {
+					if (Util.canSafeBuildRobot(RobotType.MINER, direction)) {
 						controller.buildRobot(RobotType.MINER, direction);
 						break;
 					}

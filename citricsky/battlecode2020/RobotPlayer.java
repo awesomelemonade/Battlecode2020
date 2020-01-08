@@ -3,6 +3,7 @@ package citricsky.battlecode2020;
 import battlecode.common.Clock;
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
+import citricsky.battlecode2020.util.Util;
 
 public class RobotPlayer {
 	public static RobotController controller;
@@ -19,6 +20,7 @@ public class RobotPlayer {
 			default:
 				throw new IllegalStateException("Unimplemented!");
 		}
+		Util.init(controller);
 		bot.init();
 		while (true) {
 			bot.turn();

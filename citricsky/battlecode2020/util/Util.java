@@ -1,8 +1,13 @@
 package citricsky.battlecode2020.util;
 
-import battlecode.common.Direction;
+import battlecode.common.*;
 
 public class Util {
+	private static RobotController controller;
+	public static void init(RobotController controller) {
+		Util.controller = controller;
+		Communication.preload();
+	}
 	public static final Direction[] ADJACENT_DIRECTIONS = new Direction[] {
 			Direction.NORTH, Direction.NORTHEAST, Direction.EAST, Direction.SOUTHEAST,
 			Direction.SOUTH, Direction.SOUTHWEST, Direction.WEST, Direction.NORTHWEST
@@ -61,5 +66,21 @@ public class Util {
 	}
 	public static Direction randomAdjacentDirection() {
 		return ADJACENT_DIRECTIONS[(int) (Math.random() * 8)];
+	}
+
+	/**
+	 * Whether the given direction is flooding
+	 * Returns true if can't be sensed (to be safe)
+	 */
+	public static boolean isFlooding(Direction direction)  throws GameActionException {
+		MapLocation location = controller.getLocation().add(direction);
+		return !(controller.canSenseLocation(location) &&
+				(!controller.senseFlooding(location)));
+	}
+	public static boolean canSafeMove(Direction direction) throws GameActionException {
+		return controller.canMove(direction) && (!isFlooding(direction));
+	}
+	public static boolean canSafeBuildRobot(RobotType type, Direction direction) throws GameActionException {
+		return controller.canBuildRobot(type, direction) && (!isFlooding(direction));
 	}
 }

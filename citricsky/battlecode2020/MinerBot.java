@@ -81,10 +81,10 @@ public class MinerBot implements RunnableBot {
 		if (!controller.isReady()) {
 			return;
 		}
-		for (int i = 0; i < 16 && (!controller.canMove(lastRandomDirection)); i++) {
+		for (int i = 0; i < 16 && (!Util.canSafeMove(lastRandomDirection)); i++) {
 			lastRandomDirection = Util.randomAdjacentDirection();
 		}
-		if (controller.canMove(lastRandomDirection)) {
+		if (Util.canSafeMove(lastRandomDirection)) {
 			controller.move(lastRandomDirection);
 		}
 	}
