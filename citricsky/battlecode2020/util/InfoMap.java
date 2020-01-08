@@ -13,11 +13,11 @@ public class InfoMap {
 
 	}
 	public void set(int x, int y, long value) {
-		int index = (x * width + y);
+		int index = (x * height + y);
 		array[index / 4] |= (value << ((index % 4) * BITMASK_LENGTH));
 	}
 	public long get(int x, int y) {
-		int index = (x * width + y);
+		int index = (x * height + y);
 		return (array[index / 4] >>> ((index % 4) * BITMASK_LENGTH)) & BITMASK;
 	}
 }

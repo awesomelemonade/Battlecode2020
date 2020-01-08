@@ -32,11 +32,4 @@ public class Hash {
 		h1 ^= h1 >>> 16;
 		return h1;
 	}
-	private static final int MAX_MAP_SIZE = 64;
-	/**
-	 * Hashes to lower 12 bits
-	 */
-	public static int hash(MapLocation location) {
-		return ((location.x % MAX_MAP_SIZE) << 6) | (location.y % MAX_MAP_SIZE);
-	}
 }
