@@ -59,4 +59,7 @@ public class Util {
 		}
 		return Direction.CENTER;
 	}
+	public static Direction randomAdjacentDirection() {
+		return ADJACENT_DIRECTIONS[(int) (Math.random() * 8)];
+	}
 }
