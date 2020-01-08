@@ -44,7 +44,7 @@ public class MinerBot implements RunnableBot {
 			// Move towards visible soup
 			MapLocation soupLocation = findSoupLocation();
 			if (soupLocation == null) {
-				randomExplore();
+				Util.randomWalk();
 			} else {
 				pathTowards(soupLocation);
 			}
@@ -72,20 +72,5 @@ public class MinerBot implements RunnableBot {
 			}
 		}
 		return null;
-	}
-	private Direction lastRandomDirection;
-	public void randomExplore() throws GameActionException {
-		if (lastRandomDirection == null) {
-			lastRandomDirection = Util.randomAdjacentDirection();
-		}
-		if (!controller.isReady()) {
-			return;
-		}
-		for (int i = 0; i < 16 && (!Util.canSafeMove(lastRandomDirection)); i++) {
-			lastRandomDirection = Util.randomAdjacentDirection();
-		}
-		if (Util.canSafeMove(lastRandomDirection)) {
-			controller.move(lastRandomDirection);
-		}
 	}
 }

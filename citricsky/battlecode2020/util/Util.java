@@ -83,4 +83,20 @@ public class Util {
 	public static boolean canSafeBuildRobot(RobotType type, Direction direction) throws GameActionException {
 		return controller.canBuildRobot(type, direction) && (!isFlooding(direction));
 	}
+
+	private static Direction lastRandomDirection;
+	public static void randomWalk() throws GameActionException {
+		if (lastRandomDirection == null) {
+			lastRandomDirection = Util.randomAdjacentDirection();
+		}
+		if (!controller.isReady()) {
+			return;
+		}
+		for (int i = 0; i < 16 && (!Util.canSafeMove(lastRandomDirection)); i++) {
+			lastRandomDirection = Util.randomAdjacentDirection();
+		}
+		if (Util.canSafeMove(lastRandomDirection)) {
+			controller.move(lastRandomDirection);
+		}
+	}
 }

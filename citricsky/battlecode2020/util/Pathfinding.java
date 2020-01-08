@@ -19,6 +19,12 @@ public class Pathfinding {
 	}
 	// Assumes landscaping is not a possibility and it's not a simple drone
 	public void execute(MapLocation target) throws GameActionException {
+		indicators: {
+			controller.setIndicatorLine(controller.getLocation(), target, 0, 255, 0);
+			if (bugPathing) {
+				controller.setIndicatorDot(controller.getLocation(), 255, 255, 0);
+			}
+		}
 		if (!controller.isReady()) {
 			return;
 		}
