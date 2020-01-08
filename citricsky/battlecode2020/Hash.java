@@ -1,6 +1,9 @@
 package citricsky.battlecode2020;
 
+import battlecode.common.MapLocation;
+
 public class Hash {
+	// Murmur hash constants
 	private static final int c1 = 0xcc9e2d51;
 	private static final int c2 = 0x1b873593;
 	public static int hash(int seed, int operand) {
@@ -28,5 +31,12 @@ public class Hash {
 		h1 *= 0xc2b2ae35;
 		h1 ^= h1 >>> 16;
 		return h1;
+	}
+	private static final int MAX_MAP_SIZE = 64;
+	/**
+	 * Hashes to lower 12 bits
+	 */
+	public static int hash(MapLocation location) {
+		return ((location.x % MAX_MAP_SIZE) << 6) | (location.y % MAX_MAP_SIZE);
 	}
 }
