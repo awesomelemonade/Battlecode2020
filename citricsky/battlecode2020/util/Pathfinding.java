@@ -27,13 +27,13 @@ public class Pathfinding {
 	// Assumes landscaping is not a possibility and it's not a simple drone
 	public void execute(MapLocation target) throws GameActionException {
 		controller.setIndicatorLine(controller.getLocation(), target, 0, 255, 0);
+		if (bugPathing) {
+			controller.setIndicatorDot(controller.getLocation(), 255, 255, 0);
+		}
 		if (!controller.isReady()) {
 			return;
 		}
 		combo(target);
-		if (bugPathing) {
-			controller.setIndicatorDot(controller.getLocation(), 255, 255, 0);
-		}
 	}
 	private void combo(MapLocation target) throws GameActionException {
 		if (!bugPathing) {
@@ -41,8 +41,8 @@ public class Pathfinding {
 				return;
 			}
 		}
-		bugPath(target);
 		bugPathing = true;
+		bugPath(target);
 	}
 	private boolean naiveGoTowards(MapLocation target) throws GameActionException {
 		MapLocation currentLocation = controller.getLocation();
