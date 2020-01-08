@@ -17,15 +17,29 @@ public class RobotPlayer {
 			case MINER:
 				bot = new MinerBot(controller);
 				break;
+			case LANDSCAPER:
+				bot = new LandscaperBot(controller);
+				break;
+			case DESIGN_SCHOOL:
+				bot = new DesignSchoolBot(controller);
+				break;
 			default:
 				throw new IllegalStateException("Unimplemented!");
 		}
 		Util.init(controller);
 		bot.init();
-		while (true) {
-			bot.turn();
-			// TODO: Catch up on ledger while waiting
-			Clock.yield();
+		try {
+			while (true) {
+				bot.turn();
+				// TODO: Catch up on ledger while waiting
+				Clock.yield();
+			}
+		} catch (Exception ex) {
+			while (true) {
+				controller.setIndicatorDot(controller.getLocation(), 255, 0, 0);
+				ex.printStackTrace();
+				Clock.yield();
+			}
 		}
 	}
 }

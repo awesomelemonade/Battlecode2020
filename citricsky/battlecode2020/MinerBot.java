@@ -44,7 +44,11 @@ public class MinerBot implements RunnableBot {
 			// Move towards visible soup
 			MapLocation soupLocation = findSoupLocation();
 			if (soupLocation == null) {
-				Util.randomWalk();
+				// try build design school
+				if (!tryBuild(RobotType.DESIGN_SCHOOL)) {
+					// Otherwise, walk randomly
+					Util.randomWalk();
+				}
 			} else {
 				pathTowards(soupLocation);
 			}
@@ -72,5 +76,18 @@ public class MinerBot implements RunnableBot {
 			}
 		}
 		return null;
+	}
+	private boolean spawned = false;
+	public boolean tryBuild(RobotType type) throws GameActionException {
+		if (spawned) { // TODO: temporary hack
+			return false;
+		}
+		Direction direction = Util.randomAdjacentDirection();
+		if (Util.canSafeBuildRobot(type, direction)) {
+			controller.buildRobot(type, direction);
+			spawned = true;
+			return true;
+		}
+		return false;
 	}
 }
