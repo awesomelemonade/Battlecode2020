@@ -191,4 +191,16 @@ public class Util {
 			return true;
 		}
 	}
+	public static boolean tryShootDrone() throws GameActionException {
+		RobotInfo[] enemies = controller.senseNearbyRobots(controller.getLocation(),
+				GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED, controller.getTeam().opponent());
+		for (RobotInfo enemy : enemies) {
+			int enemyId = enemy.getID();
+			if (controller.canShootUnit(enemyId)) {
+				controller.shootUnit(enemyId);
+				return true;
+			}
+		}
+		return false;
+	}
 }

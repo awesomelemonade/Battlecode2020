@@ -3,10 +3,7 @@ package citricsky;
 import battlecode.common.Clock;
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
-import citricsky.battlecode2020.DesignSchoolBot;
-import citricsky.battlecode2020.HQBot;
-import citricsky.battlecode2020.LandscaperBot;
-import citricsky.battlecode2020.MinerBot;
+import citricsky.battlecode2020.*;
 import citricsky.battlecode2020.util.SharedInfo;
 import citricsky.battlecode2020.util.Util;
 
@@ -27,6 +24,12 @@ public class RobotPlayer {
 				break;
 			case DESIGN_SCHOOL:
 				bot = new DesignSchoolBot(controller);
+				break;
+			case REFINERY:
+				bot = new RefineryBot(controller);
+				break;
+			case NET_GUN:
+				bot = new NetGunBot(controller);
 				break;
 			default:
 				throw new IllegalStateException("Unimplemented!");

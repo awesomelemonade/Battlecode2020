@@ -22,7 +22,7 @@ public class HQBot implements RunnableBot {
 		}
 		MapLocation currentLocation = controller.getLocation();
 		turn: {
-			if (tryShootDrone()) {
+			if (Util.tryShootDrone()) {
 				break turn;
 			}
 			if (spawnCount < 20) {
@@ -55,17 +55,5 @@ public class HQBot implements RunnableBot {
 			controller.buildRobot(RobotType.MINER, direction);
 			this.spawnCount++;
 		}
-	}
-	public boolean tryShootDrone() throws GameActionException {
-		RobotInfo[] enemies = controller.senseNearbyRobots(controller.getLocation(),
-				GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED, controller.getTeam().opponent());
-		for (RobotInfo enemy : enemies) {
-			int enemyId = enemy.getID();
-			if (controller.canShootUnit(enemyId)) {
-				controller.shootUnit(enemyId);
-				return true;
-			}
-		}
-		return false;
 	}
 }
