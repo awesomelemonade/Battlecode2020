@@ -14,7 +14,7 @@ public class MinerBot implements RunnableBot {
 
 	@Override
 	public void init() {
-		pathfinding = new Pathfinding(controller);
+		pathfinding = new Pathfinding();
 		for (RobotInfo robot : controller.senseNearbyRobots(-1, controller.getTeam())) {
 			if (robot.type == RobotType.HQ) {
 				hqLocation = robot.getLocation();

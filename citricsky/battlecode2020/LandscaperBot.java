@@ -15,7 +15,7 @@ public class LandscaperBot implements RunnableBot {
 	@Override
 	public void init() {
 		infoMap = new InfoMap(controller.getMapWidth(), controller.getMapHeight());
-		pathfinding = new Pathfinding(controller);
+		pathfinding = new Pathfinding();
 	}
 	@Override
 	public void turn() throws GameActionException {

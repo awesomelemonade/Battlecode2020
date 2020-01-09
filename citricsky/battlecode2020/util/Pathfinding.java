@@ -1,20 +1,19 @@
 package citricsky.battlecode2020.util;
 
-import battlecode.common.Direction;
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
-import battlecode.common.RobotController;
+import battlecode.common.*;
 
 public class Pathfinding {
-	private RobotController controller;
+	private static RobotController controller;
 	private boolean bugPathing = false;
 	private Direction currentDirection;
 	private FastIntSet visitedSet;
 	private MapLocation bestLocation;
 	private int bestDistanceSquared;
 
-	public Pathfinding(RobotController controller) {
-		this.controller = controller;
+	public static void init(RobotController controller) {
+		Pathfinding.controller = controller;
+	}
+	public Pathfinding() {
 		this.visitedSet = new FastIntSet(controller.getMapWidth() * controller.getMapHeight());
 	}
 	public void reset() {
@@ -37,18 +36,55 @@ public class Pathfinding {
 	}
 	private void combo(MapLocation target) throws GameActionException {
 		if (!bugPathing) {
-			if (naiveGoTowards(target)) {
+			if (naiveMove(controller.getLocation().directionTo(target))) {
 				return;
 			}
 		}
 		bugPathing = true;
 		bugPath(target);
 	}
-	private boolean naiveGoTowards(MapLocation target) throws GameActionException {
+	public static boolean naiveMove(Direction direction) throws GameActionException {
 		MapLocation currentLocation = controller.getLocation();
-		Direction direction = currentLocation.directionTo(target);
 		if (Util.canSafeMove(direction)) {
 			controller.move(direction);
+			return true;
+		} else {
+			if (controller.getType() == RobotType.LANDSCAPER) {
+				MapLocation toLocation = currentLocation.add(direction);
+				if (controller.canSenseLocation(toLocation)) {
+					if (!controller.isLocationOccupied(toLocation)) {
+						int fromElevation = controller.senseElevation(currentLocation);
+						int toElevation = controller.senseElevation(toLocation);
+						int turnsToFlooded = Math.min(Util.getTurnsToFlooded(fromElevation),
+								Util.getTurnsToFlooded(toElevation));
+						int dirtDifference = Math.max(0,
+								Math.abs(fromElevation - toElevation) - GameConstants.MAX_DIRT_DIFFERENCE);
+						if (dirtDifference * 3 < turnsToFlooded) {
+							if (fromElevation < toElevation) {
+								if (moveDirt(direction, Direction.CENTER)) {
+									return true;
+								}
+							} else {
+								if (moveDirt(Direction.CENTER, direction)) {
+									return true;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		return false;
+	}
+	private static boolean moveDirt(Direction from, Direction to) throws GameActionException {
+		// Place dirt in lower elevation
+		if (controller.canDepositDirt(to)) {
+			controller.depositDirt(to);
+			return true;
+		}
+		// Dig dirt from higher elevation
+		if (controller.canDigDirt(from)) {
+			controller.digDirt(from);
 			return true;
 		}
 		return false;

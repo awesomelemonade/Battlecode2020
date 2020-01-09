@@ -9,6 +9,7 @@ public class Util {
 		Communication.preload();
 		CommunicationProcessor.init(controller);
 		SharedInfo.init(controller);
+		Pathfinding.init(controller);
 	}
 	public static final Direction[] ADJACENT_DIRECTIONS = new Direction[] {
 			Direction.NORTH, Direction.NORTHEAST, Direction.EAST, Direction.SOUTHEAST,
@@ -94,11 +95,8 @@ public class Util {
 		if (!controller.isReady()) {
 			return;
 		}
-		for (int i = 0; i < 16 && (!Util.canSafeMove(lastRandomDirection)); i++) {
+		for (int i = 0; i < 16 && (!Pathfinding.naiveMove(lastRandomDirection)); i++) {
 			lastRandomDirection = Util.randomAdjacentDirection();
-		}
-		if (Util.canSafeMove(lastRandomDirection)) {
-			controller.move(lastRandomDirection);
 		}
 	}
 	private static final int[] TURNS_TO_FLOODED = {
@@ -175,10 +173,8 @@ public class Util {
 				for (Direction direction : Util.ADJACENT_DIRECTIONS) {
 					MapLocation adjacent = location.add(direction);
 					if (controller.canSenseLocation(adjacent)) {
-						if (controller.onTheMap(adjacent)) {
-							if (controller.senseFlooding(location)) {
-								return true;
-							}
+						if (controller.senseFlooding(location)) {
+							return true;
 						}
 					} else {
 						// Cannot see adjacent
