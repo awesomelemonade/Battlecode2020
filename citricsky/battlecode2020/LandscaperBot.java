@@ -1,6 +1,7 @@
 package citricsky.battlecode2020;
 
 import battlecode.common.*;
+import citricsky.RunnableBot;
 import citricsky.battlecode2020.util.*;
 
 public class LandscaperBot implements RunnableBot {

@@ -1,6 +1,7 @@
 package citricsky.battlecode2020;
 
 import battlecode.common.*;
+import citricsky.RunnableBot;
 import citricsky.battlecode2020.util.Communication;
 import citricsky.battlecode2020.util.Pathfinding;
 import citricsky.battlecode2020.util.Util;
@@ -99,7 +100,8 @@ public class MinerBot implements RunnableBot {
 	}
 	private boolean spawned = false;
 	public boolean tryBuild(RobotType type) throws GameActionException {
-		if (spawned) { // TODO: temporary hack
+		// TODO: temporary hack to make sure landscapers spawn before more design schools
+		if (spawned && controller.getTeamSoup() > 200) {
 			return false;
 		}
 		Direction direction = Util.randomAdjacentDirection();

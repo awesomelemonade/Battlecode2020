@@ -1,8 +1,12 @@
-package citricsky.battlecode2020;
+package citricsky;
 
 import battlecode.common.Clock;
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
+import citricsky.battlecode2020.DesignSchoolBot;
+import citricsky.battlecode2020.HQBot;
+import citricsky.battlecode2020.LandscaperBot;
+import citricsky.battlecode2020.MinerBot;
 import citricsky.battlecode2020.util.Util;
 
 public class RobotPlayer {

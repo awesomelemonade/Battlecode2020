@@ -4,6 +4,7 @@ import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
+import citricsky.RunnableBot;
 import citricsky.battlecode2020.util.Util;
 
 public class DesignSchoolBot implements RunnableBot {

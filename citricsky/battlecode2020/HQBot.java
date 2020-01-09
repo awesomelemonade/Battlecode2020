@@ -1,6 +1,7 @@
 package citricsky.battlecode2020;
 
 import battlecode.common.*;
+import citricsky.RunnableBot;
 import citricsky.battlecode2020.util.Util;
 
 public class HQBot implements RunnableBot {
