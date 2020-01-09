@@ -52,14 +52,27 @@ public class Pathfinding {
 			if (controller.getType() == RobotType.LANDSCAPER) {
 				MapLocation toLocation = currentLocation.add(direction);
 				if (controller.canSenseLocation(toLocation)) {
-					if (!controller.isLocationOccupied(toLocation)) {
+					if (!(controller.senseFlooding(toLocation) || controller.isLocationOccupied(toLocation))) {
 						int fromElevation = controller.senseElevation(currentLocation);
 						int toElevation = controller.senseElevation(toLocation);
 						int turnsToFlooded = Math.min(Util.getTurnsToFlooded(fromElevation),
 								Util.getTurnsToFlooded(toElevation));
 						int dirtDifference = Math.max(0,
 								Math.abs(fromElevation - toElevation) - GameConstants.MAX_DIRT_DIFFERENCE);
-						if (dirtDifference * 3 < turnsToFlooded) {
+						boolean moveDirt = dirtDifference * 3 < turnsToFlooded;
+						if (!moveDirt) {
+							boolean lowerTileNotNearWater = true;
+							MapLocation lower = fromElevation < toElevation ? currentLocation : toLocation;
+							for (Direction tempDirection : Util.ADJACENT_DIRECTIONS) {
+								MapLocation tempLocation = lower.add(tempDirection);
+								if (controller.canSenseLocation(tempLocation) && controller.senseFlooding(tempLocation)) {
+									lowerTileNotNearWater = false;
+									break;
+								}
+							}
+							moveDirt = lowerTileNotNearWater;
+						}
+						if (moveDirt) {
 							if (fromElevation < toElevation) {
 								if (moveDirt(direction, Direction.CENTER)) {
 									return true;
