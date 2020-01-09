@@ -46,7 +46,22 @@ public class LandscaperBot implements RunnableBot {
 		if (enemyHQ == null) {
 			Util.randomWalk();
 		} else {
-			pathfinding.execute(enemyHQ);
+			if (controller.getLocation().isWithinDistanceSquared(enemyHQ, 2)) {
+				if (!controller.isReady()) {
+					return;
+				}
+				Direction direction = controller.getLocation().directionTo(enemyHQ);
+				if (controller.canDepositDirt(direction)) {
+					controller.depositDirt(direction);
+					return;
+				}
+				if (controller.canDigDirt(Direction.CENTER)) {
+					controller.digDirt(Direction.CENTER);
+					return;
+				}
+			} else {
+				pathfinding.execute(enemyHQ);
+			}
 		}
 	}
 }
