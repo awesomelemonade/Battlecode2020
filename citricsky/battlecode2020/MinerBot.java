@@ -3,6 +3,7 @@ package citricsky.battlecode2020;
 import battlecode.common.*;
 import citricsky.RunnableBot;
 import citricsky.battlecode2020.util.Communication;
+import citricsky.battlecode2020.util.CommunicationProcessor;
 import citricsky.battlecode2020.util.Pathfinding;
 import citricsky.battlecode2020.util.Util;
 
@@ -39,19 +40,15 @@ public class MinerBot implements RunnableBot {
 		for (RobotInfo enemy : enemyUnits) {
 			if (enemy.getType() == RobotType.HQ) {
 				MapLocation enemyHQ = enemy.getLocation();
-				if (controller.getTeamSoup() >= TRANSACTION_COST) {
-					int[] message = new int[] {
-							12345, 12345, 12345, 12345, enemyHQ.x, enemyHQ.y, 0
-					};
-					Communication.hashTransaction(message);
-					if (controller.canSubmitTransaction(message, TRANSACTION_COST)) {
-						controller.submitTransaction(message, TRANSACTION_COST);
-					}
-				}
+				int[] message = new int[] {
+						12345, 12345, 12345, 12345, enemyHQ.x, enemyHQ.y, 0
+				};
+				Communication.hashTransaction(message);
+				CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
 				break;
 			}
 		}
-
+		CommunicationProcessor.sendAll();
 
 		MapLocation currentLocation = controller.getLocation();
 		if (controller.getSoupCarrying() < RobotType.MINER.soupLimit) {
@@ -101,7 +98,7 @@ public class MinerBot implements RunnableBot {
 	private boolean spawned = false;
 	public boolean tryBuild(RobotType type) throws GameActionException {
 		// TODO: temporary hack to make sure landscapers spawn before more design schools
-		if (spawned && controller.getTeamSoup() > 200) {
+		if (spawned || controller.getTeamSoup() < 200) {
 			return false;
 		}
 		Direction direction = Util.randomAdjacentDirection();

@@ -1,7 +1,5 @@
 package citricsky.battlecode2020.util;
 
-import java.util.Arrays;
-
 public class FastIntSet {
 	private int[] array;
 	private int counter;

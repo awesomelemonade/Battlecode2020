@@ -18,7 +18,6 @@ public class LandscaperBot implements RunnableBot {
 	public void init() {
 		infoMap = new InfoMap(controller.getMapWidth(), controller.getMapHeight());
 		pathfinding = new Pathfinding(controller);
-		CommunicationProcessor.init(controller);
 	}
 	@Override
 	public void turn() throws GameActionException {
@@ -56,15 +55,11 @@ public class LandscaperBot implements RunnableBot {
 			for (RobotInfo enemy : enemyUnits) {
 				if (enemy.getType() == RobotType.HQ) {
 					this.enemyHQ = enemy.getLocation();
-					if (controller.getTeamSoup() >= TRANSACTION_COST) {
-						int[] message = new int[] {
-								12345, 12345, 12345, 12345, enemyHQ.x, enemyHQ.y, 0
-						};
-						Communication.hashTransaction(message);
-						if (controller.canSubmitTransaction(message, TRANSACTION_COST)) {
-							controller.submitTransaction(message, TRANSACTION_COST);
-						}
-					}
+					int[] message = new int[] {
+							12345, 12345, 12345, 12345, enemyHQ.x, enemyHQ.y, 0
+					};
+					Communication.hashTransaction(message);
+					CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
 					break;
 				}
 			}
@@ -74,21 +69,18 @@ public class LandscaperBot implements RunnableBot {
 			Util.randomWalk();
 		} else {
 			if (controller.getLocation().isWithinDistanceSquared(enemyHQ, 2)) {
-				if (!controller.isReady()) {
-					return;
-				}
-				Direction direction = controller.getLocation().directionTo(enemyHQ);
-				if (controller.canDepositDirt(direction)) {
-					controller.depositDirt(direction);
-					return;
-				}
-				if (controller.canDigDirt(Direction.CENTER)) {
-					controller.digDirt(Direction.CENTER);
-					return;
+				if (controller.isReady()) {
+					Direction direction = controller.getLocation().directionTo(enemyHQ);
+					if (controller.canDepositDirt(direction)) {
+						controller.depositDirt(direction);
+					} else if (controller.canDigDirt(Direction.CENTER)) {
+						controller.digDirt(Direction.CENTER);
+					}
 				}
 			} else {
 				pathfinding.execute(enemyHQ);
 			}
 		}
+		CommunicationProcessor.sendAll();
 	}
 }

@@ -7,6 +7,7 @@ public class Util {
 	public static void init(RobotController controller) {
 		Util.controller = controller;
 		Communication.preload();
+		CommunicationProcessor.init(controller);
 	}
 	public static final Direction[] ADJACENT_DIRECTIONS = new Direction[] {
 			Direction.NORTH, Direction.NORTHEAST, Direction.EAST, Direction.SOUTHEAST,
