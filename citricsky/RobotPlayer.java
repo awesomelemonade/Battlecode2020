@@ -7,6 +7,7 @@ import citricsky.battlecode2020.DesignSchoolBot;
 import citricsky.battlecode2020.HQBot;
 import citricsky.battlecode2020.LandscaperBot;
 import citricsky.battlecode2020.MinerBot;
+import citricsky.battlecode2020.util.SharedInfo;
 import citricsky.battlecode2020.util.Util;
 
 public class RobotPlayer {
@@ -34,6 +35,7 @@ public class RobotPlayer {
 		bot.init();
 		try {
 			while (true) {
+				SharedInfo.loop();
 				bot.turn();
 				// TODO: Catch up on ledger while waiting
 				Clock.yield();

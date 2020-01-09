@@ -8,6 +8,7 @@ public class Util {
 		Util.controller = controller;
 		Communication.preload();
 		CommunicationProcessor.init(controller);
+		SharedInfo.init(controller);
 	}
 	public static final Direction[] ADJACENT_DIRECTIONS = new Direction[] {
 			Direction.NORTH, Direction.NORTHEAST, Direction.EAST, Direction.SOUTHEAST,
