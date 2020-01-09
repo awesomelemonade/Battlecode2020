@@ -26,9 +26,7 @@ public class LandscaperBot implements RunnableBot {
 			int dy = Util.FLOOD_FILL_DY[i];
 			MapLocation location = currentLocation.translate(dx, dy);
 			if (controller.canSenseLocation(location)) {
-				if (controller.onTheMap(location)) {
-					infoMap.set(location.x, location.y, 1);
-				}
+				infoMap.set(location, 1);
 			} else {
 				break;
 			}
