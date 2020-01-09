@@ -6,7 +6,7 @@ public class Util {
 	private static RobotController controller;
 	public static void init(RobotController controller) {
 		Util.controller = controller;
-		Communication.preload();
+		Communication.init(controller);
 		CommunicationProcessor.init(controller);
 		SharedInfo.init(controller);
 		Pathfinding.init(controller);

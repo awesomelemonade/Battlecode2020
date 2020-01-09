@@ -1,14 +1,18 @@
 package citricsky.battlecode2020.util;
 
+import battlecode.common.RobotController;
+
 public class Communication {
-	private static final int seed = 154820275;
+	private static int seed = 154820275;
 
 	private static final int UPPER_BITMASK = 0b11111111000000000000000000000000;
 	private static final int LOWER_BITMASK = 0b00000000111111111111111111111111;
 	private static final int[] PRIMES = new int[] {5113, 15919, 18671, 42101, 61441, 78571, 101531};
 
-	public static void preload() {
-		// Preloads static variables (~5k bytecodes for bloom filter)
+	public static void init(RobotController controller) {
+		// xor the seed by map size
+		seed ^= (controller.getMapWidth() << 6) | controller.getMapHeight();
+		// Also preloads static variables (~5k bytecodes for bloom filter)
 	}
 	/**
 	 * Each transaction can be only verified once
