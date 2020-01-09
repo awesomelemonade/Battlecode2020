@@ -1,6 +1,7 @@
 package citricsky.battlecode2020;
 
 import battlecode.common.*;
+import citricsky.battlecode2020.util.Communication;
 import citricsky.battlecode2020.util.Pathfinding;
 import citricsky.battlecode2020.util.Util;
 
@@ -30,8 +31,27 @@ public class MinerBot implements RunnableBot {
 		lastTarget = location;
 		pathfinding.execute(location);
 	}
+	private static final int TRANSACTION_COST = 10;
 	@Override
 	public void turn() throws GameActionException {
+		RobotInfo[] enemyUnits = controller.senseNearbyRobots(-1, controller.getTeam().opponent());
+		for (RobotInfo enemy : enemyUnits) {
+			if (enemy.getType() == RobotType.HQ) {
+				MapLocation enemyHQ = enemy.getLocation();
+				if (controller.getTeamSoup() >= TRANSACTION_COST) {
+					int[] message = new int[] {
+							12345, 12345, 12345, 12345, enemyHQ.x, enemyHQ.y, 0
+					};
+					Communication.hashTransaction(message);
+					if (controller.canSubmitTransaction(message, TRANSACTION_COST)) {
+						controller.submitTransaction(message, TRANSACTION_COST);
+					}
+				}
+				break;
+			}
+		}
+
+
 		MapLocation currentLocation = controller.getLocation();
 		if (controller.getSoupCarrying() < RobotType.MINER.soupLimit) {
 			// Try to mine soup

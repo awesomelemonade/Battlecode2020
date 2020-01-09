@@ -24,25 +24,27 @@ public class HQBot implements RunnableBot {
 			if (tryShootDrone()) {
 				break turn;
 			}
-			for (int i = 0; i < Util.FLOOD_FILL_DX.length; i++) {
-				MapLocation location = currentLocation.translate(Util.FLOOD_FILL_DX[i], Util.FLOOD_FILL_DY[i]);
-				if (!controller.canSenseLocation(location)) {
-					break;
-				}
-				if (controller.senseSoup(location) > 0) {
-					Direction idealDirection = Util.getDirection(Util.FLOOD_FILL_DX_CLAMPED[i], Util.FLOOD_FILL_DY_CLAMPED[i]);
-					for (Direction direction : Util.getAttemptOrder(idealDirection)) {
-						if (Util.canSafeBuildRobot(RobotType.MINER, direction)) {
-							controller.buildRobot(RobotType.MINER, direction);
-							this.spawnCount++;
-							break;
-						}
+			if (spawnCount < 20) {
+				for (int i = 0; i < Util.FLOOD_FILL_DX.length; i++) {
+					MapLocation location = currentLocation.translate(Util.FLOOD_FILL_DX[i], Util.FLOOD_FILL_DY[i]);
+					if (!controller.canSenseLocation(location)) {
+						break;
 					}
-					break turn;
+					if (controller.senseSoup(location) > 0) {
+						Direction idealDirection = Util.getDirection(Util.FLOOD_FILL_DX_CLAMPED[i], Util.FLOOD_FILL_DY_CLAMPED[i]);
+						for (Direction direction : Util.getAttemptOrder(idealDirection)) {
+							if (Util.canSafeBuildRobot(RobotType.MINER, direction)) {
+								controller.buildRobot(RobotType.MINER, direction);
+								this.spawnCount++;
+								break;
+							}
+						}
+						break turn;
+					}
 				}
-			}
-			if (spawnCount < 3) {
-				tryBuildMiner();
+				if (spawnCount < 3) {
+					tryBuildMiner();
+				}
 			}
 		}
 	}
