@@ -128,19 +128,15 @@ public class Pathfinding {
 			currentDirection = currentLocation.directionTo(target);
 			// Follows the wall with left hand
 			// This for loop ensures we're not in an infinite loop (stuck in a 1x1 square)
-			for (int i = 0; i < 8 && (!Util.canSafeMove(currentDirection)); i++) {
+			for (int i = 0; i < 8 && (!Pathfinding.naiveMove(currentDirection)); i++) {
 				currentDirection = currentDirection.rotateRight();
 			}
 		} else {
-			Direction start = currentDirection.opposite().rotateRight();
-			for (int i = 0; i < 8 && !(!Util.canSafeMove(start.rotateLeft()) &&
-					Util.canSafeMove(start)); i++) {
+			Direction start = currentDirection.opposite().rotateRight().rotateRight();
+			for (int i = 0; i < 8 && !Pathfinding.naiveMove(start); i++) {
 				start = start.rotateRight();
 			}
 			currentDirection = start;
-		}
-		if (Util.canSafeMove(currentDirection)) {
-			controller.move(currentDirection);
 		}
 	}
 	private void addToVisitedSet(MapLocation location) {
