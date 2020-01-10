@@ -132,8 +132,14 @@ public class Pathfinding {
 				currentDirection = currentDirection.rotateRight();
 			}
 		} else {
-			Direction start = currentDirection.opposite().rotateRight().rotateRight();
-			for (int i = 0; i < 8 && !Pathfinding.naiveMove(start); i++) {
+			Direction start = currentDirection.opposite().rotateRight();
+			if (Pathfinding.naiveMove(start)) {
+				reset();
+				return;
+			} else {
+				start = start.rotateRight();
+			}
+			for (int i = 0; i < 7 && !Pathfinding.naiveMove(start); i++) {
 				start = start.rotateRight();
 			}
 			currentDirection = start;
