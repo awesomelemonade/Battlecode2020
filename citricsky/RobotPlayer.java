@@ -4,6 +4,7 @@ import battlecode.common.Clock;
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 import citricsky.battlecode2020.*;
+import citricsky.battlecode2020.util.Cache;
 import citricsky.battlecode2020.util.SharedInfo;
 import citricsky.battlecode2020.util.Util;
 
@@ -38,7 +39,7 @@ public class RobotPlayer {
 		bot.init();
 		try {
 			while (true) {
-				SharedInfo.loop();
+				Util.loop();
 				bot.turn();
 				// TODO: Catch up on ledger while waiting
 				Clock.yield();

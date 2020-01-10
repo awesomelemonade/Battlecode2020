@@ -10,6 +10,12 @@ public class Util {
 		CommunicationProcessor.init(controller);
 		SharedInfo.init(controller);
 		Pathfinding.init(controller);
+		UnitsMap.init(controller);
+	}
+	public static void loop() throws GameActionException {
+		Cache.ALL_NEARBY_ROBOTS = controller.senseNearbyRobots();
+		SharedInfo.loop();
+		UnitsMap.loop();
 	}
 	public static final Direction[] ADJACENT_DIRECTIONS = new Direction[] {
 			Direction.NORTH, Direction.NORTHEAST, Direction.EAST, Direction.SOUTHEAST,
@@ -71,14 +77,22 @@ public class Util {
 		return ADJACENT_DIRECTIONS[(int) (Math.random() * 8)];
 	}
 
+	public static boolean onTheMap(MapLocation location) {
+		int x = location.x;
+		int y = location.y;
+		return x >= 0 && x < controller.getMapWidth() && y >= 0 && y < controller.getMapHeight();
+	}
 	/**
 	 * Whether the given direction is flooding
-	 * Returns true if can't be sensed (to be safe)
 	 */
 	public static boolean isFlooding(Direction direction) throws GameActionException {
-		MapLocation location = controller.getLocation().add(direction);
-		return !(controller.canSenseLocation(location) &&
-				(!controller.senseFlooding(location)));
+		return isFlooding(controller.getLocation().add(direction));
+	}
+	public static boolean isFlooding(MapLocation location) throws GameActionException {
+		return controller.canSenseLocation(location) && controller.senseFlooding(location);
+	}
+	public static boolean isBlocked(MapLocation location) throws GameActionException {
+		return !onTheMap(location) || isFlooding(location) || UnitsMap.hasBlockingUnit(location);
 	}
 	public static boolean canSafeMove(Direction direction) throws GameActionException {
 		return controller.canMove(direction) && (!isFlooding(direction));
