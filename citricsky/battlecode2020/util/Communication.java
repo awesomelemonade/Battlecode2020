@@ -23,6 +23,10 @@ public class Communication {
 	 * @return whether the transaction is verified to be ours
 	 */
 	public static boolean verifyTransaction(int[] message) {
+		if (message.length < 7) {
+			// All of our messages are length 7
+			return false;
+		}
 		int verify = message[6] & LOWER_BITMASK;
 		message[6] ^= verify; // Zeros out LOWER_BITMASK
 		int hash = hashArray(message) & LOWER_BITMASK;
