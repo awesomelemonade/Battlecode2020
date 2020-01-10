@@ -4,26 +4,28 @@ import battlecode.common.*;
 
 public class SharedInfo {
 	private static RobotController controller;
-	private static Team opponentTeam;
 	private static MapLocation enemyHQLocation;
 	private static final int ENEMYHQ_TRANSACTION_COST = 10;
 
 	public static void init(RobotController controller) {
 		SharedInfo.controller = controller;
-		SharedInfo.opponentTeam = controller.getTeam().opponent();
+		EnemyHQGuesser.init(controller);
 	}
 	public static void loop() throws GameActionException {
 		CommunicationProcessor.processAll();
+		checkEnemyHQLocation();
+		CommunicationProcessor.sendAll();
+	}
+	private static void checkEnemyHQLocation() {
 		if (enemyHQLocation == null) {
-			RobotInfo[] enemyUnits = controller.senseNearbyRobots(-1, opponentTeam);
-			for (RobotInfo enemy : enemyUnits) {
+			for (RobotInfo enemy : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
 				if (enemy.getType() == RobotType.HQ) {
 					SharedInfo.sendEnemyHQ(enemy.getLocation());
-					break;
+					return;
 				}
 			}
+			EnemyHQGuesser.loop();
 		}
-		CommunicationProcessor.sendAll();
 	}
 	public static void sendEnemyHQ(MapLocation location) {
 		enemyHQLocation = location;

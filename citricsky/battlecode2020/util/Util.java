@@ -13,7 +13,7 @@ public class Util {
 		UnitsMap.init(controller);
 	}
 	public static void loop() throws GameActionException {
-		Cache.ALL_NEARBY_ROBOTS = controller.senseNearbyRobots();
+		Cache.loop();
 		SharedInfo.loop();
 		UnitsMap.loop();
 	}
