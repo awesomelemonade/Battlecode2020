@@ -92,7 +92,8 @@ public class Util {
 		return controller.canSenseLocation(location) && controller.senseFlooding(location);
 	}
 	public static boolean isBlocked(MapLocation location) throws GameActionException {
-		return !onTheMap(location) || isFlooding(location) || UnitsMap.hasBlockingUnit(location);
+		return !onTheMap(location) || UnitsMap.hasBlockingUnit(location) ||
+				(controller.getType() != RobotType.DELIVERY_DRONE && isFlooding(location));
 	}
 	public static boolean canSafeMove(Direction direction) throws GameActionException {
 		return controller.canMove(direction) && (!isFlooding(direction));

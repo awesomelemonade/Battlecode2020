@@ -9,7 +9,7 @@ public class UnitsMap {
 	private static RobotController controller;
 	private static InfoMap infoMap;
 	public static void init(RobotController controller) {
-		controller = controller;
+		UnitsMap.controller = controller;
 		infoMap = new InfoMap(controller.getMapWidth(), controller.getMapHeight());
 	}
 	public static boolean hasBlockingUnit(MapLocation location) {

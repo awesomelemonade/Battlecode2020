@@ -43,44 +43,53 @@ public class Pathfinding {
 		bugPathing = true;
 		bugPath(target);
 	}
+	private static boolean checkDirtDifference(MapLocation location) throws GameActionException {
+		return Math.abs(controller.senseElevation(controller.getLocation()) -
+				controller.senseElevation(location)) <= GameConstants.MAX_DIRT_DIFFERENCE;
+	}
 	public static boolean naiveMove(Direction direction) throws GameActionException {
 		MapLocation currentLocation = controller.getLocation();
-		if (Util.canSafeMove(direction)) {
-			controller.move(direction);
-			return true;
-		} else {
-			if (controller.getType() == RobotType.LANDSCAPER) {
-				MapLocation toLocation = currentLocation.add(direction);
-				if (controller.canSenseLocation(toLocation)) {
-					if (!(controller.senseFlooding(toLocation) || controller.isLocationOccupied(toLocation))) {
-						int fromElevation = controller.senseElevation(currentLocation);
-						int toElevation = controller.senseElevation(toLocation);
-						int turnsToFlooded = Math.min(Util.getTurnsToFlooded(fromElevation),
-								Util.getTurnsToFlooded(toElevation));
-						int dirtDifference = Math.max(0,
-								Math.abs(fromElevation - toElevation) - GameConstants.MAX_DIRT_DIFFERENCE);
-						boolean moveDirt = dirtDifference * 3 < turnsToFlooded;
-						if (!moveDirt) {
-							boolean lowerTileNotNearWater = true;
-							MapLocation lower = fromElevation < toElevation ? currentLocation : toLocation;
-							for (Direction tempDirection : Util.ADJACENT_DIRECTIONS) {
-								MapLocation tempLocation = lower.add(tempDirection);
-								if (controller.canSenseLocation(tempLocation) && controller.senseFlooding(tempLocation)) {
-									lowerTileNotNearWater = false;
-									break;
-								}
+		MapLocation toLocation = currentLocation.add(direction);
+		if (!Util.isBlocked(toLocation)) {
+			RobotType type = controller.getType();
+			boolean dirtDifferenceCheck = checkDirtDifference(toLocation);
+			if (type == RobotType.DELIVERY_DRONE || dirtDifferenceCheck) {
+				// Let's just sit if there's a robot passing by
+				if (!controller.isLocationOccupied(toLocation)) {
+					controller.move(direction);
+				}
+				return true;
+			} else {
+				// It's not a drone and the elevation difference is too big
+				if (type == RobotType.LANDSCAPER) {
+					// We can move dirt - should we?
+					int fromElevation = controller.senseElevation(currentLocation);
+					int toElevation = controller.senseElevation(toLocation);
+					int turnsToFlooded = Math.min(Util.getTurnsToFlooded(fromElevation),
+							Util.getTurnsToFlooded(toElevation));
+					int dirtDifference = Math.max(0,
+							Math.abs(fromElevation - toElevation) - GameConstants.MAX_DIRT_DIFFERENCE);
+					boolean moveDirt = dirtDifference * 3 < turnsToFlooded;
+					if (!moveDirt) {
+						boolean lowerTileNotNearWater = true;
+						MapLocation lower = fromElevation < toElevation ? currentLocation : toLocation;
+						for (Direction tempDirection : Util.ADJACENT_DIRECTIONS) {
+							MapLocation tempLocation = lower.add(tempDirection);
+							if (controller.canSenseLocation(tempLocation) && controller.senseFlooding(tempLocation)) {
+								lowerTileNotNearWater = false;
+								break;
 							}
-							moveDirt = lowerTileNotNearWater;
 						}
-						if (moveDirt) {
-							if (fromElevation < toElevation) {
-								if (moveDirt(direction, Direction.CENTER)) {
-									return true;
-								}
-							} else {
-								if (moveDirt(Direction.CENTER, direction)) {
-									return true;
-								}
+						moveDirt = lowerTileNotNearWater;
+					}
+					if (moveDirt) {
+						if (fromElevation < toElevation) {
+							if (moveDirt(direction, Direction.CENTER)) {
+								return true;
+							}
+						} else {
+							if (moveDirt(Direction.CENTER, direction)) {
+								return true;
 							}
 						}
 					}
