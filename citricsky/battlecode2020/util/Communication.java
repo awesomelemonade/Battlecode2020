@@ -1,6 +1,7 @@
 package citricsky.battlecode2020.util;
 
 import battlecode.common.RobotController;
+import battlecode.common.Team;
 
 public class Communication {
 	private static int seed = 154820275;
@@ -11,7 +12,9 @@ public class Communication {
 
 	public static void init(RobotController controller) {
 		// xor the seed by map size
-		seed ^= (controller.getMapWidth() << 6) | controller.getMapHeight();
+		int gameAdjust = (controller.getMapWidth() << 6) | controller.getMapHeight();
+		gameAdjust = (gameAdjust << 1) | ((controller.getTeam() == Team.A) ? 0 : 1);
+		seed ^= gameAdjust;
 		// Also preloads static variables (~5k bytecodes for bloom filter)
 	}
 	/**
