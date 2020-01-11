@@ -40,7 +40,7 @@ public class Communication {
 	 */
 	public static void hashTransaction(int[] message) {
 		// Generate 8 random bits
-		message[6] = Util.randomInt() & UPPER_BITMASK;
+		message[6] = Util.getRandom().nextInt() & UPPER_BITMASK;
 		message[6] |= hashArray(message) & LOWER_BITMASK;
 	}
 	private static int hashArray(int[] message) {

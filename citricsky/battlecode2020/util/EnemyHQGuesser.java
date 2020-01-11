@@ -119,27 +119,28 @@ public class EnemyHQGuesser {
 	}
 	public static int getRandomGuessIndex() {
 		// Yay premature optimization
+		double random = Util.getRandom().nextDouble();
 		switch(mode) {
 			case 0:
-				if (Math.random() < 0.5) {
+				if (random < 0.5) {
 					return 1;
 				} else {
 					return 2;
 				}
 			case 1:
-				if (Math.random() < 0.5) {
+				if (random < 0.5) {
 					return 0;
 				} else {
 					return 2;
 				}
 			case 2:
-				if (Math.random() < 0.5) {
+				if (random < 0.5) {
 					return 0;
 				} else {
 					return 1;
 				}
 			case UNKNOWN_MODE:
-				return (int) (Math.random() * 3);
+				return (int) (random * 3);
 			default:
 				return -1;
 		}

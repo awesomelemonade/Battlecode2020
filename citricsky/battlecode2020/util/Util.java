@@ -2,10 +2,14 @@ package citricsky.battlecode2020.util;
 
 import battlecode.common.*;
 
+import java.util.Random;
+
 public class Util {
 	private static RobotController controller;
+	private static Random random;
 	public static void init(RobotController controller) {
 		Util.controller = controller;
+		random = new Random(controller.getID());
 		Cache.init(controller);
 		SharedInfo.init(controller);
 		Communication.init(controller);
@@ -18,13 +22,13 @@ public class Util {
 		SharedInfo.loop();
 		UnitsMap.loop();
 	}
+	public static Random getRandom() {
+		return random;
+	}
 	public static final Direction[] ADJACENT_DIRECTIONS = new Direction[] {
 			Direction.NORTH, Direction.NORTHEAST, Direction.EAST, Direction.SOUTHEAST,
 			Direction.SOUTH, Direction.SOUTHWEST, Direction.WEST, Direction.NORTHWEST
 	};
-	public static int randomInt() {
-		return Float.floatToRawIntBits((float) Math.random());
-	}
 	public static final int[] FLOOD_FILL_DX = {0, -1, 0, 0, 1, -1, -1, 1, 1, -2, 0, 0, 2, -2, -2, -1, -1, 1, 1, 2, 2, -2, -2, 2, 2, -3, 0, 0, 3, -3, -3, -1, -1, 1, 1, 3, 3, -3, -3, -2, -2, 2, 2, 3, 3, -4, 0, 0, 4, -4, -4, -1, -1, 1, 1, 4, 4, -3, -3, 3, 3, -4, -4, -2, -2, 2, 2, 4, 4, -5, -4, -4, -3, -3, 0, 0, 3, 3, 4, 4, 5, -5, -5, -1, -1, 1, 1, 5, 5, -5, -5, -2, -2, 2, 2, 5, 5, -4, -4, 4, 4, -5, -5, -3, -3, 3, 3, 5, 5, -6, 0, 0, 6, -6, -6, -1, -1, 1, 1, 6, 6, -6, -6, -2, -2, 2, 2, 6, 6, -5, -5, -4, -4, 4, 4, 5, 5, -6, -6, -3, -3, 3, 3, 6, 6};
 	public static final int[] FLOOD_FILL_DY = {0, 0, -1, 1, 0, -1, 1, -1, 1, 0, -2, 2, 0, -1, 1, -2, 2, -2, 2, -1, 1, -2, 2, -2, 2, 0, -3, 3, 0, -1, 1, -3, 3, -3, 3, -1, 1, -2, 2, -3, 3, -3, 3, -2, 2, 0, -4, 4, 0, -1, 1, -4, 4, -4, 4, -1, 1, -3, 3, -3, 3, -2, 2, -4, 4, -4, 4, -2, 2, 0, -3, 3, -4, 4, -5, 5, -4, 4, -3, 3, 0, -1, 1, -5, 5, -5, 5, -1, 1, -2, 2, -5, 5, -5, 5, -2, 2, -4, 4, -4, 4, -3, 3, -5, 5, -5, 5, -3, 3, 0, -6, 6, 0, -1, 1, -6, 6, -6, 6, -1, 1, -2, 2, -6, 6, -6, 6, -2, 2, -4, 4, -5, 5, -5, 5, -4, 4, -3, 3, -6, 6, -6, 6, -3, 3};
 	public static final int[] FLOOD_FILL_DX_CLAMPED = {0, -1, 0, 0, 1, -1, -1, 1, 1, -1, 0, 0, 1, -1, -1, -1, -1, 1, 1, 1, 1, -1, -1, 1, 1, -1, 0, 0, 1, -1, -1, -1, -1, 1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1, -1, 0, 0, 1, -1, -1, -1, -1, 1, 1, 1, 1, -1, -1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1, -1, -1, -1, -1, -1, 0, 0, 1, 1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1, -1, -1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1, -1, 0, 0, 1, -1, -1, -1, -1, 1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1};
@@ -75,7 +79,7 @@ public class Util {
 		return Direction.CENTER;
 	}
 	public static Direction randomAdjacentDirection() {
-		return ADJACENT_DIRECTIONS[(int) (Math.random() * 8)];
+		return ADJACENT_DIRECTIONS[random.nextInt(8)];
 	}
 
 	public static boolean onTheMap(MapLocation location) {
