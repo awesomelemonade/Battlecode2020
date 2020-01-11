@@ -9,7 +9,7 @@ public class Util {
 	private static Random random;
 	public static void init(RobotController controller) {
 		Util.controller = controller;
-		random = new Random(controller.getID());
+		random = new Random(Hash.hash(1532135, controller.getID()));
 		Cache.init(controller);
 		SharedInfo.init(controller);
 		Communication.init(controller);
