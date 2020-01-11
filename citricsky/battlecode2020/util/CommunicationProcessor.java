@@ -66,8 +66,8 @@ public class CommunicationProcessor {
 		return true;
 	}
 	public static void processTransaction(Transaction transaction) {
-		if (transaction.getCost() == 0) {
-			return; // Not worth bytecode
+		if (transaction.getCost() <= 3) {
+			return; // Not worth bytecode (for now)
 		}
 		int[] message = transaction.getMessage();
 		if (Communication.verifyTransaction(message)) {
