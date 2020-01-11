@@ -41,7 +41,7 @@ public class SharedInfo {
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
 	}
 	public static void sendOurHQ(MapLocation location) {
-		ourHQLocation = location;
+		setOurHQLocation(location);
 		int[] message = new int[] {
 				OURHQ_SIGNATURE, 0, 0, 0, ourHQLocation.x, ourHQLocation.y, 0
 		};
@@ -58,17 +58,17 @@ public class SharedInfo {
 	public static void processMessage(int[] message) {
 		switch(message[0]) {
 			case ENEMYHQ_SIGNATURE:
-				if (enemyHQLocation != null) {
+				if (enemyHQLocation == null) {
 					int x = message[4];
 					int y = message[5];
 					enemyHQLocation = new MapLocation(x, y);
 				}
 				break;
 			case OURHQ_SIGNATURE:
-				if (ourHQLocation != null) {
+				if (ourHQLocation == null) {
 					int x2 = message[4];
 					int y2 = message[5];
-					ourHQLocation = new MapLocation(x2, y2);
+					setOurHQLocation(new MapLocation(x2, y2));
 				}
 				break;
 			case ENEMYHQ_MODE_SIGNATURE:
@@ -76,6 +76,10 @@ public class SharedInfo {
 				EnemyHQGuesser.setMode(mode);
 				break;
 		}
+	}
+	public static void setOurHQLocation(MapLocation location) {
+		ourHQLocation = location;
+		EnemyHQGuesser.setGuesses(location.x, location.y);
 	}
 	public static MapLocation getOurHQLocation() {
 		return ourHQLocation;

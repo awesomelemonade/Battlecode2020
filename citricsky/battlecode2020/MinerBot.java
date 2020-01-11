@@ -6,7 +6,6 @@ import citricsky.battlecode2020.util.*;
 
 public class MinerBot implements RunnableBot {
 	private RobotController controller;
-	private Pathfinding pathfinding;
 	public MinerBot(RobotController controller) {
 		this.controller = controller;
 	}
@@ -14,7 +13,6 @@ public class MinerBot implements RunnableBot {
 
 	@Override
 	public void init() {
-		pathfinding = new Pathfinding();
 		for (RobotInfo robot : controller.senseNearbyRobots(-1, controller.getTeam())) {
 			if (robot.type == RobotType.HQ) {
 				hqLocation = robot.getLocation();
@@ -22,15 +20,6 @@ public class MinerBot implements RunnableBot {
 			}
 		}
 	}
-	private MapLocation lastTarget;
-	public void pathTowards(MapLocation location) throws GameActionException {
-		if (lastTarget == null || (!lastTarget.equals(location))) {
-			pathfinding.reset();
-		}
-		lastTarget = location;
-		pathfinding.execute(location);
-	}
-	private static final int TRANSACTION_COST = 10;
 	@Override
 	public void turn() throws GameActionException {
 		if (!controller.isReady()) {
@@ -58,14 +47,14 @@ public class MinerBot implements RunnableBot {
 				// try build design school
 				if (!tryBuild(RobotType.DESIGN_SCHOOL)) {
 					// Otherwise, walk randomly
-					Util.randomWalk();
+					Util.randomExplore();
 				}
 			} else {
-				pathTowards(soupLocation);
+				Pathfinding.execute(soupLocation);
 			}
 		} else {
 			// Move towards HQ or refinery
-			pathTowards(hqLocation);
+			Pathfinding.execute(hqLocation);
 		}
 	}
 	public MapLocation findSoupLocation() throws GameActionException {

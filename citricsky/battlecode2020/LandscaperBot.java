@@ -35,7 +35,7 @@ public class LandscaperBot implements RunnableBot {
 		// Dig trench from water to hq
 		MapLocation enemyHQ = SharedInfo.getEnemyHQLocation();
 		if (enemyHQ == null) {
-			Util.randomWalk();
+			Util.randomExplore();
 		} else {
 			if (controller.getLocation().isWithinDistanceSquared(enemyHQ, 2)) {
 				if (controller.isReady()) {

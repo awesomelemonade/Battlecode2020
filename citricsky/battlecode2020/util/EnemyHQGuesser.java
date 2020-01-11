@@ -29,8 +29,8 @@ public class EnemyHQGuesser {
 		guesses = new MapLocation[3];
 		int width = controller.getMapWidth();
 		int height = controller.getMapHeight();
-		int a = width - x;
-		int b = height - y;
+		int a = width - x - 1;
+		int b = height - y - 1;
 		// Symmetric around x axis
 		guesses[0] = new MapLocation(x, b);
 		// Symmetric around y axis
@@ -62,7 +62,13 @@ public class EnemyHQGuesser {
 		if (guesses == null) {
 			return null;
 		}
-		return guesses[EnemyHQGuesser.getRandomGuessIndex(mode)];
+		return guesses[EnemyHQGuesser.getRandomGuessIndex()];
+	}
+	public static MapLocation getEnemyHQGuess(int index) {
+		if (index < 0) {
+			return null;
+		}
+		return guesses[index];
 	}
 	public static boolean markUnseen(int index) {
 		if (mode == UNKNOWN_MODE) {
@@ -111,7 +117,7 @@ public class EnemyHQGuesser {
 				throw new IllegalArgumentException("Unknown");
 		}
 	}
-	private static int getRandomGuessIndex(int mode) {
+	public static int getRandomGuessIndex() {
 		// Yay premature optimization
 		switch(mode) {
 			case 0:
@@ -132,13 +138,16 @@ public class EnemyHQGuesser {
 				} else {
 					return 1;
 				}
-			case 3:
+			case UNKNOWN_MODE:
 				return (int) (Math.random() * 3);
 			default:
-				throw new IllegalArgumentException("Unknown Mode");
+				return -1;
 		}
 	}
 	public static void setMode(int mode) {
 		EnemyHQGuesser.mode = mode;
+	}
+	public static int getMode() {
+		return mode;
 	}
 }

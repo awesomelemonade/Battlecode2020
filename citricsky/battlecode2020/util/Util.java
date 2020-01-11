@@ -115,6 +115,27 @@ public class Util {
 			lastRandomDirection = Util.randomAdjacentDirection();
 		}
 	}
+	private static MapLocation lastExploreMode;
+	private static MapLocation lastExploreTarget;
+	private static int lastExploreHQIndex;
+	public static void randomExplore() throws GameActionException {
+		if (SharedInfo.getEnemyHQLocation() != null) {
+			Util.randomWalk();
+			return;
+		}
+		// Let's try to find the HQ
+		if (lastExploreTarget == null || controller.canSenseLocation(lastExploreTarget) || EnemyHQGuesser.getMode() == lastExploreHQIndex) {
+			lastExploreHQIndex = EnemyHQGuesser.getRandomGuessIndex();
+			lastExploreTarget = EnemyHQGuesser.getEnemyHQGuess(lastExploreHQIndex);
+		}
+		if (lastExploreTarget == null) {
+			controller.setIndicatorDot(lastExploreTarget, 255, 128, 0);
+			Util.randomWalk();
+			return;
+		}
+		// Go towards exploreTarget
+		Pathfinding.execute(lastExploreTarget);
+	}
 	private static final int[] TURNS_TO_FLOODED = {
 			0, 256, 464, 677, 931, 1210, 1413, 1546, 1640, 1713, 1771, 1819, 1861, 1897, 1929, 1957, 1983, 2007, 2028,
 			2048, 2067, 2084, 2100, 2115, 2129, 2143, 2155, 2168, 2179, 2190, 2201, 2211, 2220, 2230, 2239, 2247, 2256,

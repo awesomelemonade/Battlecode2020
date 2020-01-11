@@ -4,37 +4,40 @@ import battlecode.common.*;
 
 public class Pathfinding {
 	private static RobotController controller;
-	private boolean bugPathing = false;
-	private Direction currentDirection;
-	private FastIntSet visitedSet;
-	private MapLocation bestLocation;
-	private int bestDistanceSquared;
+	private static boolean bugPathing = false;
+	private static Direction currentDirection;
+	private static FastIntSet visitedSet;
+	private static MapLocation bestLocation;
+	private static int bestDistanceSquared;
+	private static MapLocation lastTarget;
 
 	public static void init(RobotController controller) {
 		Pathfinding.controller = controller;
+		visitedSet = new FastIntSet(controller.getMapWidth() * controller.getMapHeight());
 	}
-	public Pathfinding() {
-		this.visitedSet = new FastIntSet(controller.getMapWidth() * controller.getMapHeight());
-	}
-	public void reset() {
-		this.currentDirection = null;
-		this.bugPathing = false;
-		this.bestLocation = null;
-		this.bestDistanceSquared = Integer.MAX_VALUE;
-		this.visitedSet.reset();
+	public static void reset() {
+		currentDirection = null;
+		bugPathing = false;
+		bestLocation = null;
+		bestDistanceSquared = Integer.MAX_VALUE;
+		visitedSet.reset();
 	}
 	// Assumes landscaping is not a possibility and it's not a simple drone
-	public void execute(MapLocation target) throws GameActionException {
+	public static void execute(MapLocation target) throws GameActionException {
 		controller.setIndicatorLine(controller.getLocation(), target, 0, 255, 0);
 		if (bugPathing) {
 			controller.setIndicatorDot(controller.getLocation(), 255, 255, 0);
 		}
+		if (lastTarget == null || (!lastTarget.equals(target))) {
+			reset();
+		}
+		lastTarget = target;
 		if (!controller.isReady()) {
 			return;
 		}
 		combo(target);
 	}
-	private void combo(MapLocation target) throws GameActionException {
+	private static void combo(MapLocation target) throws GameActionException {
 		if (!bugPathing) {
 			if (naiveMove(controller.getLocation().directionTo(target))) {
 				return;
@@ -111,7 +114,7 @@ public class Pathfinding {
 		}
 		return false;
 	}
-	private void bugPath(MapLocation target) throws GameActionException {
+	private static void bugPath(MapLocation target) throws GameActionException {
 		MapLocation currentLocation = controller.getLocation();
 		if (visited(currentLocation) && currentLocation.equals(bestLocation)) {
 			reset();
@@ -145,10 +148,10 @@ public class Pathfinding {
 			currentDirection = start;
 		}
 	}
-	private void addToVisitedSet(MapLocation location) {
+	private static void addToVisitedSet(MapLocation location) {
 		visitedSet.add(location.x * controller.getMapHeight() + location.y);
 	}
-	private boolean visited(MapLocation location) {
+	private static boolean visited(MapLocation location) {
 		return visitedSet.contains(location.x * controller.getMapHeight() + location.y);
 	}
 }
