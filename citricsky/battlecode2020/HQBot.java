@@ -2,6 +2,7 @@ package citricsky.battlecode2020;
 
 import battlecode.common.*;
 import citricsky.RunnableBot;
+import citricsky.battlecode2020.util.SharedInfo;
 import citricsky.battlecode2020.util.Util;
 
 public class HQBot implements RunnableBot {
@@ -21,6 +22,9 @@ public class HQBot implements RunnableBot {
 			return;
 		}
 		MapLocation currentLocation = controller.getLocation();
+		if (SharedInfo.getOurHQLocation() == null) {
+			SharedInfo.sendOurHQ(currentLocation);
+		}
 		turn: {
 			if (Util.tryShootDrone()) {
 				break turn;

@@ -19,10 +19,14 @@ public class EnemyHQGuesser {
 
 	public static void init(RobotController controller) {
 		EnemyHQGuesser.controller = controller;
-		guesses = new MapLocation[3];
 		EnemyHQGuesser.mode = UNKNOWN_MODE;
 	}
+
+	/**
+	 * Input: Our HQ Location. Creates guesses based on our hq location and symmetry
+	 */
 	public static void setGuesses(int x, int y) {
+		guesses = new MapLocation[3];
 		int width = controller.getMapWidth();
 		int height = controller.getMapHeight();
 		int a = width - x;
@@ -36,6 +40,10 @@ public class EnemyHQGuesser {
 		guesses[2] = new MapLocation(a, b);
 	}
 	public static void loop() {
+		if (guesses == null) {
+			// We haven't received our hq coordinates
+			return;
+		}
 		// Let's check if any guesses can be sensed
 		for (int i = guesses.length; --i >= 0;) {
 			if (mode == i) {
@@ -50,9 +58,16 @@ public class EnemyHQGuesser {
 			}
 		}
 	}
+	public static MapLocation getRandomEnemyHQGuess() {
+		if (guesses == null) {
+			return null;
+		}
+		return guesses[EnemyHQGuesser.getRandomGuessIndex(mode)];
+	}
 	public static boolean markUnseen(int index) {
 		if (mode == UNKNOWN_MODE) {
 			mode = index;
+			SharedInfo.sendEnemyGuessMode(mode);
 			return false;
 		} else {
 			int other = getOtherMode(mode, index);
@@ -96,7 +111,7 @@ public class EnemyHQGuesser {
 				throw new IllegalArgumentException("Unknown");
 		}
 	}
-	public static int getRandomGuessIndex(int mode) {
+	private static int getRandomGuessIndex(int mode) {
 		// Yay premature optimization
 		switch(mode) {
 			case 0:
@@ -122,5 +137,8 @@ public class EnemyHQGuesser {
 			default:
 				throw new IllegalArgumentException("Unknown Mode");
 		}
+	}
+	public static void setMode(int mode) {
+		EnemyHQGuesser.mode = mode;
 	}
 }

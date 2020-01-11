@@ -33,6 +33,9 @@ public class MinerBot implements RunnableBot {
 	private static final int TRANSACTION_COST = 10;
 	@Override
 	public void turn() throws GameActionException {
+		if (!controller.isReady()) {
+			return;
+		}
 		MapLocation currentLocation = controller.getLocation();
 		if (controller.getSoupCarrying() < RobotType.MINER.soupLimit) {
 			// Try to mine soup
