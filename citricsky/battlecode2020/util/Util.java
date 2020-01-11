@@ -14,13 +14,17 @@ public class Util {
 		SharedInfo.init(controller);
 		Communication.init(controller);
 		CommunicationProcessor.init(controller);
-		Pathfinding.init(controller);
-		UnitsMap.init(controller);
+		if (controller.getType() != RobotType.HQ) {
+			Pathfinding.init(controller);
+			UnitsMap.init(controller);
+		}
 	}
 	public static void loop() throws GameActionException {
 		Cache.loop();
 		SharedInfo.loop();
-		UnitsMap.loop();
+		if (controller.getType() != RobotType.HQ) {
+			UnitsMap.loop();
+		}
 	}
 	public static Random getRandom() {
 		return random;
