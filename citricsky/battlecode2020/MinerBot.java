@@ -25,13 +25,6 @@ public class MinerBot implements RunnableBot {
 		if (!controller.isReady()) {
 			return;
 		}
-		// Try to deposit soup
-		for (Direction direction : Direction.values()) {
-			if (controller.canDepositSoup(direction)) {
-				controller.depositSoup(direction, controller.getSoupCarrying());
-				return;
-			}
-		}
 		MapLocation currentLocation = controller.getLocation();
 		if (controller.getSoupCarrying() < RobotType.MINER.soupLimit) {
 			// Try to mine soup
@@ -53,6 +46,13 @@ public class MinerBot implements RunnableBot {
 				Pathfinding.execute(soupLocation);
 			}
 		} else {
+			// Try to deposit soup
+			for (Direction direction : Direction.values()) {
+				if (controller.canDepositSoup(direction)) {
+					controller.depositSoup(direction, controller.getSoupCarrying());
+					return;
+				}
+			}
 			// Move towards HQ or refinery
 			Pathfinding.execute(hqLocation);
 		}
