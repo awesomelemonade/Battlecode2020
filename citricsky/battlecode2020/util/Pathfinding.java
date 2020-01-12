@@ -64,13 +64,7 @@ public class Pathfinding {
 				return true;
 			} else {
 				// It's not a drone and the elevation difference is too big
-				boolean nearHQ = false;
-				if (SharedInfo.getOurHQLocation() != null) {
-					if (SharedInfo.getOurHQLocation().isWithinDistanceSquared(currentLocation, 15)) {
-						nearHQ = true;
-					}
-				}
-				if (type == RobotType.LANDSCAPER && (!nearHQ)) {
+				if (type == RobotType.LANDSCAPER) {
 					// We can move dirt - should we?
 					int fromElevation = controller.senseElevation(currentLocation);
 					int toElevation = controller.senseElevation(toLocation);
