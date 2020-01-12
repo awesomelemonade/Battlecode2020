@@ -9,24 +9,30 @@ public class Pathfinding {
 	private static FastIntSet visitedSet;
 	private static MapLocation bestLocation;
 	private static int bestDistanceSquared;
+	private static int bestElevationDifference;
 	private static MapLocation lastTarget;
 
 	public static void init(RobotController controller) {
 		Pathfinding.controller = controller;
 		visitedSet = new FastIntSet(controller.getMapWidth() * controller.getMapHeight());
 	}
-	public static void reset() {
+	public static void softReset() {
 		currentDirection = null;
 		bugPathing = false;
+	}
+	public static void reset() {
+		softReset();
 		bestLocation = null;
 		bestDistanceSquared = Integer.MAX_VALUE;
+		bestElevationDifference = Integer.MAX_VALUE;
 		visitedSet.reset();
 	}
 	// Assumes landscaping is not a possibility and it's not a simple drone
 	public static void execute(MapLocation target) throws GameActionException {
-		controller.setIndicatorLine(controller.getLocation(), target, 0, 255, 0);
+		MapLocation currentLocation = controller.getLocation();
+		controller.setIndicatorLine(currentLocation, target, 0, 255, 0);
 		if (bugPathing) {
-			controller.setIndicatorDot(controller.getLocation(), 255, 255, 0);
+			controller.setIndicatorDot(currentLocation, 255, 255, 0);
 		}
 		if (lastTarget == null || (!lastTarget.equals(target))) {
 			reset();
@@ -35,67 +41,91 @@ public class Pathfinding {
 		if (!controller.isReady()) {
 			return;
 		}
-		combo(target);
+		Direction direction = combo(currentLocation, target, currentDirection, false);
+		if (direction != null && direction != Direction.CENTER) {
+			if (controller.canMove(direction)) {
+				controller.move(direction);
+			} else {
+				MapLocation toLocation = currentLocation.add(direction);
+				if (!checkDirtDifference(currentLocation, toLocation)) {
+					moveDirt(direction);
+				}
+			}
+		}
 	}
-	private static void combo(MapLocation target) throws GameActionException {
+	private static Direction combo(MapLocation currentLocation, MapLocation target,
+								   Direction currentDirection, boolean canMoveDirt) throws GameActionException {
 		if (!bugPathing) {
-			if (naiveMove(controller.getLocation().directionTo(target))) {
-				return;
+			Direction direction = currentLocation.directionTo(target);
+			if (canNaiveMove(currentLocation, direction, canMoveDirt)) {
+				return direction;
 			}
 		}
 		bugPathing = true;
-		bugPath(target);
+		return bugPath(currentLocation, target, currentDirection);
 	}
-	private static boolean checkDirtDifference(MapLocation location) throws GameActionException {
-		return Math.abs(controller.senseElevation(controller.getLocation()) -
-				controller.senseElevation(location)) <= GameConstants.MAX_DIRT_DIFFERENCE;
+	private static boolean checkDirtDifference(MapLocation a, MapLocation b) throws GameActionException {
+		return Math.abs(controller.senseElevation(a) -
+				controller.senseElevation(b)) <= GameConstants.MAX_DIRT_DIFFERENCE;
 	}
-	public static boolean naiveMove(Direction direction) throws GameActionException {
-		MapLocation currentLocation = controller.getLocation();
+
+	/**
+	 * Can move in a certain direction from a certain location, and whether moving dirt counts as a move
+	 */
+	public static boolean canNaiveMove(MapLocation currentLocation, Direction direction, boolean canMoveDirt) throws GameActionException {
 		MapLocation toLocation = currentLocation.add(direction);
 		if (!Util.isBlocked(toLocation)) {
 			RobotType type = controller.getType();
-			boolean dirtDifferenceCheck = checkDirtDifference(toLocation);
+			boolean dirtDifferenceCheck = checkDirtDifference(currentLocation, toLocation);
 			if (type == RobotType.DELIVERY_DRONE || dirtDifferenceCheck) {
 				// Let's just sit if there's a robot passing by
-				if (!controller.isLocationOccupied(toLocation)) {
-					controller.move(direction);
-				}
 				return true;
 			} else {
 				// It's not a drone and the elevation difference is too big
-				if (type == RobotType.LANDSCAPER) {
+				if (canMoveDirt && type == RobotType.LANDSCAPER) {
 					// We can move dirt - should we?
-					int fromElevation = controller.senseElevation(currentLocation);
-					int toElevation = controller.senseElevation(toLocation);
-					int turnsToFlooded = Math.min(Util.getTurnsToFlooded(fromElevation),
-							Util.getTurnsToFlooded(toElevation));
-					int dirtDifference = Math.max(0,
-							Math.abs(fromElevation - toElevation) - GameConstants.MAX_DIRT_DIFFERENCE);
-					boolean moveDirt = dirtDifference * 3 < turnsToFlooded;
-					if (!moveDirt) {
-						boolean lowerTileNotNearWater = true;
-						MapLocation lower = fromElevation < toElevation ? currentLocation : toLocation;
-						for (Direction tempDirection : Util.ADJACENT_DIRECTIONS) {
-							MapLocation tempLocation = lower.add(tempDirection);
-							if (controller.canSenseLocation(tempLocation) && controller.senseFlooding(tempLocation)) {
-								lowerTileNotNearWater = false;
-								break;
+					if (controller.canSenseLocation(currentLocation) && controller.canSenseLocation(toLocation)) {
+						int fromElevation = controller.senseElevation(currentLocation);
+						int toElevation = controller.senseElevation(toLocation);
+						int turnsToFlooded = Math.min(Util.getTurnsToFlooded(fromElevation),
+								Util.getTurnsToFlooded(toElevation));
+						int dirtDifference = Math.max(0,
+								Math.abs(fromElevation - toElevation) - GameConstants.MAX_DIRT_DIFFERENCE);
+						boolean moveDirt = dirtDifference * 3 < turnsToFlooded;
+						if (!moveDirt) {
+							boolean lowerTileNotNearWater = true;
+							MapLocation lower = fromElevation < toElevation ? currentLocation : toLocation;
+							for (Direction tempDirection : Util.ADJACENT_DIRECTIONS) {
+								MapLocation tempLocation = lower.add(tempDirection);
+								if (controller.canSenseLocation(tempLocation) && controller.senseFlooding(tempLocation)) {
+									lowerTileNotNearWater = false;
+									break;
+								}
 							}
+							moveDirt = lowerTileNotNearWater;
 						}
-						moveDirt = lowerTileNotNearWater;
-					}
-					if (moveDirt) {
-						if (fromElevation < toElevation) {
-							if (moveDirt(direction, Direction.CENTER)) {
-								return true;
-							}
-						} else {
-							if (moveDirt(Direction.CENTER, direction)) {
-								return true;
-							}
+						if (moveDirt) {
+							return true;
 						}
 					}
+				}
+			}
+		}
+		return false;
+	}
+	private static boolean moveDirt(Direction direction) throws GameActionException {
+		MapLocation currentLocation = controller.getLocation();
+		MapLocation toLocation = currentLocation.add(direction);
+		if (controller.canSenseLocation(currentLocation) && controller.canSenseLocation(toLocation)) {
+			int fromElevation = controller.senseElevation(currentLocation);
+			int toElevation = controller.senseElevation(toLocation);
+			if (fromElevation < toElevation) {
+				if (moveDirt(direction, Direction.CENTER)) {
+					return true;
+				}
+			} else {
+				if (moveDirt(Direction.CENTER, direction)) {
+					return true;
 				}
 			}
 		}
@@ -114,13 +144,36 @@ public class Pathfinding {
 		}
 		return false;
 	}
-	private static void bugPath(MapLocation target) throws GameActionException {
-		MapLocation currentLocation = controller.getLocation();
-		if (visited(currentLocation) && currentLocation.equals(bestLocation)) {
-			reset();
-			combo(target);
-			return;
+	private static void checkBest(MapLocation from, MapLocation to, MapLocation target) throws GameActionException {
+		addToVisitedSet(from);
+		int distanceSquared = from.distanceSquaredTo(target);
+		int elevationDifference = Integer.MAX_VALUE;
+		if (controller.canSenseLocation(from) && controller.canSenseLocation(to)) {
+			elevationDifference = Math.abs(controller.senseElevation(from) - controller.senseElevation(to));
 		}
+		if (distanceSquared < bestDistanceSquared ||
+				(distanceSquared == bestDistanceSquared && elevationDifference < bestElevationDifference)) {
+			bestLocation = from;
+			bestDistanceSquared = distanceSquared;
+			bestElevationDifference = elevationDifference;
+		}
+	}
+	private static Direction bugPath(MapLocation currentLocation, MapLocation target, Direction currentDirection) throws GameActionException {
+		if (visited(currentLocation) && currentLocation.equals(bestLocation)) {
+			softReset();
+			Direction direction = combo(target, currentDirection, true);
+			// Add new location to visited
+			if (direction != null) {
+				MapLocation to = currentLocation.add(direction);
+				Direction newDirection = combo(target, direction, true);
+				if (newDirection != null) {
+					MapLocation newLocation = to.add(newDirection);
+					checkBest(to, newLocation, target);
+				}
+			}
+			return direction;
+		}
+		// TODO: convert to checkBest
 		addToVisitedSet(currentLocation);
 		int distanceSquared = target.distanceSquaredTo(currentLocation);
 		if (distanceSquared < bestDistanceSquared) {
@@ -131,22 +184,32 @@ public class Pathfinding {
 			currentDirection = currentLocation.directionTo(target);
 			// Follows the wall with left hand
 			// This for loop ensures we're not in an infinite loop (stuck in a 1x1 square)
-			for (int i = 0; i < 8 && (!Pathfinding.naiveMove(currentDirection)); i++) {
+			Direction success = null;
+			for (int i = 0; i < 8 && ((success = Pathfinding.naiveMove(currentDirection, false)) == null); i++) {
 				currentDirection = currentDirection.rotateRight();
+			}
+			if (success != null) {
+				return currentDirection;
 			}
 		} else {
 			Direction start = currentDirection.opposite().rotateRight();
-			if (Pathfinding.naiveMove(start)) {
+			if (Pathfinding.naiveMove(start, false) != null) {
+				// We can probably naiveMove again
 				reset();
-				return;
+				return start;
 			} else {
 				start = start.rotateRight();
 			}
-			for (int i = 0; i < 7 && !Pathfinding.naiveMove(start); i++) {
+			Direction success = null;
+			for (int i = 0; i < 7 && ((success = Pathfinding.naiveMove(start, false)) == null); i++) {
 				start = start.rotateRight();
 			}
 			currentDirection = start;
+			if (success != null) {
+				return currentDirection;
+			}
 		}
+		return null;
 	}
 	private static void addToVisitedSet(MapLocation location) {
 		visitedSet.add(location.x * controller.getMapHeight() + location.y);
