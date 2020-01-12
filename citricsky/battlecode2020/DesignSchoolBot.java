@@ -20,7 +20,8 @@ public class DesignSchoolBot implements RunnableBot {
 	}
 	@Override
 	public void turn() throws GameActionException {
-		if (spawnCount < 9 || controller.getTeamSoup() > 500) {
+		if ((controller.getTeamSoup() > 220 && spawnCount < 9) ||
+				controller.getTeamSoup() > 500 || (controller.getRoundNum() < 100 && spawnCount < 3)) {
 			tryBuildLandscaper();
 		}
 	}

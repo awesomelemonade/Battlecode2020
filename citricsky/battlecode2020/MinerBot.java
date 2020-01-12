@@ -60,7 +60,51 @@ public class MinerBot implements RunnableBot {
 				}
 			}
 			// Move towards HQ or refinery
-			Pathfinding.execute(hqLocation);
+			MapLocation bestLocation = null;
+			int bestDistanceSquared = Integer.MAX_VALUE;
+
+			boolean hqAvailable = false;
+
+			for (Direction direction : Util.ADJACENT_DIRECTIONS) {
+				MapLocation location = hqLocation.add(direction);
+				if (controller.canSenseLocation(location)) {
+					if (!controller.isLocationOccupied(location)) {
+						hqAvailable = true;
+					}
+				} else {
+					hqAvailable = true;
+				}
+			}
+			if (hqAvailable) {
+				bestLocation = hqLocation;
+				bestDistanceSquared  = currentLocation.distanceSquaredTo(hqLocation);
+			}
+			for (RobotInfo robot : Cache.ALL_FRIENDLY_ROBOTS) {
+				if (robot.getType() == RobotType.REFINERY) {
+					MapLocation location = robot.getLocation();
+					int distanceSquared = currentLocation.distanceSquaredTo(location);
+					if (distanceSquared < bestDistanceSquared) {
+						bestDistanceSquared = distanceSquared;
+						bestLocation = location;
+					}
+				}
+			}
+			if (bestLocation == null) {
+				// Build a refinery
+				for (Direction direction : Util.ADJACENT_DIRECTIONS) {
+					MapLocation location = currentLocation.add(direction);
+					if (location.isWithinDistanceSquared(hqLocation, 2)) {
+						continue;
+					}
+					if (Util.canSafeBuildRobot(RobotType.REFINERY, direction)) {
+						controller.buildRobot(RobotType.REFINERY, direction);
+						return;
+					}
+				}
+				Util.randomExplore();
+			} else {
+				Pathfinding.execute(bestLocation);
+			}
 		}
 	}
 	public MapLocation findSoupLocation() throws GameActionException {
@@ -79,7 +123,7 @@ public class MinerBot implements RunnableBot {
 	private boolean spawned = false;
 	public boolean tryBuild(RobotType type) throws GameActionException {
 		// TODO: temporary hack to make sure landscapers spawn before more design schools
-		if (spawned || controller.getTeamSoup() < 200) {
+		if (spawned || controller.getTeamSoup() < 250) {
 			return false;
 		}
 		Direction direction = Util.randomAdjacentDirection();

@@ -69,19 +69,25 @@ public class LandscaperBot implements RunnableBot {
 					turn();
 					return;
 				} else {
-					if (controller.canSenseRadiusSquared(controller.getLocation().distanceSquaredTo(ourHQ) + 2)) {
-						for (Direction dir : Util.ADJACENT_DIRECTIONS) {
-							MapLocation new_loc = ourHQ.add(dir);
-							if (controller.canSenseLocation(new_loc) && !controller.isLocationOccupied(new_loc)) {
-								Pathfinding.execute(new_loc);
+					boolean notVisible = false;
+					for (Direction dir : Util.ADJACENT_DIRECTIONS) {
+						MapLocation location = ourHQ.add(dir);
+						if (controller.canSenseLocation(location)) {
+							if (!controller.isLocationOccupied(location)) {
+								Pathfinding.execute(location);
 								return;
 							}
+						} else {
+							notVisible = true;
 						}
-						// All locations were blocked.
+					}
+					if (notVisible) {
+						Pathfinding.execute(ourHQ);
+					} else {
+						// All locations were blocked
 						attacking = true;
 						turn();
-					} else {
-						Pathfinding.execute(ourHQ);
+						return;
 					}
 				}
 			}
@@ -97,12 +103,16 @@ public class LandscaperBot implements RunnableBot {
 				for (Direction direction : Direction.values()) {
 					MapLocation location = controller.getLocation().add(direction);
 					int distanceSquared = location.distanceSquaredTo(ourHQ);
-					if (distanceSquared <= 2 && distanceSquared > 0 &&
-							controller.canSenseLocation(location) && controller.canDepositDirt(direction)) {
-						int elevation = controller.senseElevation(location);
-						if (elevation < bestElevation) {
-							bestElevation = elevation;
-							bestDirection = direction;
+					if (distanceSquared <= 2 && distanceSquared > 0 && controller.canSenseLocation(location) &&
+							controller.canDepositDirt(direction) && controller.isLocationOccupied(location)) {
+						RobotInfo robot = controller.senseRobotAtLocation(location);
+						// Only fill if it's our landscaper or an enemy
+						if (robot.getTeam() == Cache.OPPONENT_TEAM || robot.getType() == RobotType.LANDSCAPER) {
+							int elevation = controller.senseElevation(location);
+							if (elevation < bestElevation) {
+								bestElevation = elevation;
+								bestDirection = direction;
+							}
 						}
 					}
 				}
