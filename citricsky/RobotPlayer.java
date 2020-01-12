@@ -23,6 +23,8 @@ public class RobotPlayer {
 			case LANDSCAPER:
 				bot = new LandscaperBot(controller);
 				break;
+			case DELIVERY_DRONE:
+				bot = new DroneBot(controller);
 			case DESIGN_SCHOOL:
 				bot = new DesignSchoolBot(controller);
 				break;
