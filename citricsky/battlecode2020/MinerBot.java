@@ -33,17 +33,21 @@ public class MinerBot implements RunnableBot {
 			MapLocation enemyHQ = SharedInfo.getEnemyHQLocation();
 			// TODO: Check if we have funds to build a drone
 			if (!attackerBuiltFulfillmentCenter) {
-
+				if (Util.trySafeBuildTowardsEnemyHQ(RobotType.FULFILLMENT_CENTER)) {
+					attackerBuiltFulfillmentCenter = true;
+				}
 			}
 			if (enemyHQ == null) {
-				Util.randomExplore();
+				if (!attackerBuiltFulfillmentCenter) {
+					Util.randomExploreBug0();
+				}
 			} else {
 				// Check if we're at the enemyHQ
 				if (!attackerBuiltDesignSchool) {
 					for (Direction direction : Util.ADJACENT_DIRECTIONS) {
 						// If we can build next to enemyHQ
 						MapLocation location = currentLocation.add(direction);
-						if (location.isWithinDistanceSquared(enemyHQ, 2)) {
+						if (location.isWithinDistanceSquared(enemyHQ, 1)) {
 							if (Util.canSafeBuildRobot(RobotType.DESIGN_SCHOOL, direction)) {
 								controller.buildRobot(RobotType.DESIGN_SCHOOL, direction);
 								attackerBuiltDesignSchool = true;
@@ -52,7 +56,7 @@ public class MinerBot implements RunnableBot {
 						}
 					}
 					if (!currentLocation.isWithinDistanceSquared(enemyHQ, 2)) {
-						Pathfinding.execute(enemyHQ);
+						Pathfinding.bug0(enemyHQ);
 					}
 				}
 			}

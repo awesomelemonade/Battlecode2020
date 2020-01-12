@@ -22,6 +22,12 @@ public class Pathfinding {
 		bestDistanceSquared = Integer.MAX_VALUE;
 		visitedSet.reset();
 	}
+	public static void bug0(MapLocation target) throws GameActionException {
+		controller.setIndicatorLine(controller.getLocation(), target, 0, 255, 0);
+		if (!naiveMove(controller.getLocation().directionTo(target))) {
+			bugPath(target);
+		}
+	}
 	// Assumes landscaping is not a possibility and it's not a simple drone
 	public static void execute(MapLocation target) throws GameActionException {
 		controller.setIndicatorLine(controller.getLocation(), target, 0, 255, 0);

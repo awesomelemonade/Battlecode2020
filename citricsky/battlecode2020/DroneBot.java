@@ -40,6 +40,18 @@ public class DroneBot implements RunnableBot {
 				return;
 			}
 		} else {
+			int id = SharedInfo.getAttackerMinerId();
+			if (id != 0) {
+				if (controller.canPickUpUnit(id)) {
+					controller.pickUpUnit(id);
+				} else {
+					RobotInfo robot = controller.senseRobot(id);
+					if (robot != null) {
+						Pathfinding.bug0(robot.getLocation());
+					}
+				}
+			}
+
 			// Find target
 			RobotInfo target = findBestTarget();
 			// Try to pick them up

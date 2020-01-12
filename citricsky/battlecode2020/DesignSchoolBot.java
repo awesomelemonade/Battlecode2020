@@ -1,10 +1,9 @@
 package citricsky.battlecode2020;
 
-import battlecode.common.Direction;
-import battlecode.common.GameActionException;
-import battlecode.common.RobotController;
-import battlecode.common.RobotType;
+import battlecode.common.*;
 import citricsky.RunnableBot;
+import citricsky.battlecode2020.util.Cache;
+import citricsky.battlecode2020.util.SharedInfo;
 import citricsky.battlecode2020.util.Util;
 
 public class DesignSchoolBot implements RunnableBot {
@@ -20,16 +19,11 @@ public class DesignSchoolBot implements RunnableBot {
 	}
 	@Override
 	public void turn() throws GameActionException {
-		if ((controller.getTeamSoup() > 220 && spawnCount < 9) ||
+		if ((controller.getTeamSoup() >= 150 && spawnCount < 9) ||
 				controller.getTeamSoup() > 500 || (controller.getRoundNum() < 100 && spawnCount < 3)) {
-			tryBuildLandscaper();
-		}
-	}
-	public void tryBuildLandscaper() throws GameActionException {
-		Direction direction = Util.randomAdjacentDirection();
-		if (Util.canSafeBuildRobot(RobotType.LANDSCAPER, direction)) {
-			controller.buildRobot(RobotType.LANDSCAPER, direction);
-			this.spawnCount++;
+			if (Util.trySafeBuildTowardsEnemyHQ(RobotType.LANDSCAPER)) {
+				this.spawnCount++;
+			}
 		}
 	}
 }

@@ -14,7 +14,6 @@ public class LandscaperBot implements RunnableBot {
 		this.controller = controller;
 		this.attacking = false;
 		this.wallCreator = false;
-		attacking = true;
 	}
 	@Override
 	public void init() {
@@ -22,6 +21,15 @@ public class LandscaperBot implements RunnableBot {
 	}
 	@Override
 	public void turn() throws GameActionException {
+		if (!attacking) {
+			for (RobotInfo robot : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
+				if (robot.getType() == RobotType.HQ) {
+					attacking = true;
+					break;
+				}
+			}
+		}
+
 		if (wallCreator) {
 			createWall();
 			return;

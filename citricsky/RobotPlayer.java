@@ -25,6 +25,7 @@ public class RobotPlayer {
 				break;
 			case DELIVERY_DRONE:
 				bot = new DroneBot(controller);
+				break;
 			case DESIGN_SCHOOL:
 				bot = new DesignSchoolBot(controller);
 				break;
@@ -33,6 +34,9 @@ public class RobotPlayer {
 				break;
 			case NET_GUN:
 				bot = new NetGunBot(controller);
+				break;
+			case FULFILLMENT_CENTER:
+				bot = new FulfillmentCenter(controller);
 				break;
 			default:
 				throw new IllegalStateException("Unimplemented!");

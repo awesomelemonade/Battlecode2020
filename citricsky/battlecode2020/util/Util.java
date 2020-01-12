@@ -112,6 +112,19 @@ public class Util {
 	public static boolean canSafeBuildRobot(RobotType type, Direction direction) throws GameActionException {
 		return controller.canBuildRobot(type, direction) && (!isFlooding(direction));
 	}
+	public static boolean trySafeBuildTowardsEnemyHQ(RobotType type) throws GameActionException {
+		MapLocation location = SharedInfo.getEnemyHQLocation();
+		if (location == null) {
+			location = Cache.MAP_CENTER_LOCATION;
+		}
+		for (Direction direction : Util.getAttemptOrder(controller.getLocation().directionTo(location))) {
+			if (Util.canSafeBuildRobot(type, direction)) {
+				controller.buildRobot(type, direction);
+				return true;
+			}
+		}
+		return false;
+	}
 
 	private static Direction lastRandomDirection;
 	public static void randomWalk() throws GameActionException {
@@ -145,6 +158,24 @@ public class Util {
 		}
 		// Go towards exploreTarget
 		Pathfinding.execute(lastExploreTarget);
+	}
+	public static void randomExploreBug0() throws GameActionException {
+		if (SharedInfo.getEnemyHQLocation() != null) {
+			Util.randomWalk();
+			return;
+		}
+		// Let's try to find the HQ
+		if (lastExploreTarget == null || controller.canSenseLocation(lastExploreTarget) || EnemyHQGuesser.getMode() == lastExploreHQIndex) {
+			lastExploreHQIndex = EnemyHQGuesser.getRandomGuessIndex();
+			lastExploreTarget = EnemyHQGuesser.getEnemyHQGuess(lastExploreHQIndex);
+		}
+		if (lastExploreTarget == null) {
+			controller.setIndicatorDot(lastExploreTarget, 255, 128, 0);
+			Util.randomWalk();
+			return;
+		}
+		// Go towards exploreTarget
+		Pathfinding.bug0(lastExploreTarget);
 	}
 	private static final int[] TURNS_TO_FLOODED = {
 			0, 256, 464, 677, 931, 1210, 1413, 1546, 1640, 1713, 1771, 1819, 1861, 1897, 1929, 1957, 1983, 2007, 2028,
