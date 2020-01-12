@@ -6,7 +6,7 @@ import battlecode.common.Team;
 
 public class Cache {
 	private static RobotController controller;
-	private static Team OUR_TEAM;
+	public static Team OUR_TEAM;
 	public static Team OPPONENT_TEAM;
 	public static RobotInfo[] ALL_NEARBY_ROBOTS;
 	public static RobotInfo[] ALL_FRIENDLY_ROBOTS;

@@ -73,7 +73,15 @@ public class LandscaperBot implements RunnableBot {
 					for (Direction dir : Util.ADJACENT_DIRECTIONS) {
 						MapLocation location = ourHQ.add(dir);
 						if (controller.canSenseLocation(location)) {
-							if (!controller.isLocationOccupied(location)) {
+							boolean occupied = controller.isLocationOccupied(location);
+							if (occupied) {
+								RobotInfo robot = controller.senseRobotAtLocation(location);
+								if (!(robot.getTeam() == Cache.OUR_TEAM && robot.getType() == RobotType.MINER)) {
+									// If it's our own miner, it's not actually occupied permanently
+									occupied = false;
+								}
+							}
+							if (!occupied) {
 								Pathfinding.execute(location);
 								return;
 							}
@@ -95,13 +103,20 @@ public class LandscaperBot implements RunnableBot {
 	}
 
 	private void createWall() throws GameActionException  {
+		MapLocation currentLocation = controller.getLocation();
 		MapLocation ourHQ = SharedInfo.getOurHQLocation();
 		if (controller.isReady()) {
+			Direction directionToHQ = currentLocation.directionTo(ourHQ);
+			if (controller.canDigDirt(directionToHQ)) {
+				// Heal our HQ
+				controller.digDirt(directionToHQ);
+				return;
+			}
 			if (controller.getDirtCarrying() > 0) {
 				Direction bestDirection = null;
 				int bestElevation = Integer.MAX_VALUE;
 				for (Direction direction : Direction.values()) {
-					MapLocation location = controller.getLocation().add(direction);
+					MapLocation location = currentLocation.add(direction);
 					int distanceSquared = location.distanceSquaredTo(ourHQ);
 					if (distanceSquared <= 2 && distanceSquared > 0 && controller.canSenseLocation(location) &&
 							controller.canDepositDirt(direction) && controller.isLocationOccupied(location)) {
@@ -120,7 +135,8 @@ public class LandscaperBot implements RunnableBot {
 					controller.depositDirt(bestDirection);
 				}
 			} else {
-				Direction direction = controller.getLocation().directionTo(ourHQ).opposite();
+				Direction direction = directionToHQ.opposite();
+				// TODO: Dig dirt from highest rather than opposite?
 				if (controller.canDigDirt(direction)) {
 					controller.digDirt(direction);
 				}
