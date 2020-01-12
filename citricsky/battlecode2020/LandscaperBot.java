@@ -7,7 +7,6 @@ import citricsky.battlecode2020.util.*;
 public class LandscaperBot implements RunnableBot {
 	private RobotController controller;
 	private InfoMap infoMap;
-	private Pathfinding pathfinding;
 	private boolean attacking;
 	private boolean wallCreator;
 
@@ -19,7 +18,6 @@ public class LandscaperBot implements RunnableBot {
 	@Override
 	public void init() {
 		infoMap = new InfoMap(controller.getMapWidth(), controller.getMapHeight());
-		pathfinding = new Pathfinding();
 	}
 	@Override
 	public void turn() throws GameActionException {
@@ -59,26 +57,23 @@ public class LandscaperBot implements RunnableBot {
 						}
 					}
 				} else {
-					pathfinding.execute(enemyHQ);
+					Pathfinding.execute(enemyHQ);
 				}
 			}
-		}
-		else {
+		} else {
 			if (ourHQ == null) {
 				Util.randomExplore();
-			}
-			else {
-				if(controller.getLocation().isWithinDistanceSquared(ourHQ, 2)) {
+			} else {
+				if (controller.getLocation().isWithinDistanceSquared(ourHQ, 2)) {
 					wallCreator = true;
 					turn();
 					return;
-				}
-				else {
+				} else {
 					if (controller.canSenseRadiusSquared(controller.getLocation().distanceSquaredTo(ourHQ) + 2)) {
 						for (Direction dir : Util.ADJACENT_DIRECTIONS) {
 							MapLocation new_loc = ourHQ.add(dir);
 							if (controller.canSenseLocation(new_loc) && !controller.isLocationOccupied(new_loc)) {
-								pathfinding.execute(new_loc);
+								Pathfinding.execute(new_loc);
 								return;
 							}
 						}
@@ -86,7 +81,7 @@ public class LandscaperBot implements RunnableBot {
 						attacking = true;
 						turn();
 					} else {
-						pathfinding.execute(ourHQ);
+						Pathfinding.execute(ourHQ);
 					}
 				}
 			}
@@ -96,11 +91,29 @@ public class LandscaperBot implements RunnableBot {
 	private void createWall() throws GameActionException  {
 		MapLocation ourHQ = SharedInfo.getOurHQLocation();
 		if (controller.isReady()) {
-			Direction direction = controller.getLocation().directionTo(ourHQ).opposite();
-			if (controller.canDepositDirt(Direction.CENTER)) {
-				controller.depositDirt(Direction.CENTER);
-			} else if (controller.canDigDirt(direction)) {
-				controller.digDirt(direction);
+			if (controller.getDirtCarrying() > 0) {
+				Direction bestDirection = null;
+				int bestElevation = Integer.MAX_VALUE;
+				for (Direction direction : Direction.values()) {
+					MapLocation location = controller.getLocation().add(direction);
+					int distanceSquared = location.distanceSquaredTo(ourHQ);
+					if (distanceSquared <= 2 && distanceSquared > 0 &&
+							controller.canSenseLocation(location) && controller.canDepositDirt(direction)) {
+						int elevation = controller.senseElevation(location);
+						if (elevation < bestElevation) {
+							bestElevation = elevation;
+							bestDirection = direction;
+						}
+					}
+				}
+				if (bestDirection != null) {
+					controller.depositDirt(bestDirection);
+				}
+			} else {
+				Direction direction = controller.getLocation().directionTo(ourHQ).opposite();
+				if (controller.canDigDirt(direction)) {
+					controller.digDirt(direction);
+				}
 			}
 		}
 	}
