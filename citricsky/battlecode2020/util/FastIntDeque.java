@@ -1,10 +1,10 @@
 package citricsky.battlecode2020.util;
 
-public class FastDeque {
+public class FastIntDeque {
 	private int[] array;
 	private int index;
 	private int size;
-	public FastDeque(int arraySize) {
+	public FastIntDeque(int arraySize) {
 		this.array = new int[arraySize];
 	}
 	public void push(int i) {
@@ -19,5 +19,11 @@ public class FastDeque {
 	}
 	public void reset() {
 		size = 0;
+	}
+	public int get(int index) {
+		return array[(this.index + index) % array.length];
+	}
+	public int size() {
+		return size;
 	}
 }

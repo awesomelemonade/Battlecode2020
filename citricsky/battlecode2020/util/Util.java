@@ -17,6 +17,7 @@ public class Util {
 		if (controller.getType() != RobotType.HQ) {
 			Pathfinding.init(controller);
 			UnitsMap.init(controller);
+			EnemyHQWatcher.init(controller);
 		}
 	}
 	public static void loop() throws GameActionException {
@@ -24,6 +25,7 @@ public class Util {
 		SharedInfo.loop();
 		if (controller.getType() != RobotType.HQ) {
 			UnitsMap.loop();
+			EnemyHQWatcher.loop();
 		}
 	}
 	public static Random getRandom() {

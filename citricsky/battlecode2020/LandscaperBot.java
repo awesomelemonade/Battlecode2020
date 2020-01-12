@@ -14,6 +14,7 @@ public class LandscaperBot implements RunnableBot {
 		this.controller = controller;
 		this.attacking = false;
 		this.wallCreator = false;
+		attacking = true;
 	}
 	@Override
 	public void init() {
@@ -28,7 +29,7 @@ public class LandscaperBot implements RunnableBot {
 
 		// Turn logic
 		MapLocation currentLocation = controller.getLocation();
-		// Update explore map
+		/*// Update explore map
 		for (int i = 0; i < Util.FLOOD_FILL_DX.length; i++) {
 			int dx = Util.FLOOD_FILL_DX[i];
 			int dy = Util.FLOOD_FILL_DY[i];
@@ -38,7 +39,7 @@ public class LandscaperBot implements RunnableBot {
 			} else {
 				break;
 			}
-		}
+		}*/
 		// Dig trench from water to hq
 		MapLocation enemyHQ = SharedInfo.getEnemyHQLocation();
 		MapLocation ourHQ = SharedInfo.getOurHQLocation();
@@ -57,7 +58,8 @@ public class LandscaperBot implements RunnableBot {
 						}
 					}
 				} else {
-					Pathfinding.execute(enemyHQ);
+					MapLocation target = EnemyHQWatcher.findClosestPotentialLocation(currentLocation);
+					Pathfinding.execute(target);
 				}
 			}
 		} else {

@@ -73,7 +73,7 @@ public class Pathfinding {
 					int dirtDifference = Math.max(0,
 							Math.abs(fromElevation - toElevation) - GameConstants.MAX_DIRT_DIFFERENCE);
 					boolean moveDirt = dirtDifference * 3 < turnsToFlooded;
-					if (!moveDirt) {
+					if (!moveDirt && dirtDifference < 20) {
 						boolean lowerTileNotNearWater = true;
 						MapLocation lower = fromElevation < toElevation ? currentLocation : toLocation;
 						for (Direction tempDirection : Util.ADJACENT_DIRECTIONS) {
