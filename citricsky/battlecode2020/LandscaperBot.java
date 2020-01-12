@@ -76,7 +76,7 @@ public class LandscaperBot implements RunnableBot {
 							boolean occupied = controller.isLocationOccupied(location);
 							if (occupied) {
 								RobotInfo robot = controller.senseRobotAtLocation(location);
-								if (!(robot.getTeam() == Cache.OUR_TEAM && robot.getType() == RobotType.MINER)) {
+								if (robot.getTeam() == Cache.OUR_TEAM && robot.getType() == RobotType.MINER) {
 									// If it's our own miner, it's not actually occupied permanently
 									occupied = false;
 								}
