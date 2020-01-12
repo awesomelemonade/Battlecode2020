@@ -14,7 +14,7 @@ public class Util {
 		SharedInfo.init(controller);
 		Communication.init(controller);
 		CommunicationProcessor.init(controller);
-		if (controller.getType() != RobotType.HQ) {
+		if (!controller.getType().isBuilding()) {
 			Pathfinding.init(controller);
 			UnitsMap.init(controller);
 			EnemyHQWatcher.init(controller);
@@ -23,7 +23,7 @@ public class Util {
 	public static void loop() throws GameActionException {
 		Cache.loop();
 		SharedInfo.loop();
-		if (controller.getType() != RobotType.HQ) {
+		if (!controller.getType().isBuilding()) {
 			UnitsMap.loop();
 			EnemyHQWatcher.loop();
 		}

@@ -1,5 +1,6 @@
 package citricsky.battlecode2020.util;
 
+import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotInfo;
 import battlecode.common.Team;
@@ -11,10 +12,12 @@ public class Cache {
 	public static RobotInfo[] ALL_NEARBY_ROBOTS;
 	public static RobotInfo[] ALL_FRIENDLY_ROBOTS;
 	public static RobotInfo[] ALL_NEARBY_ENEMY_ROBOTS;
+	public static MapLocation MAP_CENTER_LOCATION;
 	public static void init(RobotController controller) {
 		Cache.controller = controller;
 		OUR_TEAM = controller.getTeam();
 		OPPONENT_TEAM = OUR_TEAM.opponent();
+		MAP_CENTER_LOCATION = new MapLocation(controller.getMapWidth() / 2, controller.getMapHeight() / 2);
 	}
 	public static void loop() {
 		Cache.ALL_NEARBY_ROBOTS = controller.senseNearbyRobots();

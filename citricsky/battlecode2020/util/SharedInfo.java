@@ -2,15 +2,19 @@ package citricsky.battlecode2020.util;
 
 import battlecode.common.*;
 
+import java.util.Arrays;
+
 public class SharedInfo {
 	private static RobotController controller;
 	private static MapLocation ourHQLocation;
 	private static MapLocation enemyHQLocation;
-	private static final int TRANSACTION_COST = 5;
+	private static int attackerMinerId;
+	public static final int TRANSACTION_COST = 3;
 
 	private static final int ENEMYHQ_SIGNATURE = 2130985;
 	private static final int ENEMYHQ_MODE_SIGNATURE = 415912;
 	private static final int OURHQ_SIGNATURE = 51351235;
+	private static final int ATTACKER_MINER_SIGNATURE = 9613451;
 
 	public static void init(RobotController controller) {
 		SharedInfo.controller = controller;
@@ -55,6 +59,13 @@ public class SharedInfo {
 		Communication.hashTransaction(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
 	}
+	public static void sendAttackerMinerId(int id) {
+		int[] message = new int[] {
+				ATTACKER_MINER_SIGNATURE, 0, 0, 0, 0, id, 0
+		};
+		Communication.hashTransaction(message);
+		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
+	}
 	public static void processMessage(int[] message) {
 		switch(message[0]) {
 			case ENEMYHQ_SIGNATURE:
@@ -75,6 +86,9 @@ public class SharedInfo {
 				int mode = message[5];
 				EnemyHQGuesser.setMode(mode);
 				break;
+			case ATTACKER_MINER_SIGNATURE:
+				attackerMinerId = message[5];
+				break;
 		}
 	}
 	public static void setOurHQLocation(MapLocation location) {
@@ -86,5 +100,8 @@ public class SharedInfo {
 	}
 	public static MapLocation getEnemyHQLocation() {
 		return enemyHQLocation;
+	}
+	public static int getAttackerMinerId() {
+		return attackerMinerId;
 	}
 }

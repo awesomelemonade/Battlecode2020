@@ -11,6 +11,9 @@ public class MinerBot implements RunnableBot {
 	}
 	private MapLocation hqLocation;
 
+	private boolean attackerBuiltFulfillmentCenter = false;
+	private boolean attackerBuiltDesignSchool = false;
+
 	@Override
 	public void init() {
 		for (RobotInfo robot : controller.senseNearbyRobots(-1, controller.getTeam())) {
@@ -26,6 +29,35 @@ public class MinerBot implements RunnableBot {
 			return;
 		}
 		MapLocation currentLocation = controller.getLocation();
+		if (controller.getID() == SharedInfo.getAttackerMinerId()) {
+			MapLocation enemyHQ = SharedInfo.getEnemyHQLocation();
+			// TODO: Check if we have funds to build a drone
+			if (!attackerBuiltFulfillmentCenter) {
+
+			}
+			if (enemyHQ == null) {
+				Util.randomExplore();
+			} else {
+				// Check if we're at the enemyHQ
+				if (!attackerBuiltDesignSchool) {
+					for (Direction direction : Util.ADJACENT_DIRECTIONS) {
+						// If we can build next to enemyHQ
+						MapLocation location = currentLocation.add(direction);
+						if (location.isWithinDistanceSquared(enemyHQ, 2)) {
+							if (Util.canSafeBuildRobot(RobotType.DESIGN_SCHOOL, direction)) {
+								controller.buildRobot(RobotType.DESIGN_SCHOOL, direction);
+								attackerBuiltDesignSchool = true;
+								return;
+							}
+						}
+					}
+					if (!currentLocation.isWithinDistanceSquared(enemyHQ, 2)) {
+						Pathfinding.execute(enemyHQ);
+					}
+				}
+			}
+			return;
+		}
 		if (controller.getSoupCarrying() < RobotType.MINER.soupLimit) {
 			// Try to mine soup
 			for (Direction direction : Direction.values()) {

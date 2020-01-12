@@ -1,11 +1,11 @@
 package citricsky.battlecode2020;
 
-import battlecode.common.GameActionException;
-import battlecode.common.RobotController;
-import battlecode.common.RobotInfo;
-import battlecode.common.RobotType;
+import battlecode.common.*;
 import citricsky.RunnableBot;
 import citricsky.battlecode2020.util.Cache;
+import citricsky.battlecode2020.util.Pathfinding;
+import citricsky.battlecode2020.util.SharedInfo;
+import citricsky.battlecode2020.util.Util;
 
 public class DroneBot implements RunnableBot {
 	private RobotController controller;
@@ -21,8 +21,24 @@ public class DroneBot implements RunnableBot {
 		if (!controller.isReady()) {
 			return;
 		}
+		MapLocation currentLocation = controller.getLocation();
 		if (controller.isCurrentlyHoldingUnit()) {
-
+			MapLocation enemyHQ = SharedInfo.getEnemyHQLocation();
+			if (enemyHQ == null) {
+				Util.randomExplore();
+			} else {
+				if (currentLocation.isWithinDistanceSquared(enemyHQ, 25)) {
+					Direction idealDirection = currentLocation.directionTo(enemyHQ);
+					for (Direction direction : Util.getAttemptOrder(idealDirection)) {
+						if ((!Util.isFlooding(direction)) && controller.canDropUnit(direction)) {
+							controller.dropUnit(direction);
+							return;
+						}
+					}
+				}
+				Pathfinding.execute(enemyHQ);
+				return;
+			}
 		} else {
 			// Find target
 			RobotInfo target = findBestTarget();

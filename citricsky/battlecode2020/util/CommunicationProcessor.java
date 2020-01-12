@@ -66,7 +66,7 @@ public class CommunicationProcessor {
 		return true;
 	}
 	public static void processTransaction(Transaction transaction) {
-		if (transaction.getCost() <= 3) {
+		if (transaction.getCost() < SharedInfo.TRANSACTION_COST) {
 			return; // Not worth bytecode (for now)
 		}
 		int[] message = transaction.getMessage();
