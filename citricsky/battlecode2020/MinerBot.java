@@ -128,6 +128,9 @@ public class MinerBot implements RunnableBot {
 		}
 		Direction direction = Util.randomAdjacentDirection();
 		MapLocation location = controller.getLocation().add(direction);
+		if (hqLocation.isWithinDistanceSquared(location, 2)) {
+			return false;
+		}
 		if ((location.x + location.y) % 2 == 0) {
 			if (Util.canSafeBuildRobot(type, direction)) {
 				controller.buildRobot(type, direction);
