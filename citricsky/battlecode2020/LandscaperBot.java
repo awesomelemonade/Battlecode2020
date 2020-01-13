@@ -106,7 +106,7 @@ public class LandscaperBot implements RunnableBot {
 					}
 					// Try to break wall
 					MapLocation target = EnemyHQWatcher.findClosestPotentialLocation(currentLocation);
-					if (target == null) {
+					if (target == null || target.equals(currentLocation)) {
 						if (controller.canDigDirt(directionToEnemyHQ)) {
 							MapLocation location = currentLocation.add(directionToEnemyHQ);
 							if (controller.canSenseLocation(location)) {
@@ -120,9 +120,18 @@ public class LandscaperBot implements RunnableBot {
 								}
 							}
 						}
-						Direction oppositeDirection = directionToEnemyHQ.opposite();
-						if (controller.canDepositDirt(oppositeDirection)) {
-							controller.depositDirt(oppositeDirection);
+						if (controller.canSenseLocation(currentLocation)) {
+							int elevation = controller.senseElevation(currentLocation);
+							if (elevation < 20) {
+								if (controller.canDepositDirt(Direction.CENTER)) {
+									controller.depositDirt(Direction.CENTER);
+								}
+							} else {
+								Direction oppositeDirection = directionToEnemyHQ.opposite();
+								if (controller.canDepositDirt(oppositeDirection)) {
+									controller.depositDirt(oppositeDirection);
+								}
+							}
 						}
 					} else {
 						Pathfinding.execute(target);

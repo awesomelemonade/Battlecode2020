@@ -29,11 +29,8 @@ public class EnemyHQWatcher {
 			} else {
 				if (controller.canSenseLocation(location)) {
 					RobotInfo robot = controller.senseRobotAtLocation(location);
-					if (robot == null) {
-						blocked[i] = false;
-					} else {
-						blocked[i] = true;
-					}
+					boolean flooding = controller.senseFlooding(location);
+					blocked[i] = robot != null || flooding;
 				}
 			}
 			if (!blocked[i] && enemyHQ.isWithinDistanceSquared(location, bestDistanceSquared)) {
