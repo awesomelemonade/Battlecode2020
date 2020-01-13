@@ -49,8 +49,8 @@ public class DroneBot implements RunnableBot {
 						controller.pickUpUnit(id);
 						pickedUpUnit = true;
 					} else {
-						RobotInfo robot = controller.senseRobot(id);
-						if (robot != null) {
+						if (controller.canSenseRobot(id)) {
+							RobotInfo robot = controller.senseRobot(id);
 							Pathfinding.bug0(robot.getLocation());
 						}
 					}
