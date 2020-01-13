@@ -43,7 +43,7 @@ public class RobotPlayer {
 		}
 		Util.init(controller);
 		bot.init();
-		try {
+		/*try {
 			while (true) {
 				int currentTurn = controller.getRoundNum();
 				Util.loop();
@@ -56,10 +56,33 @@ public class RobotPlayer {
 				Clock.yield();
 			}
 		} catch (Exception ex) {
+			int counter = 0;
 			while (true) {
 				controller.setIndicatorDot(controller.getLocation(), 255, 0, 0);
-				ex.printStackTrace();
+				if (counter < 10) {
+					ex.printStackTrace();
+				}
 				Clock.yield();
+				counter++;
+			}
+		}*/
+
+		while (true) {
+			try {
+				while (true) {
+					int currentTurn = controller.getRoundNum();
+					Util.loop();
+					bot.turn();
+					// TODO: Catch up on ledger while waiting
+					if (controller.getRoundNum() != currentTurn) {
+						// We ran out of bytecodes! - MAGENTA
+						controller.setIndicatorDot(controller.getLocation(), 255, 0, 255);
+					}
+					Clock.yield();
+				}
+			} catch (Exception ex) {
+				controller.setIndicatorDot(controller.getLocation(), 255, 0, 0);
+				ex.printStackTrace();
 			}
 		}
 	}

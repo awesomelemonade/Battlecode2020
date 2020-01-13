@@ -103,6 +103,10 @@ public class MinerBot implements RunnableBot {
 			}
 			return;
 		}
+		// See if we should build design school
+		if (tryBuild()) {
+			return;
+		}
 		if (controller.getSoupCarrying() < RobotType.MINER.soupLimit) {
 			// Try to mine soup
 			for (Direction direction : Direction.values()) {
@@ -114,11 +118,8 @@ public class MinerBot implements RunnableBot {
 			// Move towards visible soup
 			MapLocation soupLocation = findSoupLocation();
 			if (soupLocation == null) {
-				// try build design school
-				if (!tryBuild()) {
-					// Otherwise, walk randomly
-					Util.randomExplore();
-				}
+				// Otherwise, walk randomly
+				Util.randomExplore();
 			} else {
 				Pathfinding.execute(soupLocation);
 			}
@@ -199,25 +200,33 @@ public class MinerBot implements RunnableBot {
 	}
 	private boolean spawned = false;
 	public boolean tryBuild() throws GameActionException {
+		// TODO: Build if see enemy attacker and use Util.getAttemptOrder()
 		// TODO: temporary hack to make sure landscapers spawn before more design schools
-		if (spawned || controller.getTeamSoup() < 250) {
-			return false;
-		}
+		boolean seeHQ = false;
 		for (RobotInfo robot : Cache.ALL_FRIENDLY_ROBOTS) {
 			if (robot.getType() == RobotType.DESIGN_SCHOOL) {
 				return false;
 			}
+			if (robot.getType() == RobotType.HQ) {
+				seeHQ = true;
+			}
 		}
-		Direction direction = Util.randomAdjacentDirection();
-		MapLocation location = controller.getLocation().add(direction);
-		if (hqLocation.isWithinDistanceSquared(location, 2)) {
+		if ((spawned || controller.getTeamSoup() < 500) &&
+				(!(seeHQ && Cache.ALL_NEARBY_ENEMY_ROBOTS.length > 0))) {
 			return false;
 		}
-		if ((location.x + location.y) % 2 == 0) {
-			if (Util.canSafeBuildRobot(RobotType.DESIGN_SCHOOL, direction)) {
-				controller.buildRobot(RobotType.DESIGN_SCHOOL, direction);
-				spawned = true;
-				return true;
+		Direction idealDirection = controller.getLocation().directionTo(SharedInfo.getOurHQLocation());
+		for (Direction direction : Util.getAttemptOrder(idealDirection)) {
+			MapLocation location = controller.getLocation().add(direction);
+			if (hqLocation.isWithinDistanceSquared(location, 2)) {
+				continue;
+			}
+			if ((location.x + location.y) % 2 == 0) {
+				if (Util.canSafeBuildRobot(RobotType.DESIGN_SCHOOL, direction)) {
+					controller.buildRobot(RobotType.DESIGN_SCHOOL, direction);
+					spawned = true;
+					return true;
+				}
 			}
 		}
 		return false;

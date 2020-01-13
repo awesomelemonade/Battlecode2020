@@ -13,6 +13,7 @@ public class EnemyHQWatcher {
 		potentialLocations = new FastIntDeque(Util.FLOOD_FILL_DX.length);
 	}
 	public static void loop() throws GameActionException {
+		MapLocation currentLocation = controller.getLocation();
 		MapLocation enemyHQ = SharedInfo.getEnemyHQLocation();
 		if (enemyHQ == null) {
 			return;
@@ -23,18 +24,25 @@ public class EnemyHQWatcher {
 			int dx = Util.FLOOD_FILL_DX[i];
 			int dy = Util.FLOOD_FILL_DY[i];
 			MapLocation location = enemyHQ.translate(dx, dy);
-			if (controller.canSenseLocation(location)) {
-				RobotInfo robot = controller.senseRobotAtLocation(location);
-				if (robot == null) {
-					blocked[i] = false;
-				} else {
-					blocked[i] = robot.getTeam() == Cache.OPPONENT_TEAM ||
-							robot.getType() == RobotType.LANDSCAPER || robot.getType().isBuilding();
+			if (location.equals(currentLocation)) {
+				blocked[i] = false;
+			} else {
+				if (controller.canSenseLocation(location)) {
+					RobotInfo robot = controller.senseRobotAtLocation(location);
+					if (robot == null) {
+						blocked[i] = false;
+					} else {
+						blocked[i] = robot.getTeam() == Cache.OPPONENT_TEAM ||
+								robot.getType() == RobotType.LANDSCAPER || robot.getType().isBuilding();
+					}
 				}
 			}
 			if (!blocked[i] && enemyHQ.isWithinDistanceSquared(location, bestDistanceSquared)) {
 				bestDistanceSquared = enemyHQ.distanceSquaredTo(location);
 				potentialLocations.push(location.x << 16 | location.y);
+			}
+			if (Clock.getBytecodesLeft() < 2000) {
+				break;
 			}
 		}
 	}

@@ -84,8 +84,49 @@ public class LandscaperBot implements RunnableBot {
 						}
 					}
 				} else {
+					// First try to destroy opponent buildings
+					Direction directionToEnemyHQ = currentLocation.directionTo(enemyHQ);
+					for (Direction direction : Util.getAttemptOrder(directionToEnemyHQ)) {
+						MapLocation location = currentLocation.add(direction);
+						if (controller.canSenseLocation(location)) {
+							RobotInfo robot = controller.senseRobotAtLocation(location);
+							if (robot != null &&
+									robot.getTeam() == Cache.OPPONENT_TEAM && robot.getType().isBuilding()) {
+								if (controller.canDepositDirt(direction)) {
+									controller.depositDirt(direction);
+								} else {
+									Direction opposite = direction.opposite();
+									if (controller.canDigDirt(opposite)) {
+										controller.digDirt(opposite);
+									}
+								}
+								return;
+							}
+						}
+					}
+					// Try to break wall
 					MapLocation target = EnemyHQWatcher.findClosestPotentialLocation(currentLocation);
-					Pathfinding.execute(target);
+					if (target == null) {
+						if (controller.canDigDirt(directionToEnemyHQ)) {
+							MapLocation location = currentLocation.add(directionToEnemyHQ);
+							if (controller.canSenseLocation(location)) {
+								int elevation = controller.senseElevation(location);
+								if (elevation > 10) {
+									RobotInfo robot = controller.senseRobotAtLocation(location);
+									if (robot == null || robot.getTeam() == Cache.OPPONENT_TEAM) {
+										controller.digDirt(directionToEnemyHQ);
+										return;
+									}
+								}
+							}
+						}
+						Direction oppositeDirection = directionToEnemyHQ.opposite();
+						if (controller.canDepositDirt(oppositeDirection)) {
+							controller.depositDirt(oppositeDirection);
+						}
+					} else {
+						Pathfinding.execute(target);
+					}
 				}
 			}
 		} else {
