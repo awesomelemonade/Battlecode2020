@@ -26,7 +26,8 @@ public class DesignSchoolBot implements RunnableBot {
 				break;
 			}
 		}
-		if ((((seeEnemyHQ && controller.getTeamSoup() >= 150 && spawnCount < 5) || (controller.getTeamSoup() >= 220)) &&
+		if ((((seeEnemyHQ && controller.getTeamSoup() >= 150 && spawnCount < 5) ||
+				(!seeEnemyHQ && controller.getTeamSoup() >= 210) || (controller.getTeamSoup() >= 230)) &&
 				spawnCount < 9) || controller.getTeamSoup() > 500) {
 			if (Util.trySafeBuildTowardsEnemyHQ(RobotType.LANDSCAPER)) {
 				this.spawnCount++;
