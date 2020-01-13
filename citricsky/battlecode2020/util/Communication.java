@@ -4,7 +4,7 @@ import battlecode.common.RobotController;
 import battlecode.common.Team;
 
 public class Communication {
-	private static int seed = 154820275;
+	private static int seed = 56908321;
 
 	private static final int UPPER_BITMASK = 0b11111111000000000000000000000000;
 	private static final int LOWER_BITMASK = 0b00000000111111111111111111111111;

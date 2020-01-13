@@ -32,8 +32,7 @@ public class EnemyHQWatcher {
 					if (robot == null) {
 						blocked[i] = false;
 					} else {
-						blocked[i] = robot.getTeam() == Cache.OPPONENT_TEAM ||
-								robot.getType() == RobotType.LANDSCAPER || robot.getType().isBuilding();
+						blocked[i] = true;
 					}
 				}
 			}
