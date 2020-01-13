@@ -1,9 +1,6 @@
 package citricsky.battlecode2020.util;
 
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
-import battlecode.common.RobotController;
-import battlecode.common.Transaction;
+import battlecode.common.*;
 
 import java.util.Arrays;
 
@@ -51,19 +48,13 @@ public class CommunicationProcessor {
 		}
 	}
 	public static void processAll() throws GameActionException {
-		while (process()) {}
-	}
-	public static boolean process() throws GameActionException {
-		if (turn >= controller.getRoundNum()) {
-			// Not yet available
-			return false;
+		while (turn < controller.getRoundNum()) {
+			Transaction[] transactions = controller.getBlock(turn);
+			for (int i = transactions.length; --i >= 0;) {
+				processTransaction(transactions[i]);
+			}
+			turn++;
 		}
-		Transaction[] transactions = controller.getBlock(turn);
-		for (int i = 0; i < transactions.length; i++) {
-			processTransaction(transactions[i]);
-		}
-		turn++;
-		return true;
 	}
 	public static void processTransaction(Transaction transaction) {
 		if (transaction.getCost() < SharedInfo.TRANSACTION_COST) {

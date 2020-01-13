@@ -17,7 +17,9 @@ public class Util {
 		if (!controller.getType().isBuilding()) {
 			Pathfinding.init(controller);
 			UnitsMap.init(controller);
-			EnemyHQWatcher.init(controller);
+			if (controller.getType() == RobotType.LANDSCAPER) {
+				EnemyHQWatcher.init(controller);
+			}
 		}
 	}
 	public static void loop() throws GameActionException {
@@ -25,7 +27,9 @@ public class Util {
 		SharedInfo.loop();
 		if (!controller.getType().isBuilding()) {
 			UnitsMap.loop();
-			EnemyHQWatcher.loop();
+			if (controller.getType() == RobotType.LANDSCAPER) {
+				EnemyHQWatcher.loop();
+			}
 		}
 	}
 	public static Random getRandom() {
