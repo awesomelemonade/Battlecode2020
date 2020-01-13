@@ -14,6 +14,7 @@ public class MinerBot implements RunnableBot {
 	private boolean attackerBuiltFulfillmentCenter = false;
 	private boolean attackerBuiltDesignSchool = false;
 	private boolean attackerBuiltNetGun = false;
+	private boolean attackerSeenEnemyHQ = false;
 
 	@Override
 	public void init() {
@@ -32,6 +33,13 @@ public class MinerBot implements RunnableBot {
 		MapLocation currentLocation = controller.getLocation();
 		if (controller.getID() == SharedInfo.getAttackerMinerId()) {
 			MapLocation enemyHQ = SharedInfo.getEnemyHQLocation();
+			if (!attackerSeenEnemyHQ) {
+				if (enemyHQ != null) {
+					if (currentLocation.isWithinDistanceSquared(enemyHQ, 35)) {
+						attackerSeenEnemyHQ = true;
+					}
+				}
+			}
 			// Drone stuff
 			if (!attackerBuiltFulfillmentCenter &&
 					(enemyHQ == null || (!currentLocation.isWithinDistanceSquared(enemyHQ, 24)))) {
@@ -39,7 +47,8 @@ public class MinerBot implements RunnableBot {
 					attackerBuiltFulfillmentCenter = true;
 				}
 			}
-			if (attackerBuiltFulfillmentCenter) {
+			// Should wait for drone?
+			if (attackerBuiltFulfillmentCenter && (!attackerSeenEnemyHQ)) {
 				boolean seeFulfillmentCenterOrDrone = false;
 				for (RobotInfo robot : Cache.ALL_FRIENDLY_ROBOTS) {
 					if (robot.getType() == RobotType.FULFILLMENT_CENTER ||

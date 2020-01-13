@@ -29,7 +29,7 @@ public class DroneBot implements RunnableBot {
 			if (enemyHQ == null) {
 				Util.randomExplore();
 			} else {
-				if (currentLocation.isWithinDistanceSquared(enemyHQ, 25)) {
+				if (currentLocation.isWithinDistanceSquared(enemyHQ, 24)) {
 					Direction idealDirection = currentLocation.directionTo(enemyHQ);
 					for (Direction direction : Util.getAttemptOrder(idealDirection)) {
 						if ((!Util.isFlooding(direction)) && controller.canDropUnit(direction)) {
