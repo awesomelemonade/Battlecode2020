@@ -13,6 +13,7 @@ public class MinerBot implements RunnableBot {
 
 	private boolean attackerBuiltFulfillmentCenter = false;
 	private boolean attackerBuiltDesignSchool = false;
+	private boolean attackerBuiltNetGun = false;
 
 	@Override
 	public void init() {
@@ -31,8 +32,9 @@ public class MinerBot implements RunnableBot {
 		MapLocation currentLocation = controller.getLocation();
 		if (controller.getID() == SharedInfo.getAttackerMinerId()) {
 			MapLocation enemyHQ = SharedInfo.getEnemyHQLocation();
-			// TODO: Check if we have funds to build a drone
-			if (!attackerBuiltFulfillmentCenter) {
+			// Drone stuff
+			if (!attackerBuiltFulfillmentCenter &&
+					(enemyHQ == null || (!currentLocation.isWithinDistanceSquared(enemyHQ, 24)))) {
 				if (Util.trySafeBuildTowardsEnemyHQ(RobotType.FULFILLMENT_CENTER)) {
 					attackerBuiltFulfillmentCenter = true;
 				}
@@ -57,6 +59,22 @@ public class MinerBot implements RunnableBot {
 					}
 					if (!currentLocation.isWithinDistanceSquared(enemyHQ, 2)) {
 						Pathfinding.bug0(enemyHQ);
+					}
+				} else {
+					if (!attackerBuiltNetGun) {
+						boolean seeDroneOrFulfillmentCenter = false;
+						for (RobotInfo robot : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
+							if (robot.getType() == RobotType.DELIVERY_DRONE ||
+									robot.getType() == RobotType.FULFILLMENT_CENTER) {
+								seeDroneOrFulfillmentCenter = true;
+								break;
+							}
+						}
+						if (seeDroneOrFulfillmentCenter) {
+							if (Util.trySafeBuildTowardsEnemyHQ(RobotType.NET_GUN)) {
+								attackerBuiltNetGun = true;
+							}
+						}
 					}
 				}
 			}
