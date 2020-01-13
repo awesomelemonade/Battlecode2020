@@ -6,7 +6,7 @@ import citricsky.battlecode2020.util.*;
 
 public class LandscaperBot implements RunnableBot {
 	private RobotController controller;
-	private InfoMap infoMap;
+	//private InfoMap infoMap;
 	private boolean attacking;
 	private boolean wallCreator;
 
@@ -17,7 +17,7 @@ public class LandscaperBot implements RunnableBot {
 	}
 	@Override
 	public void init() {
-		infoMap = new InfoMap(controller.getMapWidth(), controller.getMapHeight());
+		//infoMap = new InfoMap(controller.getMapWidth(), controller.getMapHeight());
 	}
 	@Override
 	public void turn() throws GameActionException {
@@ -133,6 +133,7 @@ public class LandscaperBot implements RunnableBot {
 	private void createWall() throws GameActionException  {
 		MapLocation currentLocation = controller.getLocation();
 		MapLocation ourHQ = SharedInfo.getOurHQLocation();
+		controller.setIndicatorDot(currentLocation, 0, 0, 255);
 		if (controller.isReady()) {
 			Direction directionToHQ = currentLocation.directionTo(ourHQ);
 			if (controller.canDigDirt(directionToHQ)) {
