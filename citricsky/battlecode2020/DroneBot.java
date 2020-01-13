@@ -9,8 +9,10 @@ import citricsky.battlecode2020.util.Util;
 
 public class DroneBot implements RunnableBot {
 	private RobotController controller;
+	private boolean pickedUpUnit;
 	public DroneBot(RobotController controller) {
 		this.controller = controller;
+		this.pickedUpUnit = false;
 	}
 	@Override
 	public void init() {
@@ -40,23 +42,20 @@ public class DroneBot implements RunnableBot {
 				return;
 			}
 		} else {
-			int id = SharedInfo.getAttackerMinerId();
-			if (id != 0) {
-				if (controller.canPickUpUnit(id)) {
-					controller.pickUpUnit(id);
-				} else {
-					RobotInfo robot = controller.senseRobot(id);
-					if (robot != null) {
-						Pathfinding.bug0(robot.getLocation());
+			if (!pickedUpUnit) {
+				int id = SharedInfo.getAttackerMinerId();
+				if (id != 0) {
+					if (controller.canPickUpUnit(id)) {
+						controller.pickUpUnit(id);
+						pickedUpUnit = true;
+					} else {
+						RobotInfo robot = controller.senseRobot(id);
+						if (robot != null) {
+							Pathfinding.bug0(robot.getLocation());
+						}
 					}
 				}
 			}
-
-			// Find target
-			RobotInfo target = findBestTarget();
-			// Try to pick them up
-			// Drop them to water
-
 		}
 	}
 	public RobotInfo findBestTarget() {

@@ -74,7 +74,7 @@ public class MinerBot implements RunnableBot {
 			MapLocation soupLocation = findSoupLocation();
 			if (soupLocation == null) {
 				// try build design school
-				if (!tryBuild(RobotType.DESIGN_SCHOOL)) {
+				if (!tryBuild()) {
 					// Otherwise, walk randomly
 					Util.randomExplore();
 				}
@@ -157,10 +157,15 @@ public class MinerBot implements RunnableBot {
 		return null;
 	}
 	private boolean spawned = false;
-	public boolean tryBuild(RobotType type) throws GameActionException {
+	public boolean tryBuild() throws GameActionException {
 		// TODO: temporary hack to make sure landscapers spawn before more design schools
 		if (spawned || controller.getTeamSoup() < 250) {
 			return false;
+		}
+		for (RobotInfo robot : Cache.ALL_FRIENDLY_ROBOTS) {
+			if (robot.getType() == RobotType.DESIGN_SCHOOL) {
+				return false;
+			}
 		}
 		Direction direction = Util.randomAdjacentDirection();
 		MapLocation location = controller.getLocation().add(direction);
@@ -168,8 +173,8 @@ public class MinerBot implements RunnableBot {
 			return false;
 		}
 		if ((location.x + location.y) % 2 == 0) {
-			if (Util.canSafeBuildRobot(type, direction)) {
-				controller.buildRobot(type, direction);
+			if (Util.canSafeBuildRobot(RobotType.DESIGN_SCHOOL, direction)) {
+				controller.buildRobot(RobotType.DESIGN_SCHOOL, direction);
 				spawned = true;
 				return true;
 			}
