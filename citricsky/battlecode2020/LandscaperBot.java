@@ -52,6 +52,24 @@ public class LandscaperBot implements RunnableBot {
 		MapLocation enemyHQ = SharedInfo.getEnemyHQLocation();
 		MapLocation ourHQ = SharedInfo.getOurHQLocation();
 
+		// Try healing buildings
+		if (controller.isReady()) {
+			for (Direction direction : Util.ADJACENT_DIRECTIONS) {
+				MapLocation location = currentLocation.add(direction);
+				if (controller.canSenseLocation(location)) {
+					RobotInfo robot = controller.senseRobotAtLocation(location);
+					if (robot != null) {
+						if (robot.getTeam() == Cache.OUR_TEAM && robot.getType().isBuilding()) {
+							if (controller.canDigDirt(direction)) {
+								controller.digDirt(direction);
+								return;
+							}
+						}
+					}
+				}
+			}
+		}
+
 		if (attacking) {
 			if (enemyHQ == null) {
 				Util.randomExplore();
