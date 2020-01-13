@@ -39,6 +39,20 @@ public class MinerBot implements RunnableBot {
 					attackerBuiltFulfillmentCenter = true;
 				}
 			}
+			if (attackerBuiltFulfillmentCenter) {
+				boolean seeFulfillmentCenterOrDrone = false;
+				for (RobotInfo robot : Cache.ALL_FRIENDLY_ROBOTS) {
+					if (robot.getType() == RobotType.FULFILLMENT_CENTER ||
+							robot.getType() == RobotType.DELIVERY_DRONE) {
+						seeFulfillmentCenterOrDrone = true;
+						break;
+					}
+				}
+				if (seeFulfillmentCenterOrDrone) {
+					// Sit still and wait for drone
+					return;
+				}
+			}
 			if (enemyHQ == null) {
 				if (!attackerBuiltFulfillmentCenter) {
 					Util.randomExploreBug0();

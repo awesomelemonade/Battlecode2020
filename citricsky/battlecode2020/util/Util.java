@@ -117,6 +117,9 @@ public class Util {
 		if (location == null) {
 			location = Cache.MAP_CENTER_LOCATION;
 		}
+		return trySafeBuildTowards(type, location);
+	}
+	public static boolean trySafeBuildTowards(RobotType type, MapLocation location) throws GameActionException {
 		for (Direction direction : Util.getAttemptOrder(controller.getLocation().directionTo(location))) {
 			if (Util.canSafeBuildRobot(type, direction)) {
 				controller.buildRobot(type, direction);
@@ -125,7 +128,6 @@ public class Util {
 		}
 		return false;
 	}
-
 	private static Direction lastRandomDirection;
 	public static void randomWalk() throws GameActionException {
 		if (lastRandomDirection == null) {
@@ -138,7 +140,6 @@ public class Util {
 			lastRandomDirection = Util.randomAdjacentDirection();
 		}
 	}
-	private static MapLocation lastExploreMode;
 	private static MapLocation lastExploreTarget;
 	private static int lastExploreHQIndex;
 	public static void randomExplore() throws GameActionException {
@@ -280,5 +281,54 @@ public class Util {
 			}
 		}
 		return false;
+	}
+	private static final Direction[][] DIRECTIONS_TO = new Direction[][] {
+			{Direction.CENTER},
+			{Direction.NORTH},
+			{Direction.NORTHEAST, Direction.NORTH, Direction.EAST},
+			{Direction.EAST},
+			{Direction.SOUTHEAST, Direction.EAST, Direction.SOUTH},
+			{Direction.SOUTH},
+			{Direction.SOUTHWEST, Direction.SOUTH, Direction.WEST},
+			{Direction.WEST},
+			{Direction.NORTHWEST, Direction.WEST, Direction.NORTH}
+	};
+	public static Direction[] directionsTo(MapLocation a, MapLocation b) {
+		int dx = b.x - a.x;
+		int dy = b.y - a.y;
+		if (dy < 0) {
+			if (dx < 0) {
+				// SOUTHWEST
+				return DIRECTIONS_TO[6];
+			} else if (dx == 0) {
+				// SOUTH
+				return DIRECTIONS_TO[5];
+			} else {
+				// SOUTHEAST
+				return DIRECTIONS_TO[4];
+			}
+		} else if (dy == 0) {
+			if (dx < 0) {
+				// WEST
+				return DIRECTIONS_TO[7];
+			} else if (dx == 0) {
+				// CENTER
+				return DIRECTIONS_TO[0];
+			} else {
+				// EAST
+				return DIRECTIONS_TO[3];
+			}
+		} else {
+			if (dx < 0) {
+				// NORTHWEST
+				return DIRECTIONS_TO[8];
+			} else if (dx == 0) {
+				// NORTH
+				return DIRECTIONS_TO[1];
+			} else {
+				// NORTHEAST
+				return DIRECTIONS_TO[2];
+			}
+		}
 	}
 }

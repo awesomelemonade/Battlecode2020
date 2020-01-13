@@ -51,7 +51,6 @@ public class HQBot implements RunnableBot {
 					if (robot.getTeam() == Cache.OUR_TEAM && robot.getType() == RobotType.MINER) {
 						int id = robot.getID();
 						SharedInfo.sendAttackerMinerId(id);
-						System.out.println("Found: " + robot);
 						findAttackerMinerId = null;
 					}
 				}

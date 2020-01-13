@@ -45,9 +45,14 @@ public class RobotPlayer {
 		bot.init();
 		try {
 			while (true) {
+				int currentTurn = controller.getRoundNum();
 				Util.loop();
 				bot.turn();
 				// TODO: Catch up on ledger while waiting
+				if (controller.getRoundNum() != currentTurn) {
+					// We ran out of bytecodes! - MAGENTA
+					controller.setIndicatorDot(controller.getLocation(), 255, 0, 255);
+				}
 				Clock.yield();
 			}
 		} catch (Exception ex) {
