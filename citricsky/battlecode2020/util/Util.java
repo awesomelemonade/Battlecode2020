@@ -17,9 +17,6 @@ public class Util {
 		if (!controller.getType().isBuilding()) {
 			Pathfinding.init(controller);
 			UnitsMap.init(controller);
-			if (controller.getType() == RobotType.LANDSCAPER) {
-				EnemyHQWatcher.init(controller);
-			}
 		}
 	}
 	public static void loop() throws GameActionException {
@@ -36,9 +33,6 @@ public class Util {
 		}
 		if (!controller.getType().isBuilding()) {
 			UnitsMap.loop();
-			if (controller.getType() == RobotType.LANDSCAPER) {
-				EnemyHQWatcher.loop();
-			}
 		}
 	}
 	public static void postLoop() throws GameActionException {
