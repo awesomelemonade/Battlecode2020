@@ -40,6 +40,17 @@ public class Pathfinding {
 				return;
 			}
 		}
+		// We stuck bois
+		visitedSet.reset();
+		for (Direction direction : Util.getAttemptOrder(idealDirection)) {
+			MapLocation location = currentLocation.add(direction);
+			if (!Util.onTheMap(location)) {
+				continue;
+			}
+			if (naiveMove(direction)) {
+				return;
+			}
+		}
 	}
 	public static boolean naiveMove(Direction direction) throws GameActionException {
 		MapLocation location = controller.getLocation().add(direction);

@@ -38,6 +38,9 @@ public class RobotPlayer {
 			case FULFILLMENT_CENTER:
 				bot = new FulfillmentCenter(controller);
 				break;
+			case VAPORATOR:
+				bot = new VaporatorBot(controller);
+				break;
 			default:
 				throw new IllegalStateException("Unimplemented!");
 		}
