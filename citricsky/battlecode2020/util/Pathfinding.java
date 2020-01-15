@@ -4,163 +4,58 @@ import battlecode.common.*;
 
 public class Pathfinding {
 	private static RobotController controller;
-	private static boolean bugPathing = false;
-	private static Direction currentDirection;
-	private static FastIntSet visitedSet;
-	private static MapLocation bestLocation;
-	private static int bestDistanceSquared;
+	private static FastIntSet2D visitedSet;
 	private static MapLocation lastTarget;
 
 	public static void init(RobotController controller) {
 		Pathfinding.controller = controller;
-		visitedSet = new FastIntSet(controller.getMapWidth() * controller.getMapHeight());
-	}
-	public static void reset() {
-		currentDirection = null;
-		bugPathing = false;
-		bestLocation = null;
-		bestDistanceSquared = Integer.MAX_VALUE;
-		visitedSet.reset();
-	}
-	public static void bug0(MapLocation target) throws GameActionException {
-		controller.setIndicatorLine(controller.getLocation(), target, 0, 255, 0);
-		Direction direction = controller.getLocation().directionTo(target);
-		if (naiveMove(direction)) {
-			return;
-		}
-		controller.setIndicatorDot(controller.getLocation(), 255, 255, 0);
-		bugPath(target);
+		visitedSet = new FastIntSet2D(controller.getMapWidth(), controller.getMapHeight());
 	}
 	// Assumes landscaping is not a possibility and it's not a simple drone
 	public static void execute(MapLocation target) throws GameActionException {
-		controller.setIndicatorLine(controller.getLocation(), target, 0, 255, 0);
-		if (bugPathing) {
-			controller.setIndicatorDot(controller.getLocation(), 255, 255, 0);
+		if (lastTarget == null || !lastTarget.equals(target)) {
+			lastTarget = target;
+			visitedSet.reset();
 		}
-		if (lastTarget == null || (!lastTarget.equals(target))) {
-			reset();
-		}
-		lastTarget = target;
+		MapLocation currentLocation = controller.getLocation();
+		controller.setIndicatorLine(currentLocation, target, 0, 255, 0);
 		if (!controller.isReady()) {
 			return;
 		}
-		combo(target);
-	}
-	private static void combo(MapLocation target) throws GameActionException {
-		if (!bugPathing) {
-			if (naiveMove(controller.getLocation().directionTo(target))) {
-				return;
-			}
-		}
-		bugPathing = true;
-		bugPath(target);
-	}
-	private static boolean checkDirtDifference(MapLocation location) throws GameActionException {
-		return Math.abs(controller.senseElevation(controller.getLocation()) -
-				controller.senseElevation(location)) <= GameConstants.MAX_DIRT_DIFFERENCE;
-	}
-	public static boolean naiveMove(Direction direction) throws GameActionException {
-		MapLocation currentLocation = controller.getLocation();
-		MapLocation toLocation = currentLocation.add(direction);
-		if (!Util.isBlocked(toLocation)) {
-			RobotType type = controller.getType();
-			boolean dirtDifferenceCheck = checkDirtDifference(toLocation);
-			if (type == RobotType.DELIVERY_DRONE || dirtDifferenceCheck) {
-				// Let's just sit if there's a robot passing by
-				if (!controller.isLocationOccupied(toLocation)) {
-					controller.move(direction);
-				}
-				return true;
-			} else {
-				// It's not a drone and the elevation difference is too big
-				if (type == RobotType.LANDSCAPER) {
-					// We can move dirt - should we?
-					int fromElevation = controller.senseElevation(currentLocation);
-					int toElevation = controller.senseElevation(toLocation);
-					int turnsToFlooded = Math.min(Util.getTurnsToFlooded(fromElevation),
-							Util.getTurnsToFlooded(toElevation));
-					int dirtDifference = Math.max(0,
-							Math.abs(fromElevation - toElevation) - GameConstants.MAX_DIRT_DIFFERENCE);
-					boolean moveDirt = dirtDifference * 3 < turnsToFlooded;
-					if (!moveDirt && dirtDifference < 20) {
-						boolean lowerTileNotNearWater = true;
-						MapLocation lower = fromElevation < toElevation ? currentLocation : toLocation;
-						for (Direction tempDirection : Util.ADJACENT_DIRECTIONS) {
-							MapLocation tempLocation = lower.add(tempDirection);
-							if (controller.canSenseLocation(tempLocation) && controller.senseFlooding(tempLocation)) {
-								lowerTileNotNearWater = false;
-								break;
-							}
-						}
-						moveDirt = lowerTileNotNearWater;
-					}
-					if (moveDirt) {
-						if (fromElevation < toElevation) {
-							if (moveDirt(direction, Direction.CENTER)) {
-								return true;
-							}
-						} else {
-							if (moveDirt(Direction.CENTER, direction)) {
-								return true;
-							}
-						}
-					}
-				}
-			}
-		}
-		return false;
-	}
-	private static boolean moveDirt(Direction from, Direction to) throws GameActionException {
-		// Place dirt in lower elevation
-		if (controller.canDepositDirt(to)) {
-			controller.depositDirt(to);
-			return true;
-		}
-		// Dig dirt from higher elevation
-		if (controller.canDigDirt(from)) {
-			controller.digDirt(from);
-			return true;
-		}
-		return false;
-	}
-	private static void bugPath(MapLocation target) throws GameActionException {
-		MapLocation currentLocation = controller.getLocation();
-		if (visited(currentLocation) && currentLocation.equals(bestLocation)) {
-			reset();
-			combo(target);
+		if (currentLocation.equals(target)) {
+			// We're already there
 			return;
 		}
-		addToVisitedSet(currentLocation);
-		int distanceSquared = target.distanceSquaredTo(currentLocation);
-		if (distanceSquared < bestDistanceSquared) {
-			bestLocation = currentLocation;
-			bestDistanceSquared = distanceSquared;
-		}
-		if (currentDirection == null) {
-			currentDirection = currentLocation.directionTo(target);
-			// Follows the wall with left hand
-			// This for loop ensures we're not in an infinite loop (stuck in a 1x1 square)
-			for (int i = 0; i < 8 && (!Pathfinding.naiveMove(currentDirection)); i++) {
-				currentDirection = currentDirection.rotateRight();
+		visitedSet.add(currentLocation.x, currentLocation.y);
+		Direction idealDirection = currentLocation.directionTo(target);
+		for (Direction direction : Util.getAttemptOrder(idealDirection)) {
+			MapLocation location = currentLocation.add(direction);
+			if (visitedSet.contains(location.x, location.y)) {
+				continue;
 			}
-		} else {
-			Direction start = currentDirection.opposite().rotateRight();
-			if (Pathfinding.naiveMove(start)) {
-				reset();
+			if (naiveMove(direction)) {
 				return;
-			} else {
-				start = start.rotateRight();
 			}
-			for (int i = 0; i < 7 && !Pathfinding.naiveMove(start); i++) {
-				start = start.rotateRight();
-			}
-			currentDirection = start;
 		}
 	}
-	private static void addToVisitedSet(MapLocation location) {
-		visitedSet.add(location.x * controller.getMapHeight() + location.y);
+	public static boolean naiveMove(Direction direction) throws GameActionException {
+		MapLocation location = controller.getLocation().add(direction);
+		if (!checkDirtDifference(location)) {
+			return false;
+		}
+		if (Util.isBlocked(location)) {
+			return false;
+		}
+		if (controller.canMove(direction)) {
+			controller.move(direction);
+		}
+		return true;
 	}
-	private static boolean visited(MapLocation location) {
-		return visitedSet.contains(location.x * controller.getMapHeight() + location.y);
+	private static boolean checkDirtDifference(MapLocation location) throws GameActionException {
+		if (!controller.canSenseLocation(location)) {
+			return false;
+		}
+		return Math.abs(controller.senseElevation(controller.getLocation()) -
+				controller.senseElevation(location)) <= GameConstants.MAX_DIRT_DIFFERENCE;
 	}
 }

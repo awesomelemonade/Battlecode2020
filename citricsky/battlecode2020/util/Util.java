@@ -209,7 +209,7 @@ public class Util {
 			return;
 		}
 		// Go towards exploreTarget
-		Pathfinding.bug0(lastExploreTarget);
+		Pathfinding.execute(lastExploreTarget);
 	}
 	private static final int[] TURNS_TO_FLOODED = {
 			0, 256, 464, 677, 931, 1210, 1413, 1546, 1640, 1713, 1771, 1819, 1861, 1897, 1929, 1957, 1983, 2007, 2028,
