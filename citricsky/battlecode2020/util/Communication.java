@@ -13,8 +13,6 @@ public class Communication {
 	private static final int ROUND_MASK = 0b00000000000000000000111111111111;
 	// random 32 bit.
 	private static final int SIGNATURE = 1301462582 & SIGNATURE_MASK;
-	// AUTH_BITS = [ord(os.urandom(1)) % 224 for i in range(32)]
-	private static final int[] AUTH_BITS = new int[] {20, 151, 127, 87, 191, 181, 16, 192, 6, 137, 207, 10, 117, 189, 179, 14, 28, 7, 5, 206, 22, 71, 167, 15, 130, 150, 115, 98, 90, 42, 28, 152};
 	// ROTATIONS = [ord(os.urandom(1)) % 32 for i in range(7)]
 	private static final int[] ROTATIONS = new int[] {17, 29, 25, 1, 27, 6, 29};
 
