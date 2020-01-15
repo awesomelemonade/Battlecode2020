@@ -1,4 +1,4 @@
-package citricsky;
+package citricsky; 
 
 import battlecode.common.Clock;
 import battlecode.common.GameActionException;
