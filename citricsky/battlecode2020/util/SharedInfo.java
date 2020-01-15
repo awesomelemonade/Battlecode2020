@@ -28,27 +28,28 @@ public class SharedInfo {
 	public static void sendEnemyHQ(MapLocation location) {
 		setEnemyHQLocation(location);
 		int[] message = new int[] {
-				ENEMYHQ_SIGNATURE, 0, 0, 0, enemyHQLocation.x, enemyHQLocation.y, 0
+				ENEMYHQ_SIGNATURE, 0, 0, 0, enemyHQLocation.x, enemyHQLocation.y, controller.getRoundNum()
 		};
-		Communication.hashTransaction(message);
+		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
 	}
 	public static void sendOurHQ(MapLocation location) {
 		setOurHQLocation(location);
 		int[] message = new int[] {
-				OURHQ_SIGNATURE, 0, 0, 0, location.x, location.y, 0
+				OURHQ_SIGNATURE, 0, 0, 0, location.x, location.y, controller.getRoundNum()
 		};
-		Communication.hashTransaction(message);
+		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
 	}
 	public static void sendEnemyGuessMode(int mode) {
 		setEnemyHQGuesserMode(mode);
 		int[] message = new int[] {
-				ENEMYHQ_MODE_SIGNATURE, 0, 0, 0, 0, mode, 0
+				ENEMYHQ_MODE_SIGNATURE, 0, 0, 0, 0, mode, controller.getRoundNum()
 		};
-		Communication.hashTransaction(message);
+		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
 	}
+
 	public static void processMessage(int[] message) {
 		switch(message[0]) {
 			case ENEMYHQ_SIGNATURE:

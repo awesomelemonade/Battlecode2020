@@ -51,17 +51,17 @@ public class CommunicationProcessor {
 		while (turn < controller.getRoundNum()) {
 			Transaction[] transactions = controller.getBlock(turn);
 			for (int i = transactions.length; --i >= 0;) {
-				processTransaction(transactions[i]);
+				processTransaction(transactions[i], turn);
 			}
 			turn++;
 		}
 	}
-	public static void processTransaction(Transaction transaction) {
+	public static void processTransaction(Transaction transaction, int turn) {
 		if (transaction.getCost() < SharedInfo.TRANSACTION_COST) {
 			return; // Not worth bytecode (for now)
 		}
 		int[] message = transaction.getMessage();
-		if (Communication.verifyTransaction(message)) {
+		if (Communication.decryptMessage(message, turn)) {
 			SharedInfo.processMessage(message);
 		}
 	}

@@ -3,80 +3,84 @@ package citricsky.battlecode2020.util;
 import battlecode.common.RobotController;
 import battlecode.common.Team;
 
-public class Communication {
-	private static int seed = 56908321;
+import java.util.Arrays;
 
-	private static final int UPPER_BITMASK = 0b11111111000000000000000000000000;
-	private static final int LOWER_BITMASK = 0b00000000111111111111111111111111;
-	private static final int[] PRIMES = new int[] {5113, 15919, 18671, 42101, 61441, 78571, 101531};
+public class Communication {
+	// random 32 bit
+	private static int SEED = 56908321;
+
+	private static final int SIGNATURE_MASK = 0b11111111111111111111000000000000;
+	private static final int ROUND_MASK = 0b00000000000000000000111111111111;
+	// random 32 bit.
+	private static final int SIGNATURE = 1301462582 & SIGNATURE_MASK;
+	// AUTH_BITS = [ord(os.urandom(1)) % 224 for i in range(32)]
+	private static final int[] AUTH_BITS = new int[] {20, 151, 127, 87, 191, 181, 16, 192, 6, 137, 207, 10, 117, 189, 179, 14, 28, 7, 5, 206, 22, 71, 167, 15, 130, 150, 115, 98, 90, 42, 28, 152};
+	// ROTATIONS = [ord(os.urandom(1)) % 32 for i in range(7)]
+	private static final int[] ROTATIONS = new int[] {17, 29, 25, 1, 27, 6, 29};
 
 	public static void init(RobotController controller) {
 		// xor the seed by map size
 		int gameAdjust = (controller.getMapWidth() << 6) | controller.getMapHeight();
 		gameAdjust = (gameAdjust << 1) | ((controller.getTeam() == Team.A) ? 0 : 1);
-		seed ^= gameAdjust;
-		// Also preloads static variables (~5k bytecodes for bloom filter)
+		SEED ^= gameAdjust;
+		// Also preloads static variables
 	}
 	/**
-	 * Each transaction can be only verified once
+	 * Decrypts the transaction and verifies if it is ours.
 	 * @param message
 	 * @return whether the transaction is verified to be ours
 	 */
-	public static boolean verifyTransaction(int[] message) {
+	public static boolean decryptMessage(int[] message, int turn) {
 		if (message.length < 7) {
 			// All of our messages are length 7
 			return false;
 		}
-		int verify = message[6] & LOWER_BITMASK;
-		message[6] ^= verify; // Zeros out LOWER_BITMASK
-		int hash = hashArray(message) & LOWER_BITMASK;
-		message[6] |= verify;
-		return hash == verify && (!mayContainsAndAdd(message[6]));
+		message[6] ^= SEED;
+		message[6] = Integer.rotateRight(message[6], ROTATIONS[6]);
+		message[6] -= SEED;
+
+		if ((message[6] & SIGNATURE_MASK) != SIGNATURE) {
+			return false;
+		}
+		message[6] &= ROUND_MASK;
+		if(Math.abs(turn - message[6]) > 2) return false;
+
+		int key = pow(SEED, message[6]);
+		for(int i = 0; i < 6; i++) {
+			message[i] ^= key;
+			message[i] = Integer.rotateRight(message[i], ROTATIONS[i]);
+			message[i] -= key;
+		}
+		return true;
 	}
 
 	/**
-	 * Creates a signature, setting the 7th element in the message
+	 * Adds a signature to the 7th element, and encrypts it.
 	 * @param message
 	 */
-	public static void hashTransaction(int[] message) {
-		// Generate 8 random bits
-		message[6] = Util.getRandom().nextInt() & UPPER_BITMASK;
-		message[6] |= hashArray(message) & LOWER_BITMASK;
-	}
-	private static int hashArray(int[] message) {
-		int hash = 1;
-		hash = hash * PRIMES[0] + message[0];
-		hash = hash * PRIMES[1] + message[1];
-		hash = hash * PRIMES[2] + message[2];
-		hash = hash * PRIMES[3] + message[3];
-		hash = hash * PRIMES[4] + message[4];
-		hash = hash * PRIMES[5] + message[5];
-		hash = hash * PRIMES[6] + message[6];
-		return Hash.hash(seed, hash);
-	}
-
-	private static final int BLOOM_FILTER_SIZE = 4096 * 64;
-	private static final int BITS_PER_LONG = 64;
-	private static final BooleanArray BLOOM_FILTER = new BooleanArray(BLOOM_FILTER_SIZE / BITS_PER_LONG);
-	private static final int[] BLOOM_FILTER_SEEDS = new int[] {
-			509485, 302772, 154030, 364385, 958342, 180307, 368404, 200874
-	}; // 8 hash functions
-
-	/**
-	 * Returns whether x is in the bloom filter
-	 * If it isn't, x will be added to the bloom filter
-	 * @param x
-	 * @return whether x is in the bloom filter
-	 */
-	private static boolean mayContainsAndAdd(int x) {
-		boolean mayContains = true;
-		for (int i = BLOOM_FILTER_SEEDS.length; --i >= 0;) {
-			int index = Math.abs(Hash.hash(BLOOM_FILTER_SEEDS[i], x) % BLOOM_FILTER_SIZE);
-			if (!BLOOM_FILTER.get(index)) {
-				BLOOM_FILTER.set(index);
-				mayContains = false;
-			}
+	public static void encryptMessage(int[] message) {
+		int key = pow(SEED, message[6]);
+		message[6] &= ROUND_MASK;
+		message[6] |= SIGNATURE;
+		for(int i = 0; i < 6; i++) {
+			message[i] += key;
+			message[i] = Integer.rotateLeft(message[i], ROTATIONS[i]);
+			message[i] ^= key;
 		}
-		return mayContains;
+		message[6] += SEED;
+		message[6] = Integer.rotateLeft(message[6], ROTATIONS[6]);
+		message[6] ^= SEED;
+	}
+
+	private static int pow(int x, int p) {
+		int ans = 1;
+		while (p > 0) {
+			if (p % 2 == 1) {
+				ans = (ans * x);
+			}
+			p /= 2;
+			x = x * x;
+		}
+		return ans;
 	}
 }
