@@ -30,6 +30,9 @@ public class Pathfinding {
 		Direction idealDirection = currentLocation.directionTo(target);
 		for (Direction direction : Util.getAttemptOrder(idealDirection)) {
 			MapLocation location = currentLocation.add(direction);
+			if (!Util.onTheMap(location)) {
+				continue;
+			}
 			if (visitedSet.contains(location.x, location.y)) {
 				continue;
 			}

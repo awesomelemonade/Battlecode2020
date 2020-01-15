@@ -150,7 +150,7 @@ public class MinerBot implements RunnableBot {
 			if (hqLocation.isWithinDistanceSquared(location, 2)) {
 				continue;
 			}
-			if ((location.x + location.y) % 2 == 0) {
+			if ((location.x + location.y) % 2 == 0 && (!LatticeUtil.isPit(location))) {
 				if (Util.canSafeBuildRobot(RobotType.DESIGN_SCHOOL, direction)) {
 					controller.buildRobot(RobotType.DESIGN_SCHOOL, direction);
 					spawned = true;
