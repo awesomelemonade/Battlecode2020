@@ -24,13 +24,25 @@ public class Util {
 	}
 	public static void loop() throws GameActionException {
 		Cache.loop();
-		SharedInfo.loop();
+		CommunicationProcessor.processAll();
+		if (SharedInfo.getEnemyHQLocation() == null) {
+			for (RobotInfo enemy : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
+				if (enemy.getType() == RobotType.HQ) {
+					SharedInfo.sendEnemyHQ(enemy.getLocation());
+					return;
+				}
+			}
+			EnemyHQGuesser.loop();
+		}
 		if (!controller.getType().isBuilding()) {
 			UnitsMap.loop();
 			if (controller.getType() == RobotType.LANDSCAPER) {
 				EnemyHQWatcher.loop();
 			}
 		}
+	}
+	public static void postLoop() throws GameActionException {
+		CommunicationProcessor.sendAll();
 	}
 	public static Random getRandom() {
 		return random;
@@ -169,7 +181,7 @@ public class Util {
 			return;
 		}
 		// Let's try to find the HQ
-		if (lastExploreTarget == null || controller.canSenseLocation(lastExploreTarget) || EnemyHQGuesser.getMode() == lastExploreHQIndex) {
+		if (lastExploreTarget == null || controller.canSenseLocation(lastExploreTarget) || SharedInfo.getEnemyHQGuesserMode() == lastExploreHQIndex) {
 			lastExploreHQIndex = EnemyHQGuesser.getRandomGuessIndex();
 			lastExploreTarget = EnemyHQGuesser.getEnemyHQGuess(lastExploreHQIndex);
 		}
@@ -187,7 +199,7 @@ public class Util {
 			return;
 		}
 		// Let's try to find the HQ
-		if (lastExploreTarget == null || controller.canSenseLocation(lastExploreTarget) || EnemyHQGuesser.getMode() == lastExploreHQIndex) {
+		if (lastExploreTarget == null || controller.canSenseLocation(lastExploreTarget) || SharedInfo.getEnemyHQGuesserMode() == lastExploreHQIndex) {
 			lastExploreHQIndex = EnemyHQGuesser.getRandomGuessIndex();
 			lastExploreTarget = EnemyHQGuesser.getEnemyHQGuess(lastExploreHQIndex);
 		}

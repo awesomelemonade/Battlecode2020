@@ -2,42 +2,31 @@ package citricsky.battlecode2020.util;
 
 import battlecode.common.*;
 
-import java.util.Arrays;
-
 public class SharedInfo {
-	private static RobotController controller;
-	private static MapLocation ourHQLocation;
-	private static MapLocation enemyHQLocation;
-	private static int attackerMinerId;
 	public static final int TRANSACTION_COST = 3;
 
 	private static final int ENEMYHQ_SIGNATURE = 2130985;
 	private static final int ENEMYHQ_MODE_SIGNATURE = 415912;
 	private static final int OURHQ_SIGNATURE = 51351235;
-	private static final int ATTACKER_MINER_SIGNATURE = 9613451;
+
+	private static RobotController controller;
+	private static MapLocation ourHQLocation;
+	private static int ourHQParityX = -1;
+	private static int ourHQParityY = -1;
+	private static MapLocation enemyHQLocation;
+	private static int enemyHQGuesserMode = EnemyHQGuesser.UNKNOWN_MODE;
+
 
 	public static void init(RobotController controller) {
 		SharedInfo.controller = controller;
 		EnemyHQGuesser.init(controller);
 	}
-	public static void loop() throws GameActionException {
-		CommunicationProcessor.processAll();
-		checkEnemyHQLocation();
-		CommunicationProcessor.sendAll();
-	}
 	private static void checkEnemyHQLocation() {
-		if (enemyHQLocation == null) {
-			for (RobotInfo enemy : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
-				if (enemy.getType() == RobotType.HQ) {
-					SharedInfo.sendEnemyHQ(enemy.getLocation());
-					return;
-				}
-			}
-			EnemyHQGuesser.loop();
-		}
+		// TODO: Remove
+
 	}
 	public static void sendEnemyHQ(MapLocation location) {
-		enemyHQLocation = location;
+		setEnemyHQLocation(location);
 		int[] message = new int[] {
 				ENEMYHQ_SIGNATURE, 0, 0, 0, enemyHQLocation.x, enemyHQLocation.y, 0
 		};
@@ -47,21 +36,15 @@ public class SharedInfo {
 	public static void sendOurHQ(MapLocation location) {
 		setOurHQLocation(location);
 		int[] message = new int[] {
-				OURHQ_SIGNATURE, 0, 0, 0, ourHQLocation.x, ourHQLocation.y, 0
+				OURHQ_SIGNATURE, 0, 0, 0, location.x, location.y, 0
 		};
 		Communication.hashTransaction(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
 	}
 	public static void sendEnemyGuessMode(int mode) {
+		setEnemyHQGuesserMode(mode);
 		int[] message = new int[] {
 				ENEMYHQ_MODE_SIGNATURE, 0, 0, 0, 0, mode, 0
-		};
-		Communication.hashTransaction(message);
-		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
-	}
-	public static void sendAttackerMinerId(int id) {
-		int[] message = new int[] {
-				ATTACKER_MINER_SIGNATURE, 0, 0, 0, 0, id, 0
 		};
 		Communication.hashTransaction(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
@@ -69,39 +52,46 @@ public class SharedInfo {
 	public static void processMessage(int[] message) {
 		switch(message[0]) {
 			case ENEMYHQ_SIGNATURE:
-				if (enemyHQLocation == null) {
-					int x = message[4];
-					int y = message[5];
-					enemyHQLocation = new MapLocation(x, y);
-				}
+				int x = message[4];
+				int y = message[5];
+				setEnemyHQLocation(new MapLocation(x, y));
 				break;
 			case OURHQ_SIGNATURE:
-				if (ourHQLocation == null) {
-					int x2 = message[4];
-					int y2 = message[5];
-					setOurHQLocation(new MapLocation(x2, y2));
-				}
+				int x2 = message[4];
+				int y2 = message[5];
+				setOurHQLocation(new MapLocation(x2, y2));
 				break;
 			case ENEMYHQ_MODE_SIGNATURE:
 				int mode = message[5];
-				EnemyHQGuesser.setMode(mode);
-				break;
-			case ATTACKER_MINER_SIGNATURE:
-				attackerMinerId = message[5];
+				setEnemyHQGuesserMode(mode);
 				break;
 		}
 	}
-	public static void setOurHQLocation(MapLocation location) {
-		ourHQLocation = location;
+	private static void setOurHQLocation(MapLocation location) {
 		EnemyHQGuesser.setGuesses(location.x, location.y);
+		ourHQLocation = location;
+		ourHQParityX = location.x % 3;
+		ourHQParityY = location.y % 3;
 	}
 	public static MapLocation getOurHQLocation() {
 		return ourHQLocation;
 	}
+	public static int getOurHQParityX() {
+		return ourHQParityX;
+	}
+	public static int getOurHQParityY() {
+		return ourHQParityY;
+	}
+	private static void setEnemyHQLocation(MapLocation location) {
+		enemyHQLocation = location;
+	}
 	public static MapLocation getEnemyHQLocation() {
 		return enemyHQLocation;
 	}
-	public static int getAttackerMinerId() {
-		return attackerMinerId;
+	private static void setEnemyHQGuesserMode(int mode) {
+		enemyHQGuesserMode = mode;
+	}
+	public static int getEnemyHQGuesserMode() {
+		return enemyHQGuesserMode;
 	}
 }

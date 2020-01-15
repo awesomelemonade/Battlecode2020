@@ -19,6 +19,8 @@ public class DesignSchoolBot implements RunnableBot {
 	}
 	@Override
 	public void turn() throws GameActionException {
-
+		if (controller.getTeamSoup() > 200) {
+			Util.trySafeBuildTowardsEnemyHQ(RobotType.LANDSCAPER);
+		}
 	}
 }

@@ -13,13 +13,11 @@ public class EnemyHQGuesser {
 	// mode = 1: know #2 is not hq
 	// mode = 2: know #3 is not hq
 	// mode = 3: don't know anything
-	private static int mode;
 
 	public static final int UNKNOWN_MODE = 3;
 
 	public static void init(RobotController controller) {
 		EnemyHQGuesser.controller = controller;
-		EnemyHQGuesser.mode = UNKNOWN_MODE;
 	}
 
 	/**
@@ -44,6 +42,7 @@ public class EnemyHQGuesser {
 			// We haven't received our hq coordinates
 			return;
 		}
+		int mode = SharedInfo.getEnemyHQGuesserMode();
 		// Let's check if any guesses can be sensed
 		for (int i = guesses.length; --i >= 0;) {
 			if (mode == i) {
@@ -71,9 +70,9 @@ public class EnemyHQGuesser {
 		return guesses[index];
 	}
 	public static boolean markUnseen(int index) {
+		int mode = SharedInfo.getEnemyHQGuesserMode();
 		if (mode == UNKNOWN_MODE) {
-			mode = index;
-			SharedInfo.sendEnemyGuessMode(mode);
+			SharedInfo.sendEnemyGuessMode(index);
 			return false;
 		} else {
 			int other = getOtherMode(mode, index);
@@ -120,7 +119,7 @@ public class EnemyHQGuesser {
 	public static int getRandomGuessIndex() {
 		// Yay premature optimization
 		double random = Util.getRandom().nextDouble();
-		switch(mode) {
+		switch(SharedInfo.getEnemyHQGuesserMode()) {
 			case 0:
 				if (random < 0.5) {
 					return 1;
@@ -144,11 +143,5 @@ public class EnemyHQGuesser {
 			default:
 				return -1;
 		}
-	}
-	public static void setMode(int mode) {
-		EnemyHQGuesser.mode = mode;
-	}
-	public static int getMode() {
-		return mode;
 	}
 }

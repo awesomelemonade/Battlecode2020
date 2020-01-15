@@ -86,7 +86,7 @@ public class MinerBot implements RunnableBot {
 				bestLocation = hqLocation;
 				bestDistanceSquared  = currentLocation.distanceSquaredTo(hqLocation);
 			}
-			for (RobotInfo robot : Cache.ALL_FRIENDLY_ROBOTS) {
+			for (RobotInfo robot : Cache.ALL_NEARBLY_FRIENDLY_ROBOTS) {
 				if (robot.getType() == RobotType.REFINERY) {
 					MapLocation location = robot.getLocation();
 					int distanceSquared = currentLocation.distanceSquaredTo(location);
@@ -132,7 +132,7 @@ public class MinerBot implements RunnableBot {
 		// TODO: Build if see enemy attacker and use Util.getAttemptOrder()
 		// TODO: temporary hack to make sure landscapers spawn before more design schools
 		boolean seeHQ = false;
-		for (RobotInfo robot : Cache.ALL_FRIENDLY_ROBOTS) {
+		for (RobotInfo robot : Cache.ALL_NEARBLY_FRIENDLY_ROBOTS) {
 			if (robot.getType() == RobotType.DESIGN_SCHOOL) {
 				return false;
 			}

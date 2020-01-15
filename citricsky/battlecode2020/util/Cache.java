@@ -10,7 +10,7 @@ public class Cache {
 	public static Team OUR_TEAM;
 	public static Team OPPONENT_TEAM;
 	public static RobotInfo[] ALL_NEARBY_ROBOTS;
-	public static RobotInfo[] ALL_FRIENDLY_ROBOTS;
+	public static RobotInfo[] ALL_NEARBLY_FRIENDLY_ROBOTS;
 	public static RobotInfo[] ALL_NEARBY_ENEMY_ROBOTS;
 	public static MapLocation MAP_CENTER_LOCATION;
 	public static void init(RobotController controller) {
@@ -21,7 +21,7 @@ public class Cache {
 	}
 	public static void loop() {
 		Cache.ALL_NEARBY_ROBOTS = controller.senseNearbyRobots();
-		Cache.ALL_FRIENDLY_ROBOTS = controller.senseNearbyRobots(-1, OUR_TEAM);
+		Cache.ALL_NEARBLY_FRIENDLY_ROBOTS = controller.senseNearbyRobots(-1, OUR_TEAM);
 		Cache.ALL_NEARBY_ENEMY_ROBOTS = controller.senseNearbyRobots(-1, OPPONENT_TEAM);
 	}
 }
