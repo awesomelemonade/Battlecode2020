@@ -31,78 +31,7 @@ public class MinerBot implements RunnableBot {
 			return;
 		}
 		MapLocation currentLocation = controller.getLocation();
-		if (controller.getID() == SharedInfo.getAttackerMinerId()) {
-			MapLocation enemyHQ = SharedInfo.getEnemyHQLocation();
-			if (!attackerSeenEnemyHQ) {
-				if (enemyHQ != null) {
-					if (currentLocation.isWithinDistanceSquared(enemyHQ, 35)) {
-						attackerSeenEnemyHQ = true;
-					}
-				}
-			}
-			// Drone stuff
-			if (!attackerBuiltFulfillmentCenter &&
-					(enemyHQ == null || (!currentLocation.isWithinDistanceSquared(enemyHQ, 24)))) {
-				if (Util.trySafeBuildTowardsEnemyHQ(RobotType.FULFILLMENT_CENTER)) {
-					attackerBuiltFulfillmentCenter = true;
-				}
-			}
-			// Should wait for drone?
-			if (attackerBuiltFulfillmentCenter && (!attackerSeenEnemyHQ)) {
-				boolean seeFulfillmentCenterOrDrone = false;
-				for (RobotInfo robot : Cache.ALL_FRIENDLY_ROBOTS) {
-					if (robot.getType() == RobotType.FULFILLMENT_CENTER ||
-							robot.getType() == RobotType.DELIVERY_DRONE) {
-						seeFulfillmentCenterOrDrone = true;
-						break;
-					}
-				}
-				if (seeFulfillmentCenterOrDrone) {
-					// Sit still and wait for drone
-					return;
-				}
-			}
-			if (enemyHQ == null) {
-				if (!attackerBuiltFulfillmentCenter) {
-					Util.randomExploreBug0();
-				}
-			} else {
-				// Check if we're at the enemyHQ
-				if (!attackerBuiltDesignSchool) {
-					for (Direction direction : Util.ADJACENT_DIRECTIONS) {
-						// If we can build next to enemyHQ
-						MapLocation location = currentLocation.add(direction);
-						if (location.isWithinDistanceSquared(enemyHQ, 1)) {
-							if (Util.canSafeBuildRobot(RobotType.DESIGN_SCHOOL, direction)) {
-								controller.buildRobot(RobotType.DESIGN_SCHOOL, direction);
-								attackerBuiltDesignSchool = true;
-								return;
-							}
-						}
-					}
-					if (!currentLocation.isWithinDistanceSquared(enemyHQ, 2)) {
-						Pathfinding.bug0(enemyHQ);
-					}
-				} else {
-					if (!attackerBuiltNetGun) {
-						boolean seeDroneOrFulfillmentCenter = false;
-						for (RobotInfo robot : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
-							if (robot.getType() == RobotType.DELIVERY_DRONE ||
-									robot.getType() == RobotType.FULFILLMENT_CENTER) {
-								seeDroneOrFulfillmentCenter = true;
-								break;
-							}
-						}
-						if (seeDroneOrFulfillmentCenter) {
-							if (Util.trySafeBuildTowardsEnemyHQ(RobotType.NET_GUN)) {
-								attackerBuiltNetGun = true;
-							}
-						}
-					}
-				}
-			}
-			return;
-		}
+
 		// See if we should build design school
 		if (tryBuild()) {
 			return;

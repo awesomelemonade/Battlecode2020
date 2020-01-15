@@ -24,39 +24,7 @@ public class DroneBot implements RunnableBot {
 			return;
 		}
 		MapLocation currentLocation = controller.getLocation();
-		if (controller.isCurrentlyHoldingUnit()) {
-			MapLocation enemyHQ = SharedInfo.getEnemyHQLocation();
-			if (enemyHQ == null) {
-				Util.randomExplore();
-			} else {
-				if (currentLocation.isWithinDistanceSquared(enemyHQ, 24)) {
-					Direction idealDirection = currentLocation.directionTo(enemyHQ);
-					for (Direction direction : Util.getAttemptOrder(idealDirection)) {
-						if ((!Util.isFlooding(direction)) && controller.canDropUnit(direction)) {
-							controller.dropUnit(direction);
-							return;
-						}
-					}
-				}
-				Pathfinding.execute(enemyHQ);
-				return;
-			}
-		} else {
-			if (!pickedUpUnit) {
-				int id = SharedInfo.getAttackerMinerId();
-				if (id != 0) {
-					if (controller.canPickUpUnit(id)) {
-						controller.pickUpUnit(id);
-						pickedUpUnit = true;
-					} else {
-						if (controller.canSenseRobot(id)) {
-							RobotInfo robot = controller.senseRobot(id);
-							Pathfinding.bug0(robot.getLocation());
-						}
-					}
-				}
-			}
-		}
+
 	}
 	public RobotInfo findBestTarget() {
 		RobotInfo best = null;

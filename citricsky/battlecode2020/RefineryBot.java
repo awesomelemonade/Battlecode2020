@@ -15,6 +15,6 @@ public class RefineryBot implements RunnableBot {
 	}
 	@Override
 	public void turn() throws GameActionException {
-
+		// TODO: Do Communication Attacks?
 	}
 }

@@ -19,18 +19,6 @@ public class DesignSchoolBot implements RunnableBot {
 	}
 	@Override
 	public void turn() throws GameActionException {
-		boolean seeEnemyHQ = false;
-		for (RobotInfo robot : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
-			if (robot.getType() == RobotType.HQ) {
-				seeEnemyHQ = true;
-				break;
-			}
-		}
-		if ((((seeEnemyHQ && controller.getTeamSoup() >= 150) || (controller.getTeamSoup() >= 220)) &&
-				spawnCount < 9) || controller.getTeamSoup() > 500) {
-			if (Util.trySafeBuildTowardsEnemyHQ(RobotType.LANDSCAPER)) {
-				this.spawnCount++;
-			}
-		}
+
 	}
 }

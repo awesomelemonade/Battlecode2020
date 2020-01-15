@@ -30,6 +30,7 @@ public class HQBot implements RunnableBot {
 				break;
 			}
 		}
+		SharedInfo.sendOurHQ(currentLocation);
 	}
 	@Override
 	public void turn() throws GameActionException {
@@ -37,57 +38,52 @@ public class HQBot implements RunnableBot {
 			return;
 		}
 		MapLocation currentLocation = controller.getLocation();
-		if (SharedInfo.getOurHQLocation() == null) {
-			SharedInfo.sendOurHQ(currentLocation);
+		if (Util.tryShootDrone()) {
+			return;
 		}
-		turn: {
-			if (Util.tryShootDrone()) {
-				break turn;
-			}
-			if (findAttackerMinerId != null) {
-				MapLocation location = currentLocation.add(findAttackerMinerId);
-				if (controller.canSenseLocation(location)) {
-					RobotInfo robot = controller.senseRobotAtLocation(location);
-					if (robot.getTeam() == Cache.OUR_TEAM && robot.getType() == RobotType.MINER) {
-						int id = robot.getID();
-						SharedInfo.sendAttackerMinerId(id);
-						findAttackerMinerId = null;
-					}
+		if (findAttackerMinerId != null) {
+			MapLocation location = currentLocation.add(findAttackerMinerId);
+			if (controller.canSenseLocation(location)) {
+				RobotInfo robot = controller.senseRobotAtLocation(location);
+				if (robot.getTeam() == Cache.OUR_TEAM && robot.getType() == RobotType.MINER) {
+					int id = robot.getID();
+					SharedInfo.sendAttackerMinerId(id);
+					findAttackerMinerId = null;
 				}
 			}
-			if (!spawnedAttackerMiner) {
-				Direction towardsCenter = currentLocation.directionTo(Cache.MAP_CENTER_LOCATION);
-				for (Direction direction : Util.getAttemptOrder(towardsCenter)) {
-					if (Util.canSafeBuildRobot(RobotType.MINER, direction)) {
-						controller.buildRobot(RobotType.MINER, direction);
-						spawnedAttackerMiner = true;
-						findAttackerMinerId = direction;
-						return;
-					}
+		}
+		if (!spawnedAttackerMiner) {
+			Direction towardsCenter = currentLocation.directionTo(Cache.MAP_CENTER_LOCATION);
+			for (Direction direction : Util.getAttemptOrder(towardsCenter)) {
+				if (Util.canSafeBuildRobot(RobotType.MINER, direction)) {
+					controller.buildRobot(RobotType.MINER, direction);
+					spawnedAttackerMiner = true;
+					findAttackerMinerId = direction;
+					return;
 				}
 			}
-			if (spawnCount < 20 && controller.getRoundNum() > 300 ||
-					spawnCount < Math.min(5, Math.max(2, initialSoupCount * 2 / RobotType.MINER.cost / 3))) {
-				for (int i = 0; i < Util.FLOOD_FILL_DX.length; i++) {
-					MapLocation location = currentLocation.translate(Util.FLOOD_FILL_DX[i], Util.FLOOD_FILL_DY[i]);
-					if (!controller.canSenseLocation(location)) {
-						break;
-					}
-					if (controller.senseSoup(location) > 0) {
-						Direction idealDirection = Util.getDirection(Util.FLOOD_FILL_DX_CLAMPED[i], Util.FLOOD_FILL_DY_CLAMPED[i]);
-						for (Direction direction : Util.getAttemptOrder(idealDirection)) {
-							if (Util.canSafeBuildRobot(RobotType.MINER, direction)) {
-								controller.buildRobot(RobotType.MINER, direction);
-								this.spawnCount++;
-								break;
-							}
+		}
+		if (spawnCount < 20 && controller.getRoundNum() > 300 ||
+				spawnCount < Math.min(5, Math.max(2, initialSoupCount * 2 / RobotType.MINER.cost / 3))) {
+			for (int i = 0; i < Util.FLOOD_FILL_DX.length; i++) {
+				MapLocation location = currentLocation.translate(Util.FLOOD_FILL_DX[i], Util.FLOOD_FILL_DY[i]);
+				if (!controller.canSenseLocation(location)) {
+					break;
+				}
+				if (controller.senseSoup(location) > 0) {
+					Direction idealDirection = Util.getDirection(Util.FLOOD_FILL_DX_CLAMPED[i], Util.FLOOD_FILL_DY_CLAMPED[i]);
+					for (Direction direction : Util.getAttemptOrder(idealDirection)) {
+						if (Util.canSafeBuildRobot(RobotType.MINER, direction)) {
+							controller.buildRobot(RobotType.MINER, direction);
+							this.spawnCount++;
+							break;
 						}
-						break turn;
 					}
+					return;
 				}
-				if (spawnCount < 3) {
-					tryBuildMiner();
-				}
+			}
+			if (spawnCount < 3) {
+				tryBuildMiner();
 			}
 		}
 	}
