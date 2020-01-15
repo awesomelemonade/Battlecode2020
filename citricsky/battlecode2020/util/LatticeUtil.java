@@ -8,6 +8,10 @@ public class LatticeUtil {
 		return location.x % 2 == SharedInfo.getOurHQParityX() &&
 				location.y % 2 == SharedInfo.getOurHQParityY();
 	}
+	public static boolean isBuildLocation(MapLocation location) {
+		return (location.x % 2 != SharedInfo.getOurHQParityX()) &&
+				(location.y % 2 != SharedInfo.getOurHQParityY());
+	}
 	private static final Direction[][] PIT_DIRECTIONS = {
 			{Direction.CENTER},
 			{Direction.NORTH, Direction.SOUTH},

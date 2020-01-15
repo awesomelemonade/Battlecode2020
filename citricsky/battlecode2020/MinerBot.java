@@ -81,7 +81,7 @@ public class MinerBot implements RunnableBot {
 				bestLocation = hqLocation;
 				bestDistanceSquared  = currentLocation.distanceSquaredTo(hqLocation);
 			}
-			for (RobotInfo robot : Cache.ALL_NEARBLY_FRIENDLY_ROBOTS) {
+			for (RobotInfo robot : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
 				if (robot.getType() == RobotType.REFINERY) {
 					MapLocation location = robot.getLocation();
 					int distanceSquared = currentLocation.distanceSquaredTo(location);
@@ -127,7 +127,7 @@ public class MinerBot implements RunnableBot {
 		// TODO: Build if see enemy attacker and use Util.getAttemptOrder()
 		// TODO: temporary hack to make sure landscapers spawn before more design schools
 		boolean seeHQ = false;
-		for (RobotInfo robot : Cache.ALL_NEARBLY_FRIENDLY_ROBOTS) {
+		for (RobotInfo robot : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
 			if (robot.getType() == RobotType.DESIGN_SCHOOL) {
 				return false;
 			}
@@ -135,9 +135,15 @@ public class MinerBot implements RunnableBot {
 				seeHQ = true;
 			}
 		}
-		if ((spawned || controller.getTeamSoup() < 500) &&
-				(!(seeHQ && Cache.ALL_NEARBY_ENEMY_ROBOTS.length > 0))) {
-			return false;
+		// If we see enemies near our hq, we should build one asap to defend
+		if (!(seeHQ && Cache.ALL_NEARBY_ENEMY_ROBOTS.length > 0)) {
+			// If we have too much soup, we might as well create em
+			if (controller.getTeamSoup() < 2500) {
+				// If we have little soup, don't spawn unless we haven't spawned one yet
+				if (spawned) {
+					return false;
+				}
+			}
 		}
 		Direction idealDirection = controller.getLocation().directionTo(SharedInfo.getOurHQLocation());
 		for (Direction direction : Util.getAttemptOrder(idealDirection)) {
@@ -145,11 +151,18 @@ public class MinerBot implements RunnableBot {
 			if (hqLocation.isWithinDistanceSquared(location, 2)) {
 				continue;
 			}
-			if ((location.x + location.y) % 2 == 0 && (!LatticeUtil.isPit(location))) {
-				if (Util.canSafeBuildRobot(RobotType.DESIGN_SCHOOL, direction)) {
-					controller.buildRobot(RobotType.DESIGN_SCHOOL, direction);
-					spawned = true;
-					return true;
+			if (LatticeUtil.isBuildLocation(location)) {
+				if (controller.getTeamSoup() >= RobotType.VAPORATOR.cost) {
+					if (Util.canSafeBuildRobot(RobotType.VAPORATOR, direction)) {
+						controller.buildRobot(RobotType.VAPORATOR, direction);
+						return true;
+					}
+				} else {
+					if (Util.canSafeBuildRobot(RobotType.DESIGN_SCHOOL, direction)) {
+						controller.buildRobot(RobotType.DESIGN_SCHOOL, direction);
+						spawned = true;
+						return true;
+					}
 				}
 			}
 		}

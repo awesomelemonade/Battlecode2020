@@ -38,8 +38,7 @@ public class HQBot implements RunnableBot {
 		if (Util.tryShootDrone()) {
 			return;
 		}
-		if (spawnCount < 20 && controller.getRoundNum() > 300 ||
-				spawnCount < Math.min(5, Math.max(2, initialSoupCount * 2 / RobotType.MINER.cost / 3))) {
+		if (spawnCount < Math.min(5, Math.max(2, initialSoupCount * 2 / RobotType.MINER.cost / 3))) {
 			for (int i = 0; i < Util.FLOOD_FILL_DX.length; i++) {
 				MapLocation location = currentLocation.translate(Util.FLOOD_FILL_DX[i], Util.FLOOD_FILL_DY[i]);
 				if (!controller.canSenseLocation(location)) {
