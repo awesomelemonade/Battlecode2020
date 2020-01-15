@@ -49,6 +49,10 @@ public class Pathfinding {
 		if (Util.isBlocked(location)) {
 			return false;
 		}
+		if (LatticeUtil.isPit(location)) {
+			// TODO - Miners do not need to avoid pits all the time
+			return false;
+		}
 		if (controller.canMove(direction)) {
 			controller.move(direction);
 		}

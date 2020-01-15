@@ -11,11 +11,6 @@ public class MinerBot implements RunnableBot {
 	}
 	private MapLocation hqLocation;
 
-	private boolean attackerBuiltFulfillmentCenter = false;
-	private boolean attackerBuiltDesignSchool = false;
-	private boolean attackerBuiltNetGun = false;
-	private boolean attackerSeenEnemyHQ = false;
-
 	@Override
 	public void init() {
 		for (RobotInfo robot : controller.senseNearbyRobots(-1, controller.getTeam())) {

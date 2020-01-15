@@ -70,8 +70,8 @@ public class SharedInfo {
 	private static void setOurHQLocation(MapLocation location) {
 		EnemyHQGuesser.setGuesses(location.x, location.y);
 		ourHQLocation = location;
-		ourHQParityX = location.x % 3;
-		ourHQParityY = location.y % 3;
+		ourHQParityX = location.x % 2;
+		ourHQParityY = location.y % 2;
 	}
 	public static MapLocation getOurHQLocation() {
 		return ourHQLocation;

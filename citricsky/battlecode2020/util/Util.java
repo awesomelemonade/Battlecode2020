@@ -162,23 +162,21 @@ public class Util {
 		return false;
 	}
 	private static Direction lastRandomDirection;
-	public static void randomWalk() throws GameActionException {
+	public static boolean randomWalk() throws GameActionException {
 		if (lastRandomDirection == null) {
 			lastRandomDirection = Util.randomAdjacentDirection();
 		}
-		if (!controller.isReady()) {
-			return;
-		}
-		for (int i = 0; i < 16 && (!Pathfinding.naiveMove(lastRandomDirection)); i++) {
+		boolean success = false;
+		for (int i = 0; i < 16 && (!(success = Pathfinding.naiveMove(lastRandomDirection))); i++) {
 			lastRandomDirection = Util.randomAdjacentDirection();
 		}
+		return success;
 	}
 	private static MapLocation lastExploreTarget;
 	private static int lastExploreHQIndex;
-	public static void randomExplore() throws GameActionException {
+	public static boolean randomExplore() throws GameActionException {
 		if (SharedInfo.getEnemyHQLocation() != null) {
-			Util.randomWalk();
-			return;
+			return Util.randomWalk();
 		}
 		// Let's try to find the HQ
 		if (lastExploreTarget == null || controller.canSenseLocation(lastExploreTarget) || SharedInfo.getEnemyHQGuesserMode() == lastExploreHQIndex) {
@@ -187,29 +185,11 @@ public class Util {
 		}
 		if (lastExploreTarget == null) {
 			controller.setIndicatorDot(lastExploreTarget, 255, 128, 0);
-			Util.randomWalk();
-			return;
+			return Util.randomWalk();
 		}
 		// Go towards exploreTarget
 		Pathfinding.execute(lastExploreTarget);
-	}
-	public static void randomExploreBug0() throws GameActionException {
-		if (SharedInfo.getEnemyHQLocation() != null) {
-			Util.randomWalk();
-			return;
-		}
-		// Let's try to find the HQ
-		if (lastExploreTarget == null || controller.canSenseLocation(lastExploreTarget) || SharedInfo.getEnemyHQGuesserMode() == lastExploreHQIndex) {
-			lastExploreHQIndex = EnemyHQGuesser.getRandomGuessIndex();
-			lastExploreTarget = EnemyHQGuesser.getEnemyHQGuess(lastExploreHQIndex);
-		}
-		if (lastExploreTarget == null) {
-			controller.setIndicatorDot(lastExploreTarget, 255, 128, 0);
-			Util.randomWalk();
-			return;
-		}
-		// Go towards exploreTarget
-		Pathfinding.execute(lastExploreTarget);
+		return true;
 	}
 	private static final int[] TURNS_TO_FLOODED = {
 			0, 256, 464, 677, 931, 1210, 1413, 1546, 1640, 1713, 1771, 1819, 1861, 1897, 1929, 1957, 1983, 2007, 2028,

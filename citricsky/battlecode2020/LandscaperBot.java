@@ -5,7 +5,7 @@ import citricsky.RunnableBot;
 import citricsky.battlecode2020.util.*;
 
 public class LandscaperBot implements RunnableBot {
-	private static final int LANDSCAPING_THRESHOLD = 100; // If the dirt difference is this high, we won't terraform
+	private static final int LANDSCAPING_THRESHOLD = 200; // If the dirt difference is this high, we won't terraform
 	private RobotController controller;
 	//private InfoMap infoMap;
 	private RobotBehavior[] behaviors;
@@ -20,8 +20,9 @@ public class LandscaperBot implements RunnableBot {
 		behaviors = new RobotBehavior[] {
 				//try attack,
 				//Util::tryHealHQ,
-				//Util::tryHealBuildings,
-				this::tryTerraform
+				Util::tryHealBuildings,
+				this::tryTerraform,
+				Util::randomExplore
 		};
 	}
 	private int targetElevation = 1;
@@ -44,12 +45,13 @@ public class LandscaperBot implements RunnableBot {
 		MapLocation currentLocation = controller.getLocation();
 		int targetElevation = this.targetElevation + 5;
 		int upperTargetElevation = targetElevation + GameConstants.MAX_DIRT_DIFFERENCE;
-		int hqParityX = SharedInfo.getOurHQParityX();
-		int hqParityY = SharedInfo.getOurHQParityY();
 		for (int i = 0; i < Util.FLOOD_FILL_DX.length; i++) {
 			int dx = Util.FLOOD_FILL_DX[i];
 			int dy = Util.FLOOD_FILL_DY[i];
 			MapLocation location = currentLocation.translate(dx, dy);
+			if (!Util.onTheMap(location)) {
+				continue;
+			}
 			if (!controller.canSenseLocation(location)) {
 				return false;
 			}
@@ -57,7 +59,7 @@ public class LandscaperBot implements RunnableBot {
 			if (robot != null && robot.getTeam() == Cache.OUR_TEAM && robot.getType().isBuilding()) {
 				continue;
 			}
-			if (!(location.x % 3 == hqParityX && location.y % 3 == hqParityY)) {
+			if (!LatticeUtil.isPit(location)) {
 				int elevation = controller.senseElevation(location);
 				// Fill up to target elevation or dig to targetElevation + 3
 				if (elevation < targetElevation) {
@@ -84,9 +86,11 @@ public class LandscaperBot implements RunnableBot {
 			if (controller.canDepositDirt(direction)) {
 				controller.depositDirt(direction);
 			} else {
-				Direction pitDirection = LatticeUtil.getPitDirection(currentLocation);
-				if (controller.canDigDirt(pitDirection)) {
-					controller.digDirt(pitDirection);
+				for (Direction pitDirection : LatticeUtil.getPitDirections(currentLocation)) {
+					if (controller.canDigDirt(pitDirection)) {
+						controller.digDirt(pitDirection);
+						break;
+					}
 				}
 			}
 		} else {
@@ -100,9 +104,11 @@ public class LandscaperBot implements RunnableBot {
 			if (controller.canDigDirt(direction)) {
 				controller.digDirt(direction);
 			} else {
-				Direction pitDirection = LatticeUtil.getPitDirection(currentLocation);
-				if (controller.canDepositDirt(pitDirection)) {
-					controller.depositDirt(pitDirection);
+				for (Direction pitDirection : LatticeUtil.getPitDirections(currentLocation)) {
+					if (controller.canDepositDirt(pitDirection)) {
+						controller.depositDirt(pitDirection);
+						break;
+					}
 				}
 			}
 		} else {
