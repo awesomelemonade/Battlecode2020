@@ -3,9 +3,6 @@ package citricsky.battlecode2020;
 import battlecode.common.*;
 import citricsky.RunnableBot;
 import citricsky.battlecode2020.util.Cache;
-import citricsky.battlecode2020.util.Pathfinding;
-import citricsky.battlecode2020.util.SharedInfo;
-import citricsky.battlecode2020.util.Util;
 
 public class DroneBot implements RunnableBot {
 	private RobotController controller;

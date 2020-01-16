@@ -4,8 +4,6 @@ import battlecode.common.Clock;
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 import citricsky.battlecode2020.*;
-import citricsky.battlecode2020.util.Cache;
-import citricsky.battlecode2020.util.SharedInfo;
 import citricsky.battlecode2020.util.Util;
 
 public class RobotPlayer {

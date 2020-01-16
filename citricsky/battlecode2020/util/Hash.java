@@ -1,7 +1,5 @@
 package citricsky.battlecode2020.util;
 
-import battlecode.common.MapLocation;
-
 public class Hash {
 	// Murmur hash constants
 	private static final int c1 = 0xcc9e2d51;

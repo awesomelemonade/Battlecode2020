@@ -3,8 +3,6 @@ package citricsky.battlecode2020.util;
 import battlecode.common.RobotController;
 import battlecode.common.Team;
 
-import java.util.Arrays;
-
 public class Communication {
 	// random 32 bit
 	private static int SEED = 56908321;

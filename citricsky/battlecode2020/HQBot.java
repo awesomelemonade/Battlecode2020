@@ -2,7 +2,6 @@ package citricsky.battlecode2020;
 
 import battlecode.common.*;
 import citricsky.RunnableBot;
-import citricsky.battlecode2020.util.Cache;
 import citricsky.battlecode2020.util.SharedInfo;
 import citricsky.battlecode2020.util.Util;
 
@@ -39,7 +38,7 @@ public class HQBot implements RunnableBot {
 			return;
 		}
 		if (spawnCount < Math.min(5, Math.max(2, initialSoupCount * 2 / RobotType.MINER.cost / 3))) {
-			for (int i = 0; i < Util.FLOOD_FILL_DX.length; i++) {
+			for (int i = 1; i < Util.FLOOD_FILL_DX.length; i++) { // Skip first index to prevent idealDirection = CENTER
 				MapLocation location = currentLocation.translate(Util.FLOOD_FILL_DX[i], Util.FLOOD_FILL_DY[i]);
 				if (!controller.canSenseLocation(location)) {
 					break;
