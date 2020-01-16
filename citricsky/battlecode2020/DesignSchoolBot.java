@@ -20,6 +20,9 @@ public class DesignSchoolBot implements RunnableBot {
 	}
 	@Override
 	public void turn() throws GameActionException {
+		if (!controller.isReady()) {
+			return;
+		}
 		if (controller.getTeamSoup() > 200) {
 			if (controller.getTeamSoup() < RobotType.VAPORATOR.cost + RobotType.LANDSCAPER.cost + 50) {
 				for (RobotInfo robot : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
