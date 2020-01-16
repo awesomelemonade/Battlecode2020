@@ -125,7 +125,16 @@ public class MinerBot implements RunnableBot {
 		}
 		return null;
 	}
-	private boolean spawned = false;
+	private boolean spawnedDesignSchool = false;
+	public boolean willNotGetFloodedSoon(MapLocation location) throws GameActionException {
+		if (controller.canSenseLocation(location)) {
+			int turnsToFlooded = Util.getTurnsToFlooded(controller.senseElevation(location));
+			if (turnsToFlooded - controller.getRoundNum() < 200) {
+				return !Util.isAdjacentToFlooding(location);
+			}
+		}
+		return false;
+	}
 	public boolean tryBuildVaporator() throws GameActionException {
 		if (Cache.ALL_NEARBY_ENEMY_ROBOTS.length > 0) {
 			// Don't build vaporator when you see enemies
@@ -140,7 +149,7 @@ public class MinerBot implements RunnableBot {
 			if (hqLocation.isWithinDistanceSquared(location, 2)) {
 				continue;
 			}
-			if (LatticeUtil.isBuildLocation(location)) {
+			if (LatticeUtil.isBuildLocation(location) && willNotGetFloodedSoon(location)) {
 				if (Util.canSafeBuildRobot(RobotType.VAPORATOR, direction)) {
 					controller.buildRobot(RobotType.VAPORATOR, direction);
 					return true;
@@ -149,7 +158,7 @@ public class MinerBot implements RunnableBot {
 		}
 		return false;
 	}
-	public boolean validDesignSchoolLocation(MapLocation robotLocation) throws GameActionException {
+	public boolean isValidDesignSchoolLocation(MapLocation robotLocation) throws GameActionException {
 		if (!controller.canSenseLocation(robotLocation)) {
 			return false;
 		}
@@ -172,7 +181,7 @@ public class MinerBot implements RunnableBot {
 		boolean seeHQ = false;
 		for (RobotInfo robot : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
 			if (robot.getType() == RobotType.DESIGN_SCHOOL &&
-					validDesignSchoolLocation(robot.getLocation())) {
+					isValidDesignSchoolLocation(robot.getLocation())) {
 				return false;
 			}
 			if (robot.getType() == RobotType.HQ) {
@@ -184,7 +193,7 @@ public class MinerBot implements RunnableBot {
 			// If we have too much soup, we might as well create em
 			if (controller.getTeamSoup() < 2 * RobotType.VAPORATOR.cost) {
 				// If we have little soup, don't spawn unless we haven't spawned one yet
-				if (spawned) {
+				if (spawnedDesignSchool) {
 					return false;
 				}
 			}
@@ -195,10 +204,11 @@ public class MinerBot implements RunnableBot {
 			if (hqLocation.isWithinDistanceSquared(location, 2)) {
 				continue;
 			}
-			if (LatticeUtil.isBuildLocation(location) && validDesignSchoolLocation(location)) {
+			if (LatticeUtil.isBuildLocation(location) && willNotGetFloodedSoon(location) &&
+					isValidDesignSchoolLocation(location)) {
 				if (Util.canSafeBuildRobot(RobotType.DESIGN_SCHOOL, direction)) {
 					controller.buildRobot(RobotType.DESIGN_SCHOOL, direction);
-					spawned = true;
+					spawnedDesignSchool = true;
 					return true;
 				}
 			}

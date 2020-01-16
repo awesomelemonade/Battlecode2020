@@ -43,7 +43,7 @@ public class LandscaperBot implements RunnableBot {
 	}
 	public boolean tryTerraform() throws GameActionException {
 		MapLocation currentLocation = controller.getLocation();
-		int targetElevation = this.targetElevation + 5;
+		int targetElevation = (this.targetElevation - this.targetElevation % 3) + 5;
 		int upperTargetElevation = targetElevation + GameConstants.MAX_DIRT_DIFFERENCE;
 		for (int i = 0; i < Util.FLOOD_FILL_DX.length; i++) {
 			int dx = Util.FLOOD_FILL_DX[i];

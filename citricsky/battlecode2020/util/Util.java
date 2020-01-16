@@ -250,6 +250,21 @@ public class Util {
 		return TURNS_TO_FLOODED[elevation];
 	}
 
+	public static boolean isAdjacentToFlooding(MapLocation location) throws GameActionException {
+		for (Direction direction : Util.ADJACENT_DIRECTIONS) {
+			MapLocation adjacent = location.add(direction);
+			if (controller.canSenseLocation(adjacent)) {
+				if (controller.senseFlooding(location)) {
+					return true;
+				}
+			} else {
+				// Cannot see adjacent
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/**
 	 * Returns whether the location will be flooded next turn
 	 * Returns true if location cannot be sensed
@@ -259,18 +274,7 @@ public class Util {
 			int elevation = controller.senseElevation(location);
 			if (controller.getRoundNum() + 1 >= getTurnsToFlooded(elevation)) {
 				// Check if there is water in the surroundings
-				for (Direction direction : Util.ADJACENT_DIRECTIONS) {
-					MapLocation adjacent = location.add(direction);
-					if (controller.canSenseLocation(adjacent)) {
-						if (controller.senseFlooding(location)) {
-							return true;
-						}
-					} else {
-						// Cannot see adjacent
-						return true;
-					}
-				}
-				return false;
+				return isAdjacentToFlooding(location);
 			} else {
 				// Elevation is high enough
 				return false;
