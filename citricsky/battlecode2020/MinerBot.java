@@ -129,9 +129,7 @@ public class MinerBot implements RunnableBot {
 	public boolean willNotGetFloodedSoon(MapLocation location) throws GameActionException {
 		if (controller.canSenseLocation(location)) {
 			int turnsToFlooded = Util.getTurnsToFlooded(controller.senseElevation(location));
-			if (turnsToFlooded - controller.getRoundNum() < 200) {
-				return !Util.isAdjacentToFlooding(location);
-			}
+			return !((turnsToFlooded - controller.getRoundNum() < 200) && Util.isAdjacentToFlooding(location));
 		}
 		return false;
 	}
