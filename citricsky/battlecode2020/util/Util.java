@@ -141,23 +141,6 @@ public class Util {
 		}
 		return false;
 	}
-	public static boolean tryHealBuildings() throws GameActionException {
-		for (Direction direction : Util.ADJACENT_DIRECTIONS) {
-			MapLocation location = controller.getLocation().add(direction);
-			if (controller.canSenseLocation(location)) {
-				RobotInfo robot = controller.senseRobotAtLocation(location);
-				if (robot != null) {
-					if (robot.getTeam() == Cache.OUR_TEAM && robot.getType().isBuilding()) {
-						if (controller.canDigDirt(direction)) {
-							controller.digDirt(direction);
-							return true;
-						}
-					}
-				}
-			}
-		}
-		return false;
-	}
 	private static Direction lastRandomDirection;
 	public static boolean randomWalk() throws GameActionException {
 		if (lastRandomDirection == null) {
