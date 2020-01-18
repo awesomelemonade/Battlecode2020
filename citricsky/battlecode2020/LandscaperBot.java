@@ -18,12 +18,11 @@ public class LandscaperBot implements RunnableBot {
 		//infoMap = new InfoMap(controller.getMapWidth(), controller.getMapHeight());
 		// Order of behaviors to be executed
 		behaviors = new RobotBehavior[] {
-				//try attack,
-				this::tryHealHQ,
-				this::tryAttackHQ,
-				this::tryHealBuildings,
-				this::tryAttackBuildings,
+				() -> tryHeal(SharedInfo.getOurHQLocation()),
+				() -> tryHeal(getNearestBuilding(Cache.ALL_NEARBY_FRIENDLY_ROBOTS)),
 				this::tryTerraform,
+				() -> tryAttack(getNearestBuilding(Cache.ALL_NEARBY_ENEMY_ROBOTS)),
+				() -> tryAttack(SharedInfo.getEnemyHQLocation()),
 				Util::randomExplore
 		};
 	}
@@ -43,103 +42,54 @@ public class LandscaperBot implements RunnableBot {
 			}
 		}
 	}
-	public boolean tryAttackHQ() throws GameActionException {
-		MapLocation enemyHQLocation = null;
-		for(RobotInfo enemy : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
-			if(enemy.getType().equals(RobotType.HQ)) {
-				enemyHQLocation = enemy.getLocation();
-				break;
-			}
-		}
-		if(enemyHQLocation != null) {
-			if(controller.getLocation().isAdjacentTo(enemyHQLocation)){
-				if(controller.getDirtCarrying() > 0) {
-					Direction directionToHQ = controller.getLocation().directionTo(enemyHQLocation);
-					if(controller.canDepositDirt(directionToHQ)) {
-						controller.depositDirt(directionToHQ);
-						return true;
-					}
-				}
-				else {
-					if(controller.canDigDirt(Direction.CENTER)) {
-						controller.canDigDirt(Direction.CENTER);
-					}
+	public boolean tryHeal(MapLocation location) throws GameActionException {
+		if (location != null) {
+			MapLocation currentLocation = controller.getLocation();
+			if (currentLocation.isAdjacentTo(location)) {
+				Direction direction = currentLocation.directionTo(location);
+				if (controller.canDigDirt(direction)) {
+					controller.digDirt(direction);
+					return true;
 				}
 			}
 		}
 		return false;
 	}
-	
-	public boolean tryAttackBuildings() throws GameActionException {
-		MapLocation enemyBuildingLocation = null;
-		for(RobotInfo enemy : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
-			if(enemy.getType().isBuilding()) {
-				enemyBuildingLocation = enemy.getLocation();
-				break;
-			}
-		}
-		if(enemyBuildingLocation != null) {
-			if(controller.getLocation().isAdjacentTo(enemyBuildingLocation)){
-				if(controller.getDirtCarrying() > 0) {
-					Direction directionToBuilding = controller.getLocation().directionTo(enemyBuildingLocation);
-					if(controller.canDepositDirt(directionToBuilding)) {
-						controller.depositDirt(directionToBuilding);
-						return true;
+	public boolean tryAttack(MapLocation location) throws GameActionException {
+		if (location != null) {
+			if (controller.getLocation().isAdjacentTo(location)) {
+				if (controller.getDirtCarrying() > 0) {
+					Direction direction = controller.getLocation().directionTo(location);
+					if (controller.canDepositDirt(direction)) {
+						controller.depositDirt(direction);
+					}
+				} else {
+					if (controller.canDigDirt(Direction.CENTER)) {
+						controller.digDirt(Direction.CENTER);
 					}
 				}
-				else {
-					if(controller.canDigDirt(Direction.CENTER)) {
-						controller.canDigDirt(Direction.CENTER);
-					}
-				}
+			} else {
+				Pathfinding.execute(location);
 			}
+			return true;
 		}
 		return false;
 	}
-	
-	public boolean tryHealHQ() throws GameActionException {
-		for (Direction direction : Util.ADJACENT_DIRECTIONS) {
-			MapLocation location = controller.getLocation().add(direction);
-			if(controller.canSenseLocation(location)) {
-				RobotInfo robot = controller.senseRobotAtLocation(location);
-				if(robot != null) {
-					if(robot.getTeam() == Cache.OUR_TEAM && robot.getType().equals(RobotType.HQ)) {
-						if(controller.canDigDirt(direction)) {
-							controller.canDigDirt(direction);
-							return true;
-						}
-						else if(controller.getDirtCarrying() == RobotType.LANDSCAPER.dirtLimit) {
-							if(controller.canDepositDirt(Direction.CENTER)) {
-								controller.depositDirt(Direction.CENTER);
-							}
-						}
-					}
+	public MapLocation getNearestBuilding(RobotInfo[] robots) {
+		MapLocation currentLocation = controller.getLocation();
+		int bestDistance = Integer.MAX_VALUE;
+		MapLocation bestEnemy = null;
+		for (RobotInfo enemy : robots) {
+			// TODO: Square distance instead of r^2 distance?
+			if (enemy.getType().isBuilding()) {
+				int distance = enemy.getLocation().distanceSquaredTo(currentLocation);
+				if (distance < bestDistance) {
+					bestDistance = distance;
+					bestEnemy = enemy.getLocation();
 				}
 			}
 		}
-		return false;
-	}
-	public boolean tryHealBuildings() throws GameActionException {
-		for (Direction direction : Util.ADJACENT_DIRECTIONS) {
-			MapLocation location = controller.getLocation().add(direction);
-			if (controller.canSenseLocation(location)) {
-				RobotInfo robot = controller.senseRobotAtLocation(location);
-				if (robot != null) {
-					if (robot.getTeam() == Cache.OUR_TEAM && robot.getType().isBuilding()) {
-						if (controller.canDigDirt(direction)) {
-							controller.digDirt(direction);
-							return true;
-						}
-						else if(controller.getDirtCarrying() == RobotType.LANDSCAPER.dirtLimit) {
-							if(controller.canDepositDirt(Direction.CENTER)) {
-								controller.depositDirt(Direction.CENTER);
-							}
-						}
-					}
-				}
-			}
-		}
-		return false;
+		return bestEnemy;
 	}
 	public boolean tryTerraform() throws GameActionException {
 		MapLocation currentLocation = controller.getLocation();
