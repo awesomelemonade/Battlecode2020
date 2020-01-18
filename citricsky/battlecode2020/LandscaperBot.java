@@ -93,8 +93,15 @@ public class LandscaperBot implements RunnableBot {
 	}
 	public boolean tryTerraform() throws GameActionException {
 		MapLocation currentLocation = controller.getLocation();
+		MapLocation ourLocationHQ = SharedInfo.getOurHQLocation();
+		if (ourLocationHQ == null) {
+			return false;
+		}
 		int targetElevation = (this.targetElevation - this.targetElevation % 3) + 5;
 		int upperTargetElevation = targetElevation + GameConstants.MAX_DIRT_DIFFERENCE;
+		MapLocation bestLocation = null;
+		int bestDistanceSquared = Integer.MAX_VALUE;
+		boolean bestRaise = false;
 		for (int i = 0; i < Util.FLOOD_FILL_DX.length; i++) {
 			int dx = Util.FLOOD_FILL_DX[i];
 			int dy = Util.FLOOD_FILL_DY[i];
@@ -103,10 +110,11 @@ public class LandscaperBot implements RunnableBot {
 				continue;
 			}
 			if (!controller.canSenseLocation(location)) {
-				return false;
+				break;
 			}
 			RobotInfo robot = controller.senseRobotAtLocation(location);
 			if (robot != null && robot.getTeam() == Cache.OUR_TEAM && robot.getType().isBuilding()) {
+				// TODO: Maybe we should consider burying our own buildings to make space for new buildings
 				continue;
 			}
 			if (!LatticeUtil.isPit(location)) {
@@ -115,17 +123,33 @@ public class LandscaperBot implements RunnableBot {
 				if (elevation < targetElevation) {
 					if (targetElevation - elevation <= LANDSCAPING_THRESHOLD) {
 						// Try to raise elevation
-						tryToRaise(location);
-						return true;
+						int distanceSquared = ourLocationHQ.distanceSquaredTo(location);
+						if (distanceSquared < bestDistanceSquared) {
+							bestDistanceSquared = distanceSquared;
+							bestLocation = location;
+							bestRaise = true;
+						}
 					}
 				} else if (elevation > upperTargetElevation) {
 					if (elevation - upperTargetElevation <= LANDSCAPING_THRESHOLD) {
 						// Try to lower elevation
-						tryToLower(location);
-						return true;
+						int distanceSquared = ourLocationHQ.distanceSquaredTo(location);
+						if (distanceSquared < bestDistanceSquared) {
+							bestDistanceSquared = distanceSquared;
+							bestLocation = location;
+							bestRaise = false;
+						}
 					}
 				}
 			}
+		}
+		if (bestLocation != null) {
+			if (bestRaise) {
+				tryToRaise(bestLocation);
+			} else {
+				tryToLower(bestLocation);
+			}
+			return true;
 		}
 		return false;
 	}
