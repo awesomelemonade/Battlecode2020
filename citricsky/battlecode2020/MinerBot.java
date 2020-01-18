@@ -204,6 +204,14 @@ public class MinerBot implements RunnableBot {
 			}
 			if (LatticeUtil.isBuildLocation(location) && willNotGetFloodedSoon(location) &&
 					isValidDesignSchoolLocation(location)) {
+				if (spawnedDesignSchool) {
+					if (Math.random() < 0.2) {
+						if (Util.canSafeBuildRobot(RobotType.FULFILLMENT_CENTER, direction)) {
+							controller.buildRobot(RobotType.FULFILLMENT_CENTER, direction);
+							return true;
+						}
+					}
+				}
 				if (Util.canSafeBuildRobot(RobotType.DESIGN_SCHOOL, direction)) {
 					controller.buildRobot(RobotType.DESIGN_SCHOOL, direction);
 					spawnedDesignSchool = true;
