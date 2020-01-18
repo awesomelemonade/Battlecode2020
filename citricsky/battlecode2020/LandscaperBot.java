@@ -108,6 +108,11 @@ public class LandscaperBot implements RunnableBot {
 							controller.canDigDirt(direction);
 							return true;
 						}
+						else if(controller.getDirtCarrying() == RobotType.LANDSCAPER.dirtLimit) {
+							if(controller.canDepositDirt(Direction.CENTER)) {
+								controller.depositDirt(Direction.CENTER);
+							}
+						}
 					}
 				}
 			}
@@ -124,6 +129,11 @@ public class LandscaperBot implements RunnableBot {
 						if (controller.canDigDirt(direction)) {
 							controller.digDirt(direction);
 							return true;
+						}
+						else if(controller.getDirtCarrying() == RobotType.LANDSCAPER.dirtLimit) {
+							if(controller.canDepositDirt(Direction.CENTER)) {
+								controller.depositDirt(Direction.CENTER);
+							}
 						}
 					}
 				}
