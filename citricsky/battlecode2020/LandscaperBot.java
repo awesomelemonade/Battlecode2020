@@ -61,11 +61,8 @@ public class LandscaperBot implements RunnableBot {
 					}
 				}
 				else {
-					for(Direction direction : Util.ADJACENT_DIRECTIONS) {
-						if(controller.canDigDirt(direction)) {
-							controller.digDirt(direction);
-							return true;
-						}
+					if(controller.canDigDirt(Direction.CENTER)) {
+						controller.canDigDirt(Direction.CENTER);
 					}
 				}
 			}
@@ -91,11 +88,8 @@ public class LandscaperBot implements RunnableBot {
 					}
 				}
 				else {
-					for(Direction direction : Util.ADJACENT_DIRECTIONS) {
-						if(controller.canDigDirt(direction)) {
-							controller.digDirt(direction);
-							return true;
-						}
+					if(controller.canDigDirt(Direction.CENTER)) {
+						controller.canDigDirt(Direction.CENTER);
 					}
 				}
 			}
