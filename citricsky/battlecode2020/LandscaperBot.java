@@ -18,13 +18,46 @@ public class LandscaperBot implements RunnableBot {
 		//infoMap = new InfoMap(controller.getMapWidth(), controller.getMapHeight());
 		// Order of behaviors to be executed
 		behaviors = new RobotBehavior[] {
+				this::tryDefend,
 				() -> tryHeal(SharedInfo.getOurHQLocation()),
 				() -> tryHeal(getNearestBuilding(Cache.ALL_NEARBY_FRIENDLY_ROBOTS)),
 				this::tryTerraform,
-				() -> tryAttack(getNearestBuilding(Cache.ALL_NEARBY_ENEMY_ROBOTS)),
-				() -> tryAttack(SharedInfo.getEnemyHQLocation()),
+				() -> tryGoToAttack(getNearestBuilding(Cache.ALL_NEARBY_ENEMY_ROBOTS)),
+				() -> tryGoToAttack(SharedInfo.getEnemyHQLocation()),
 				Util::randomExplore
 		};
+	}
+	public boolean tryDefend() throws GameActionException {
+		MapLocation currentLocation = controller.getLocation();
+		MapLocation ourHQLocation = SharedInfo.getOurHQLocation();
+		if (ourHQLocation == null) {
+			return false;
+		}
+		// Bury nearest building if it is near HQ
+		boolean enemyNearby = false;
+		RobotInfo bestEnemy = null;
+		int bestDistanceSquared = Integer.MAX_VALUE;
+		for (RobotInfo enemy : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
+			MapLocation location = enemy.getLocation();
+			if (location.isWithinDistanceSquared(ourHQLocation, RobotType.HQ.sensorRadiusSquared)) {
+				enemyNearby = true;
+				if (enemy.getType().isBuilding()) {
+					int distanceSquared = currentLocation.distanceSquaredTo(location);
+					if (distanceSquared < bestDistanceSquared) {
+						bestDistanceSquared = distanceSquared;
+						bestEnemy = enemy;
+					}
+				}
+			}
+		}
+		if (bestEnemy != null) {
+			return tryGoToAttack(bestEnemy.getLocation());
+		}
+		// Then go towards our HQ if there are enemies nearby
+		if (enemyNearby) {
+			return tryGoToHeal(ourHQLocation);
+		}
+		return false;
 	}
 	private int targetElevation = 1;
 	@Override
@@ -43,6 +76,7 @@ public class LandscaperBot implements RunnableBot {
 		}
 	}
 	public boolean tryHeal(MapLocation location) throws GameActionException {
+		// TODO: Consider depositing dirt if full?
 		if (location != null) {
 			MapLocation currentLocation = controller.getLocation();
 			if (currentLocation.isAdjacentTo(location)) {
@@ -55,7 +89,21 @@ public class LandscaperBot implements RunnableBot {
 		}
 		return false;
 	}
-	public boolean tryAttack(MapLocation location) throws GameActionException {
+	public boolean tryGoToHeal(MapLocation location) throws GameActionException {
+		// TODO: Consider depositing dirt if full?
+		if (controller.getLocation().isAdjacentTo(location)) {
+			Direction direction = controller.getLocation().directionTo(location);
+			if (controller.canDigDirt(direction)) {
+				controller.digDirt(direction);
+				return true;
+			}
+		} else {
+			Pathfinding.execute(location);
+			return true;
+		}
+		return false;
+	}
+	public boolean tryGoToAttack(MapLocation location) throws GameActionException {
 		if (location != null) {
 			if (controller.getLocation().isAdjacentTo(location)) {
 				if (controller.getDirtCarrying() > 0) {
