@@ -21,8 +21,16 @@ public class FastMapLocationDeque {
 	public void reset() {
 		size = 0;
 	}
-	public MapLocation get(int index) {
-		return array[(this.index + index) % array.length];
+	public MapLocation peek() {
+        return array[index % array.length];
+    }
+	public boolean contains(MapLocation location) {
+		for(int i = index; i < index + size; i++) {
+			if(array[i % array.length].equals(location)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	public int size() {
 		return size;

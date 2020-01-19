@@ -10,6 +10,8 @@ public class SharedInfo {
 	private static final int ENEMYHQ_SIGNATURE = 2130985;
 	private static final int ENEMYHQ_MODE_SIGNATURE = 415912;
 	private static final int OURHQ_SIGNATURE = 51351235;
+	private static final int NEWSOUP_SIGNATURE = -1352350;
+	private static final int SOUPGONE_SIGNATURE = 72952835;
 
 	private static RobotController controller;
 	private static MapLocation ourHQLocation;
@@ -18,6 +20,8 @@ public class SharedInfo {
 	private static MapLocation enemyHQLocation;
 	private static int enemyHQGuesserMode = EnemyHQGuesser.UNKNOWN_MODE;
 	private static int ourHQState = HQBot.NO_HELP_NEEDED;
+	
+	public static FastMapLocationDeque soupLocations = new FastMapLocationDeque(100);
 
 	public static void init(RobotController controller) {
 		SharedInfo.controller = controller;
@@ -55,6 +59,21 @@ public class SharedInfo {
 		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
 	}
+	public static void sendSoup(MapLocation location) {
+		int[] message = new int[] {
+				NEWSOUP_SIGNATURE, 0, 0, 0, location.x, location.y, controller.getRoundNum()
+		};
+		Communication.encryptMessage(message);
+		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
+	}
+	public static void sendSoupGone(MapLocation location) {
+		int[] message = new int[] {
+				SOUPGONE_SIGNATURE, 0, 0, 0, location.x, location.y, controller.getRoundNum()
+		};
+		Communication.encryptMessage(message);
+		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
+	}
+		
 	public static void processMessage(int[] message) {
 		switch(message[0]) {
 			case ENEMYHQ_SIGNATURE:
@@ -68,6 +87,12 @@ public class SharedInfo {
 				break;
 			case OURHQ_STATE_SIGNATURE:
 				setOurHQState(message[5]);
+				break;
+			case NEWSOUP_SIGNATURE:
+				soupLocations.push(new MapLocation(message[4], message[5]));
+				break;
+			case SOUPGONE_SIGNATURE:
+				removeSoup(new MapLocation(message[4], message[5]));
 				break;
 		}
 	}
@@ -103,5 +128,11 @@ public class SharedInfo {
 	}
 	public static int getOurHQState() {
 		return ourHQState;
+	}
+	private static void removeSoup(MapLocation location) {
+		MapLocation next = soupLocations.peek();
+		if(next!= null && next.equals(location)) {
+			soupLocations.poll();
+		}
 	}
 }

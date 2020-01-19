@@ -35,26 +35,54 @@ public class MinerBot implements RunnableBot {
 			return;
 		}
 		if (controller.getSoupCarrying() < RobotType.MINER.soupLimit) {
-			// Try to mine soup
-			for (Direction direction : Direction.values()) {
-				if (controller.canMineSoup(direction)) {
-					controller.mineSoup(direction);
-					return;
+			System.out.println("not enough soup :(");
+			//try to mine from the soupLocations
+			if(!SharedInfo.soupLocations.isEmpty()){
+				MapLocation soupLocation = SharedInfo.soupLocations.peek();
+				if(currentLocation.isAdjacentTo(soupLocation)) {
+					//if the soup is gone
+					if(controller.senseSoup(soupLocation) == 0) {
+						SharedInfo.sendSoupGone(soupLocation);
+					}
+					//mine if there is still soup
+					else {
+						Direction directionToSoup = currentLocation.directionTo(soupLocation);
+						if(controller.canMineSoup(directionToSoup)) {
+							controller.mineSoup(directionToSoup);
+						}
+					}
+				}
+				//if not adjacent, path to the soupLocation
+				else {
+					Pathfinding.execute(soupLocation);
 				}
 			}
-			// Move towards visible soup
-			MapLocation soupLocation = findSoupLocation();
-			if (soupLocation == null) {
-				// Otherwise, walk randomly
-				Util.randomExplore();
-			} else {
-				Pathfinding.execute(soupLocation);
+			else {
+				//mine adjacent, broadcast location if new
+				for (Direction direction : Direction.values()) {
+					if (controller.canMineSoup(direction)) {
+						controller.mineSoup(direction);
+						if(!SharedInfo.soupLocations.contains(currentLocation.add(direction))) {
+							SharedInfo.sendSoup(currentLocation.add(direction));
+						}
+						return;
+					}
+				}
+				
+				// Move towards visible soup
+				MapLocation soupLocation = findSoupLocation();
+				if (soupLocation == null) {
+					// Otherwise, walk randomly
+					Util.randomExplore();
+				} else {
+					Pathfinding.execute(soupLocation);
+				}
 			}
 		} else {
 			// Try to deposit soup
 			for (Direction direction : Direction.values()) {
 				if (controller.canDepositSoup(direction)) {
-					MapLocation location = controller.getLocation().add(direction);
+					MapLocation location = currentLocation.add(direction);
 					if (controller.canSenseLocation(location)) {
 						RobotInfo robot = controller.senseRobotAtLocation(location);
 						if (robot != null && robot.getTeam() == controller.getTeam()) {
