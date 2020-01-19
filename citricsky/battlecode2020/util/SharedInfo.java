@@ -15,6 +15,7 @@ public class SharedInfo {
 	private static int ourHQParityY = -1;
 	private static MapLocation enemyHQLocation;
 	private static int enemyHQGuesserMode = EnemyHQGuesser.UNKNOWN_MODE;
+	
 
 
 	public static void init(RobotController controller) {
