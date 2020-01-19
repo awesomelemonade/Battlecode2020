@@ -54,7 +54,7 @@ public class HQBot implements RunnableBot {
 				} else {
 					int count = 0;
 					for (RobotInfo robot : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
-						if (robot.getLocation().isAdjacentTo(currentLocation)) {
+						if (robot.getLocation().isAdjacentTo(currentLocation) && robot.getType() == RobotType.LANDSCAPER) {
 							count++;
 						}
 					}

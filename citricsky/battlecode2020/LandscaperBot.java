@@ -218,11 +218,6 @@ public class LandscaperBot implements RunnableBot {
 			if (!controller.canSenseLocation(location)) {
 				break;
 			}
-			RobotInfo robot = controller.senseRobotAtLocation(location);
-			if (robot != null && robot.getTeam() == Cache.OUR_TEAM && robot.getType().isBuilding()) {
-				// TODO: Maybe we should consider burying our own buildings to make space for new buildings
-				continue;
-			}
 			if (!LatticeUtil.isPit(location)) {
 				int elevation = controller.senseElevation(location);
 				// Fill up to target elevation or dig to targetElevation + 3
@@ -231,6 +226,11 @@ public class LandscaperBot implements RunnableBot {
 						// Try to raise elevation
 						int distanceSquared = (int) (Math.sqrt(ourLocationHQ.distanceSquaredTo(location)) + Math.sqrt(currentLocation.distanceSquaredTo(location)));
 						if (distanceSquared < bestDistanceSquared) {
+							RobotInfo robot = controller.senseRobotAtLocation(location);
+							if (robot != null && robot.getTeam() == Cache.OUR_TEAM && robot.getType().isBuilding()) {
+								// TODO: Maybe we should consider burying our own buildings to make space for new buildings
+								continue;
+							}
 							bestDistanceSquared = distanceSquared;
 							bestLocation = location;
 							bestRaise = true;
@@ -241,6 +241,11 @@ public class LandscaperBot implements RunnableBot {
 						// Try to lower elevation
 						int distanceSquared = (int) (Math.sqrt(ourLocationHQ.distanceSquaredTo(location)) + Math.sqrt(currentLocation.distanceSquaredTo(location)));
 						if (distanceSquared < bestDistanceSquared) {
+							RobotInfo robot = controller.senseRobotAtLocation(location);
+							if (robot != null && robot.getTeam() == Cache.OUR_TEAM && robot.getType().isBuilding()) {
+								// TODO: Maybe we should consider burying our own buildings to make space for new buildings
+								continue;
+							}
 							bestDistanceSquared = distanceSquared;
 							bestLocation = location;
 							bestRaise = false;
