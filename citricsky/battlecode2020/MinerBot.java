@@ -175,6 +175,7 @@ public class MinerBot implements RunnableBot {
 		if (currentLocation.isAdjacentTo(location)) {
 			// Build
 			Direction direction = currentLocation.directionTo(location);
+			controller.setIndicatorDot(location, 0, 0, 255);
 			if (controller.canBuildRobot(type, direction)) {
 				controller.buildRobot(type, direction);
 				onBuildRobot(type);
@@ -205,7 +206,7 @@ public class MinerBot implements RunnableBot {
 				// Check for elevation difference
 				if (type != RobotType.DESIGN_SCHOOL || isValidDesignSchoolLocation(location)) {
 					RobotInfo robot = controller.senseRobotAtLocation(location);
-					if (robot != null) {
+					if (robot == null) {
 						bestDistanceSquared = distanceSquared;
 						bestLocation = location;
 					}
@@ -234,18 +235,21 @@ public class MinerBot implements RunnableBot {
 		return false;
 	}
 	public RobotType getBuildTypeTarget() throws GameActionException {
+		int teamSoup = controller.getTeamSoup();
 		vaporator: {
 			if (Cache.ALL_NEARBY_ENEMY_ROBOTS.length > 0) {
 				// Don't build vaporator when you see enemies
 				break vaporator;
 			}
-			int teamSoup = controller.getTeamSoup();
 			if (teamSoup < RobotType.VAPORATOR.cost || teamSoup > RobotType.VAPORATOR.cost * 2) {
 				break vaporator;
 			}
 			return RobotType.VAPORATOR;
 		}
 		designSchool: {
+			if (teamSoup < RobotType.DESIGN_SCHOOL.cost) {
+				break designSchool;
+			}
 			boolean seeHQ = false;
 			for (RobotInfo robot : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
 				if (robot.getType() == RobotType.DESIGN_SCHOOL &&
@@ -259,7 +263,7 @@ public class MinerBot implements RunnableBot {
 			// If we see enemies near our hq, we should build one asap to defend
 			if (!(seeHQ && Cache.ALL_NEARBY_ENEMY_ROBOTS.length > 0)) {
 				// If we have too much soup, we might as well create em
-				if (controller.getTeamSoup() < 2 * RobotType.VAPORATOR.cost) {
+				if (teamSoup < 2 * RobotType.VAPORATOR.cost) {
 					// If we have little soup, don't spawn unless we haven't spawned one yet
 					if (spawnedDesignSchool) {
 						break designSchool;
