@@ -18,6 +18,8 @@ public class LandscaperBot implements RunnableBot {
 		//infoMap = new InfoMap(controller.getMapWidth(), controller.getMapHeight());
 		// Order of behaviors to be executed
 		behaviors = new RobotBehavior[] {
+				this::tryEmergencyHealHQ,
+				this::tryBuryAdjacentEnemyBuildings,
 				this::tryDefend,
 				() -> tryHeal(SharedInfo.getOurHQLocation()),
 				() -> tryHeal(getNearestBuilding(Cache.ALL_NEARBY_FRIENDLY_ROBOTS)),
@@ -27,7 +29,61 @@ public class LandscaperBot implements RunnableBot {
 				Util::randomExplore
 		};
 	}
-
+	private int targetElevation = 1;
+	@Override
+	public void turn() throws GameActionException {
+		while (Util.getTurnsToFlooded(targetElevation) - controller.getRoundNum() < 100) {
+			targetElevation++;
+		}
+		if (!controller.isReady()) {
+			return;
+		}
+		for (int i = 0; i < behaviors.length; i++) {
+			if (behaviors[i].execute()) {
+				// Executed successfully
+				return;
+			}
+		}
+	}
+	public boolean tryEmergencyHealHQ() throws GameActionException {
+		MapLocation currentLocation = controller.getLocation();
+		MapLocation ourHQLocation = SharedInfo.getOurHQLocation();
+		if (ourHQLocation == null) {
+			return false;
+		}
+		if (currentLocation.isAdjacentTo(ourHQLocation)) {
+			if (controller.canSenseLocation(ourHQLocation)) {
+				int hqHealth = RobotType.HQ.dirtLimit - controller.senseRobotAtLocation(ourHQLocation).dirtCarrying;
+				if (hqHealth <= 10) {
+					Direction direction = currentLocation.directionTo(ourHQLocation);
+					if (controller.canDigDirt(direction)) {
+						controller.digDirt(direction);
+					} else {
+						tryDepositToPit();
+					}
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	public boolean tryBuryAdjacentEnemyBuildings() throws GameActionException {
+		MapLocation currentLocation = controller.getLocation();
+		if (controller.canSenseRadiusSquared(Util.ADJACENT_DISTANCE_SQUARED)) {
+			for (Direction direction : Util.ADJACENT_DIRECTIONS) {
+				MapLocation location = currentLocation.add(direction);
+				RobotInfo robot = controller.senseRobotAtLocation(location);
+				if (robot != null && robot.getTeam() == Cache.OPPONENT_TEAM && robot.getType().isBuilding()) {
+					if (controller.canDepositDirt(direction)) {
+						controller.depositDirt(direction);
+					}
+					tryDigFromPit();
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 	public boolean tryDefend() throws GameActionException {
 		int ourHQState = SharedInfo.getOurHQState();
 		MapLocation currentLocation = controller.getLocation();
@@ -75,22 +131,6 @@ public class LandscaperBot implements RunnableBot {
 			}
 		}
 		return false;
-	}
-	private int targetElevation = 1;
-	@Override
-	public void turn() throws GameActionException {
-		while (Util.getTurnsToFlooded(targetElevation) - controller.getRoundNum() < 100) {
-			targetElevation++;
-		}
-		if (!controller.isReady()) {
-			return;
-		}
-		for (int i = 0; i < behaviors.length; i++) {
-			if (behaviors[i].execute()) {
-				// Executed successfully
-				return;
-			}
-		}
 	}
 	public boolean tryHeal(MapLocation location) throws GameActionException {
 		// TODO: Consider depositing dirt if full?
@@ -148,7 +188,7 @@ public class LandscaperBot implements RunnableBot {
 		if (ourLocationHQ == null) {
 			return false;
 		}
-		int targetElevation = (this.targetElevation - this.targetElevation % 3) + 5;
+		int targetElevation = (this.targetElevation - this.targetElevation % 3) + 5;;
 		int upperTargetElevation = targetElevation + GameConstants.MAX_DIRT_DIFFERENCE;
 		MapLocation bestLocation = null;
 		int bestDistanceSquared = Integer.MAX_VALUE;
@@ -239,7 +279,7 @@ public class LandscaperBot implements RunnableBot {
 			}
 		}
 	}
-	public boolean tryDepositToPit() throws GameActionException {
+	public void tryDepositToPit() throws GameActionException {
 		for (Direction pitDirection : LatticeUtil.getPitDirections(controller.getLocation())) {
 			MapLocation location = controller.getLocation().add(pitDirection);
 			if (controller.canDepositDirt(pitDirection) && (!location.equals(SharedInfo.getOurHQLocation()))) {

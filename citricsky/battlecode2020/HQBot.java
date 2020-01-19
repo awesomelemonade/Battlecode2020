@@ -40,13 +40,30 @@ public class HQBot implements RunnableBot {
 		// Calculates state
 		int state;
 		if (Cache.ALL_NEARBY_ENEMY_ROBOTS.length > 0) {
-			int count = 0;
-			for (RobotInfo robot : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
-				if (robot.getLocation().isAdjacentTo(currentLocation)) {
-					count++;
+			if (controller.canSenseRadiusSquared(Util.ADJACENT_DISTANCE_SQUARED)) { // If we can see all adjacent locations
+				boolean allNeighborsOccupied = true;
+				for (Direction direction : Util.ADJACENT_DIRECTIONS) {
+					MapLocation location = currentLocation.add(direction);
+					if (!controller.isLocationOccupied(location)) {
+						allNeighborsOccupied = false;
+						break;
+					}
 				}
+				if (allNeighborsOccupied) {
+					state = NO_ADDITIONAL_HELP_NEEDED;
+				} else {
+					int count = 0;
+					for (RobotInfo robot : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
+						if (robot.getLocation().isAdjacentTo(currentLocation)) {
+							count++;
+						}
+					}
+					state = count >= 4 ? NO_ADDITIONAL_HELP_NEEDED : NEEDS_HELP;
+				}
+			} else {
+				// This really shouldn't happen
+				state = NO_ADDITIONAL_HELP_NEEDED;
 			}
-			state = count >= 4 ? NO_ADDITIONAL_HELP_NEEDED : NEEDS_HELP;
 		} else {
 			state = NO_HELP_NEEDED;
 		}

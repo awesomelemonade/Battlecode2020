@@ -41,6 +41,7 @@ public class Util {
 	public static Random getRandom() {
 		return random;
 	}
+	public static final int ADJACENT_DISTANCE_SQUARED = 2;
 	public static final Direction[] ADJACENT_DIRECTIONS = new Direction[] {
 			Direction.NORTH, Direction.NORTHEAST, Direction.EAST, Direction.SOUTHEAST,
 			Direction.SOUTH, Direction.SOUTHWEST, Direction.WEST, Direction.NORTHWEST

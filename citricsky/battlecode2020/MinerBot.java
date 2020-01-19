@@ -142,7 +142,11 @@ public class MinerBot implements RunnableBot {
 		if (teamSoup < RobotType.VAPORATOR.cost || teamSoup > RobotType.VAPORATOR.cost * 2) {
 			return false;
 		}
-		Direction idealDirection = controller.getLocation().directionTo(SharedInfo.getOurHQLocation());
+		MapLocation ourHQLocation = SharedInfo.getOurHQLocation();
+		if (ourHQLocation == null) {
+			return false;
+		}
+		Direction idealDirection = controller.getLocation().directionTo(ourHQLocation);
 		for (Direction direction : Util.getAttemptOrder(idealDirection)) {
 			MapLocation location = controller.getLocation().add(direction);
 			if (hqLocation.isWithinDistanceSquared(location, 2)) {
@@ -197,7 +201,11 @@ public class MinerBot implements RunnableBot {
 				}
 			}
 		}
-		Direction idealDirection = controller.getLocation().directionTo(SharedInfo.getOurHQLocation());
+		MapLocation ourHQLocation = SharedInfo.getOurHQLocation();
+		if (ourHQLocation == null) {
+			return false;
+		}
+		Direction idealDirection = controller.getLocation().directionTo(ourHQLocation);
 		for (Direction direction : Util.getAttemptOrder(idealDirection)) {
 			MapLocation location = controller.getLocation().add(direction);
 			if (hqLocation.isWithinDistanceSquared(location, 2)) {
