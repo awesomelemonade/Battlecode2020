@@ -4,7 +4,7 @@ import battlecode.common.*;
 import citricsky.battlecode2020.HQBot;
 
 public class SharedInfo {
-	public static final int TRANSACTION_COST = 3;
+	public static final int TRANSACTION_COST = 1;
 
 	private static final int OURHQ_STATE_SIGNATURE = 8963124;
 	private static final int ENEMYHQ_SIGNATURE = 2130985;
@@ -21,7 +21,7 @@ public class SharedInfo {
 	private static int enemyHQGuesserMode = EnemyHQGuesser.UNKNOWN_MODE;
 	private static int ourHQState = HQBot.NO_HELP_NEEDED;
 	
-	public static FastMapLocationDeque soupLocations = new FastMapLocationDeque(100);
+	public static MapLocationArray soupLocations = new MapLocationArray(100);
 
 	public static void init(RobotController controller) {
 		SharedInfo.controller = controller;
@@ -89,10 +89,10 @@ public class SharedInfo {
 				setOurHQState(message[5]);
 				break;
 			case NEWSOUP_SIGNATURE:
-				soupLocations.push(new MapLocation(message[4], message[5]));
+				soupLocations.add(new MapLocation(message[4], message[5]));
 				break;
 			case SOUPGONE_SIGNATURE:
-				removeSoup(new MapLocation(message[4], message[5]));
+				soupLocations.remove(new MapLocation(message[4], message[5]));
 				break;
 		}
 	}
@@ -128,11 +128,5 @@ public class SharedInfo {
 	}
 	public static int getOurHQState() {
 		return ourHQState;
-	}
-	private static void removeSoup(MapLocation location) {
-		MapLocation next = soupLocations.peek();
-		if(next!= null && next.equals(location)) {
-			soupLocations.poll();
-		}
 	}
 }

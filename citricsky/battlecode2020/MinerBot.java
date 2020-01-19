@@ -35,50 +35,50 @@ public class MinerBot implements RunnableBot {
 			}
 		}
 		if (controller.getSoupCarrying() < RobotType.MINER.soupLimit) {
-			System.out.println("not enough soup :(");
-			//try to mine from the soupLocations
-			if(!SharedInfo.soupLocations.isEmpty()){
-				MapLocation soupLocation = SharedInfo.soupLocations.peek();
-				if(currentLocation.isAdjacentTo(soupLocation)) {
-					//if the soup is gone
-					if(controller.senseSoup(soupLocation) == 0) {
-						SharedInfo.sendSoupGone(soupLocation);
+			//mine adjacent, broadcast location if new
+			for (Direction direction : Direction.values()) {
+				if (controller.canMineSoup(direction)) {
+					controller.mineSoup(direction);
+					if(!SharedInfo.soupLocations.contains(currentLocation.add(direction))) {
+						SharedInfo.sendSoup(currentLocation.add(direction));
 					}
-					//mine if there is still soup
-					else {
-						Direction directionToSoup = currentLocation.directionTo(soupLocation);
-						if(controller.canMineSoup(directionToSoup)) {
-							controller.mineSoup(directionToSoup);
-						}
-					}
+					return;
 				}
-				//if not adjacent, path to the soupLocation
-				else {
-					Pathfinding.execute(soupLocation);
-				}
+			}
+			
+			// Move towards visible soup
+			MapLocation soupLocation = findSoupLocation();
+			if(soupLocation != null) {
+				Pathfinding.execute(soupLocation);
 			}
 			else {
-				//mine adjacent, broadcast location if new
-				for (Direction direction : Direction.values()) {
-					if (controller.canMineSoup(direction)) {
-						controller.mineSoup(direction);
-						if(!SharedInfo.soupLocations.contains(currentLocation.add(direction))) {
-							SharedInfo.sendSoup(currentLocation.add(direction));
+				if(!SharedInfo.soupLocations.isEmpty()) {
+					MapLocation nearestSoup = SharedInfo.soupLocations.nearestSoup(currentLocation);
+					if(currentLocation.isAdjacentTo(nearestSoup)) {
+						//if the soup is gone
+						if(controller.senseSoup(nearestSoup) == 0) {
+							SharedInfo.sendSoupGone(nearestSoup);
+							return;
 						}
-						return;
+						//mine if there is still soup
+						else {
+							Direction directionToSoup = currentLocation.directionTo(nearestSoup);
+							if(controller.canMineSoup(directionToSoup)) {
+								controller.mineSoup(directionToSoup);
+								return;
+							}
+						}
+					}
+					//if not adjacent, path to the soupLocation
+					else {
+						Pathfinding.execute(nearestSoup);
 					}
 				}
-				
-				// Move towards visible soup
-				MapLocation soupLocation = findSoupLocation();
-				if (soupLocation == null) {
-					// Otherwise, walk randomly
+				else {
 					Util.randomExplore();
-				} else {
-					Pathfinding.execute(soupLocation);
 				}
 			}
-		} else {
+		}else {
 			// Try to deposit soup
 			for (Direction direction : Direction.values()) {
 				if (controller.canDepositSoup(direction)) {
