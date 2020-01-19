@@ -24,9 +24,22 @@ public class DesignSchoolBot implements RunnableBot {
 			return;
 		}
 		if (controller.getTeamSoup() > 200) {
-			if (controller.getTeamSoup() < RobotType.VAPORATOR.cost + RobotType.LANDSCAPER.cost + 50) {
-				for (RobotInfo robot : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
-					if (robot.getType() == RobotType.LANDSCAPER) {
+			// Listen to distress signal
+			if (SharedInfo.getOurHQState() != HQBot.NEEDS_HELP) {
+				if (controller.getTeamSoup() < RobotType.VAPORATOR.cost + RobotType.LANDSCAPER.cost + 50) {
+					int friendlyLandscapersCount = 0;
+					int enemyLandscapersCount = 0;
+					for (RobotInfo robot : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
+						if (robot.getType() == RobotType.LANDSCAPER) {
+							friendlyLandscapersCount++;
+						}
+					}
+					for (RobotInfo robot : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
+						if (robot.getType() == RobotType.LANDSCAPER) {
+							enemyLandscapersCount++;
+						}
+					}
+					if (enemyLandscapersCount * 2 < friendlyLandscapersCount) {
 						return;
 					}
 				}

@@ -172,10 +172,10 @@ public class MinerBot implements RunnableBot {
 			return false;
 		}
 		MapLocation currentLocation = controller.getLocation();
+		controller.setIndicatorDot(location, 0, 0, 255);
 		if (currentLocation.isAdjacentTo(location)) {
 			// Build
 			Direction direction = currentLocation.directionTo(location);
-			controller.setIndicatorDot(location, 0, 0, 255);
 			if (controller.canBuildRobot(type, direction)) {
 				controller.buildRobot(type, direction);
 				onBuildRobot(type);
@@ -200,8 +200,8 @@ public class MinerBot implements RunnableBot {
 			if (!controller.canSenseLocation(location)) {
 				break;
 			}
-			int distanceSquared = hqLocation.distanceSquaredTo(location);
-			if (distanceSquared < bestDistanceSquared && distanceSquared > Util.ADJACENT_DISTANCE_SQUARED &&
+			int distanceSquared = (int) (Math.sqrt(hqLocation.distanceSquaredTo(location)) + Math.sqrt(currentLocation.distanceSquaredTo(location)));
+			if (distanceSquared < bestDistanceSquared && (!hqLocation.isWithinDistanceSquared(location, 2)) &&
 					LatticeUtil.isBuildLocation(location) && willNotGetFloodedSoon(location)) {
 				// Check for elevation difference
 				if (type != RobotType.DESIGN_SCHOOL || isValidDesignSchoolLocation(location)) {
@@ -246,12 +246,28 @@ public class MinerBot implements RunnableBot {
 			}
 			return RobotType.VAPORATOR;
 		}
+		/* TODO: only place net guns near enemy drones
+		netGun: {
+			if (teamSoup < RobotType.NET_GUN.cost) {
+				break netGun;
+			}
+			// Check if there are drones
+			for (RobotInfo robot : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
+				if (robot.getType() == RobotType.DELIVERY_DRONE) {
+					return RobotType.NET_GUN;
+				}
+			}
+		}*/
 		designSchool: {
 			if (teamSoup < RobotType.DESIGN_SCHOOL.cost) {
 				break designSchool;
 			}
 			boolean seeHQ = false;
 			for (RobotInfo robot : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
+				if (robot.getType() == RobotType.DELIVERY_DRONE) {
+					// We should be building net gun instead
+					//break designSchool;
+				}
 				if (robot.getType() == RobotType.DESIGN_SCHOOL &&
 						isValidDesignSchoolLocation(robot.getLocation())) {
 					break designSchool;
