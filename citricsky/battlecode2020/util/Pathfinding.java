@@ -60,7 +60,7 @@ public class Pathfinding {
 		if (Util.isBlocked(location)) {
 			return false;
 		}
-		if (LatticeUtil.isPit(location)) {
+		if (controller.getType() != RobotType.DELIVERY_DRONE && LatticeUtil.isPit(location)) {
 			// TODO - Miners do not need to avoid pits all the time
 			return false;
 		}
@@ -70,6 +70,9 @@ public class Pathfinding {
 		return true;
 	}
 	private static boolean checkDirtDifference(MapLocation location) throws GameActionException {
+		if (controller.getType() == RobotType.DELIVERY_DRONE) {
+			return true;
+		}
 		if (!controller.canSenseLocation(location)) {
 			return false;
 		}
