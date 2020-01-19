@@ -123,7 +123,7 @@ public class LandscaperBot implements RunnableBot {
 				if (elevation < targetElevation) {
 					if (targetElevation - elevation <= LANDSCAPING_THRESHOLD) {
 						// Try to raise elevation
-						int distanceSquared = ourLocationHQ.distanceSquaredTo(location);
+						int distanceSquared = (int) (Math.sqrt(ourLocationHQ.distanceSquaredTo(location)) + Math.sqrt(currentLocation.distanceSquaredTo(location)));
 						if (distanceSquared < bestDistanceSquared) {
 							bestDistanceSquared = distanceSquared;
 							bestLocation = location;
@@ -133,7 +133,7 @@ public class LandscaperBot implements RunnableBot {
 				} else if (elevation > upperTargetElevation) {
 					if (elevation - upperTargetElevation <= LANDSCAPING_THRESHOLD) {
 						// Try to lower elevation
-						int distanceSquared = ourLocationHQ.distanceSquaredTo(location);
+						int distanceSquared = (int) (Math.sqrt(ourLocationHQ.distanceSquaredTo(location)) + Math.sqrt(currentLocation.distanceSquaredTo(location)));
 						if (distanceSquared < bestDistanceSquared) {
 							bestDistanceSquared = distanceSquared;
 							bestLocation = location;
@@ -144,6 +144,7 @@ public class LandscaperBot implements RunnableBot {
 			}
 		}
 		if (bestLocation != null) {
+			controller.setIndicatorDot(bestLocation, 0, 255, 255);
 			if (bestRaise) {
 				tryToRaise(bestLocation);
 			} else {
