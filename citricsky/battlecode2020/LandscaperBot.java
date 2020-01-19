@@ -46,7 +46,7 @@ public class LandscaperBot implements RunnableBot {
 		}
 	}
 	public boolean tryEmergencyHealHQ() throws GameActionException {
-		MapLocation currentLocation = controller.getLocation();
+		MapLocation currentLocation = Cache.CURRENT_LOCATION;
 		MapLocation ourHQLocation = SharedInfo.getOurHQLocation();
 		if (ourHQLocation == null) {
 			return false;
@@ -68,7 +68,7 @@ public class LandscaperBot implements RunnableBot {
 		return false;
 	}
 	public boolean tryBuryAdjacentEnemyBuildings() throws GameActionException {
-		MapLocation currentLocation = controller.getLocation();
+		MapLocation currentLocation = Cache.CURRENT_LOCATION;
 		if (controller.canSenseRadiusSquared(Util.ADJACENT_DISTANCE_SQUARED)) {
 			for (Direction direction : Util.ADJACENT_DIRECTIONS) {
 				MapLocation location = currentLocation.add(direction);
@@ -88,7 +88,7 @@ public class LandscaperBot implements RunnableBot {
 	}
 	public boolean tryDefend() throws GameActionException {
 		int ourHQState = SharedInfo.getOurHQState();
-		MapLocation currentLocation = controller.getLocation();
+		MapLocation currentLocation = Cache.CURRENT_LOCATION;
 		MapLocation ourHQLocation = SharedInfo.getOurHQLocation();
 		if (ourHQLocation == null) {
 			return false;
@@ -147,7 +147,7 @@ public class LandscaperBot implements RunnableBot {
 	public boolean tryHeal(MapLocation location) throws GameActionException {
 		// TODO: Consider depositing dirt if full?
 		if (location != null) {
-			MapLocation currentLocation = controller.getLocation();
+			MapLocation currentLocation = Cache.CURRENT_LOCATION;
 			if (currentLocation.isAdjacentTo(location)) {
 				Direction direction = currentLocation.directionTo(location);
 				if (controller.canDigDirt(direction)) {
@@ -160,9 +160,9 @@ public class LandscaperBot implements RunnableBot {
 	}
 	public boolean tryGoToAttack(MapLocation location) throws GameActionException {
 		if (location != null) {
-			if (controller.getLocation().isAdjacentTo(location)) {
+			if (Cache.CURRENT_LOCATION.isAdjacentTo(location)) {
 				if (controller.getDirtCarrying() > 0) {
-					Direction direction = controller.getLocation().directionTo(location);
+					Direction direction = Cache.CURRENT_LOCATION.directionTo(location);
 					if (controller.canDepositDirt(direction)) {
 						controller.depositDirt(direction);
 					}
@@ -179,7 +179,7 @@ public class LandscaperBot implements RunnableBot {
 		return false;
 	}
 	public MapLocation getNearestBuilding(RobotInfo[] robots) {
-		MapLocation currentLocation = controller.getLocation();
+		MapLocation currentLocation = Cache.CURRENT_LOCATION;
 		int bestDistance = Integer.MAX_VALUE;
 		MapLocation bestEnemy = null;
 		for (RobotInfo enemy : robots) {
@@ -198,7 +198,7 @@ public class LandscaperBot implements RunnableBot {
 		return (this.targetElevation - this.targetElevation % 3) + 5;
 	}
 	public boolean tryTerraform() throws GameActionException {
-		MapLocation currentLocation = controller.getLocation();
+		MapLocation currentLocation = Cache.CURRENT_LOCATION;
 		MapLocation ourLocationHQ = SharedInfo.getOurHQLocation();
 		if (ourLocationHQ == null) {
 			return false;
@@ -266,7 +266,7 @@ public class LandscaperBot implements RunnableBot {
 		return false;
 	}
 	public void tryToRaise(MapLocation location) throws GameActionException {
-		MapLocation currentLocation = controller.getLocation();
+		MapLocation currentLocation = Cache.CURRENT_LOCATION;
 		if (currentLocation.isWithinDistanceSquared(location, 2)) {
 			Direction direction = currentLocation.directionTo(location);
 			if (controller.canDepositDirt(direction)) {
@@ -279,7 +279,7 @@ public class LandscaperBot implements RunnableBot {
 		}
 	}
 	public void tryToLower(MapLocation location) throws GameActionException {
-		MapLocation currentLocation = controller.getLocation();
+		MapLocation currentLocation = Cache.CURRENT_LOCATION;
 		if (currentLocation.isWithinDistanceSquared(location, 2)) {
 			Direction direction = currentLocation.directionTo(location);
 			if (controller.canDigDirt(direction)) {
@@ -292,7 +292,7 @@ public class LandscaperBot implements RunnableBot {
 		}
 	}
 	public void tryDigFromPit() throws GameActionException {
-		for (Direction pitDirection : LatticeUtil.getPitDirections(controller.getLocation())) {
+		for (Direction pitDirection : LatticeUtil.getPitDirections(Cache.CURRENT_LOCATION)) {
 			if (controller.canDigDirt(pitDirection)) {
 				controller.digDirt(pitDirection);
 				break;
@@ -300,8 +300,8 @@ public class LandscaperBot implements RunnableBot {
 		}
 	}
 	public void tryDepositToPit() throws GameActionException {
-		for (Direction pitDirection : LatticeUtil.getPitDirections(controller.getLocation())) {
-			MapLocation location = controller.getLocation().add(pitDirection);
+		for (Direction pitDirection : LatticeUtil.getPitDirections(Cache.CURRENT_LOCATION)) {
+			MapLocation location = Cache.CURRENT_LOCATION.add(pitDirection);
 			if (controller.canDepositDirt(pitDirection) && (!location.equals(SharedInfo.getOurHQLocation()))) {
 				controller.depositDirt(pitDirection);
 				break;

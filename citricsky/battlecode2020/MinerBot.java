@@ -25,7 +25,7 @@ public class MinerBot implements RunnableBot {
 		if (!controller.isReady()) {
 			return;
 		}
-		MapLocation currentLocation = controller.getLocation();
+		MapLocation currentLocation = Cache.CURRENT_LOCATION;
 
 		// See if we should build anything
 		RobotType buildTarget = getBuildTypeTarget();
@@ -141,7 +141,7 @@ public class MinerBot implements RunnableBot {
 		}
 	}
 	public MapLocation findSoupLocation() throws GameActionException {
-		MapLocation currentLocation = controller.getLocation();
+		MapLocation currentLocation = Cache.CURRENT_LOCATION;
 		for (int i = 0; i < Util.FLOOD_FILL_DX.length; i++) {
 			MapLocation location = currentLocation.translate(Util.FLOOD_FILL_DX[i], Util.FLOOD_FILL_DY[i]);
 			if (!controller.canSenseLocation(location)) {
@@ -171,7 +171,7 @@ public class MinerBot implements RunnableBot {
 		if (location == null) {
 			return false;
 		}
-		MapLocation currentLocation = controller.getLocation();
+		MapLocation currentLocation = Cache.CURRENT_LOCATION;
 		controller.setIndicatorDot(location, 0, 0, 255);
 		if (currentLocation.isAdjacentTo(location)) {
 			// Build
@@ -186,7 +186,7 @@ public class MinerBot implements RunnableBot {
 		return true;
 	}
 	public MapLocation findBestBuildLocation(RobotType type) throws GameActionException {
-		MapLocation currentLocation = controller.getLocation();
+		MapLocation currentLocation = Cache.CURRENT_LOCATION;
 		MapLocation bestLocation = null;
 		int bestDistanceSquared = Integer.MAX_VALUE;
 		// Do not consider the location where the unit currently is (starts at i = 1)

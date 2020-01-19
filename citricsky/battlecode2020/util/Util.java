@@ -14,7 +14,7 @@ public class Util {
 		SharedInfo.init(controller);
 		Communication.init(controller);
 		CommunicationProcessor.init(controller);
-		if (!controller.getType().isBuilding()) {
+		if (!Cache.ROBOT_TYPE.isBuilding()) {
 			Pathfinding.init(controller);
 			UnitsMap.init(controller);
 		}
@@ -31,7 +31,7 @@ public class Util {
 			}
 			EnemyHQGuesser.loop();
 		}
-		if (!controller.getType().isBuilding()) {
+		if (!Cache.ROBOT_TYPE.isBuilding()) {
 			UnitsMap.loop();
 		}
 	}
@@ -111,14 +111,14 @@ public class Util {
 	 * Whether the given direction is flooding
 	 */
 	public static boolean isFlooding(Direction direction) throws GameActionException {
-		return isFlooding(controller.getLocation().add(direction));
+		return isFlooding(Cache.CURRENT_LOCATION.add(direction));
 	}
 	public static boolean isFlooding(MapLocation location) throws GameActionException {
 		return controller.canSenseLocation(location) && controller.senseFlooding(location);
 	}
 	public static boolean isBlocked(MapLocation location) throws GameActionException {
 		return !onTheMap(location) || UnitsMap.hasBlockingUnit(location) ||
-				(controller.getType() != RobotType.DELIVERY_DRONE && isFlooding(location));
+				(Cache.ROBOT_TYPE != RobotType.DELIVERY_DRONE && isFlooding(location));
 	}
 	public static boolean canSafeMove(Direction direction) throws GameActionException {
 		return controller.canMove(direction) && (!isFlooding(direction));
@@ -134,7 +134,7 @@ public class Util {
 		return trySafeBuildTowards(type, location);
 	}
 	public static boolean trySafeBuildTowards(RobotType type, MapLocation location) throws GameActionException {
-		for (Direction direction : Util.getAttemptOrder(controller.getLocation().directionTo(location))) {
+		for (Direction direction : Util.getAttemptOrder(Cache.CURRENT_LOCATION.directionTo(location))) {
 			if (Util.canSafeBuildRobot(type, direction)) {
 				controller.buildRobot(type, direction);
 				return true;
@@ -269,7 +269,7 @@ public class Util {
 		}
 	}
 	public static boolean tryShootDrone() throws GameActionException {
-		RobotInfo[] enemies = controller.senseNearbyRobots(controller.getLocation(),
+		RobotInfo[] enemies = controller.senseNearbyRobots(Cache.CURRENT_LOCATION,
 				GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED, controller.getTeam().opponent());
 		for (RobotInfo enemy : enemies) {
 			int enemyId = enemy.getID();

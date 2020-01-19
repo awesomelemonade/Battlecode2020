@@ -49,7 +49,7 @@ public class DesignSchoolBot implements RunnableBot {
 					}
 				}
 			}
-			MapLocation currentLocation = controller.getLocation();
+			MapLocation currentLocation = Cache.CURRENT_LOCATION;
 			MapLocation location = SharedInfo.getEnemyHQLocation();
 			if (location == null) {
 				location = Cache.MAP_CENTER_LOCATION;

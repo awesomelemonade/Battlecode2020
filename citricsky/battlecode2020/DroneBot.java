@@ -23,7 +23,7 @@ public class DroneBot implements RunnableBot {
 		if (!controller.isReady()) {
 			return;
 		}
-		MapLocation currentLocation = controller.getLocation();
+		MapLocation currentLocation = Cache.CURRENT_LOCATION;
 		if (controller.isCurrentlyHoldingUnit()) {
 			// Find adjacent water
 			if (controller.canSenseRadiusSquared(Util.ADJACENT_DISTANCE_SQUARED)) {
@@ -81,7 +81,7 @@ public class DroneBot implements RunnableBot {
 				// Cannot pick up
 				continue;
 			}
-			int distanceSquared = controller.getLocation().distanceSquaredTo(enemy.getLocation());
+			int distanceSquared = Cache.CURRENT_LOCATION.distanceSquaredTo(enemy.getLocation());
 			if (best == null || priority > bestPriority || (priority == bestPriority && distanceSquared < bestDistanceSquared)) {
 				best = enemy;
 				bestPriority = priority;

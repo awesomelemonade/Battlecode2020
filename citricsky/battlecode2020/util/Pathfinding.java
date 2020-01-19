@@ -17,7 +17,7 @@ public class Pathfinding {
 			lastTarget = target;
 			visitedSet.reset();
 		}
-		MapLocation currentLocation = controller.getLocation();
+		MapLocation currentLocation = Cache.CURRENT_LOCATION;
 		controller.setIndicatorLine(currentLocation, target, 0, 255, 0);
 		if (!controller.isReady()) {
 			return;
@@ -53,16 +53,21 @@ public class Pathfinding {
 		}
 	}
 	public static boolean naiveMove(Direction direction) throws GameActionException {
-		MapLocation location = controller.getLocation().add(direction);
-		if (!checkDirtDifference(location)) {
-			return false;
-		}
+		MapLocation location = Cache.CURRENT_LOCATION.add(direction);
 		if (Util.isBlocked(location)) {
 			return false;
 		}
-		if (controller.getType() != RobotType.DELIVERY_DRONE && LatticeUtil.isPit(location)) {
+		if (Cache.ROBOT_TYPE != RobotType.DELIVERY_DRONE && LatticeUtil.isPit(location)) {
 			// TODO - Miners do not need to avoid pits all the time
 			return false;
+		}
+		if (!checkDirtDifference(location)) {
+			if (Cache.ROBOT_TYPE == RobotType.LANDSCAPER) {
+				// TODO: Try terraform
+				return false;
+			} else {
+				return false;
+			}
 		}
 		if (controller.canMove(direction)) {
 			controller.move(direction);
@@ -70,13 +75,13 @@ public class Pathfinding {
 		return true;
 	}
 	private static boolean checkDirtDifference(MapLocation location) throws GameActionException {
-		if (controller.getType() == RobotType.DELIVERY_DRONE) {
+		if (Cache.ROBOT_TYPE == RobotType.DELIVERY_DRONE) {
 			return true;
 		}
 		if (!controller.canSenseLocation(location)) {
 			return false;
 		}
-		return Math.abs(controller.senseElevation(controller.getLocation()) -
+		return Math.abs(controller.senseElevation(Cache.CURRENT_LOCATION) -
 				controller.senseElevation(location)) <= GameConstants.MAX_DIRT_DIFFERENCE;
 	}
 }

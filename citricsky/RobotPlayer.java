@@ -4,6 +4,7 @@ import battlecode.common.Clock;
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 import citricsky.battlecode2020.*;
+import citricsky.battlecode2020.util.Cache;
 import citricsky.battlecode2020.util.Util;
 
 public class RobotPlayer {
@@ -52,14 +53,14 @@ public class RobotPlayer {
 				Util.postLoop();
 				if (controller.getRoundNum() != currentTurn) {
 					// We ran out of bytecodes! - MAGENTA
-					controller.setIndicatorDot(controller.getLocation(), 255, 0, 255);
+					controller.setIndicatorDot(Cache.CURRENT_LOCATION, 255, 0, 255);
 				}
 				Clock.yield();
 			}
 		} catch (Exception ex) {
 			int counter = 0;
 			while (true) {
-				controller.setIndicatorDot(controller.getLocation(), 255, 0, 0);
+				controller.setIndicatorDot(Cache.CURRENT_LOCATION, 255, 0, 0);
 				if (counter < 10) {
 					ex.printStackTrace();
 				}

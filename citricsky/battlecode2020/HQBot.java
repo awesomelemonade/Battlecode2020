@@ -21,7 +21,7 @@ public class HQBot implements RunnableBot {
 	}
 	@Override
 	public void init() throws GameActionException {
-		MapLocation currentLocation = controller.getLocation();
+		MapLocation currentLocation = Cache.CURRENT_LOCATION;
 		for (int i = 0; i < Util.FLOOD_FILL_DX.length; i++) {
 			int dx = Util.FLOOD_FILL_DX[i];
 			int dy = Util.FLOOD_FILL_DY[i];
@@ -36,7 +36,7 @@ public class HQBot implements RunnableBot {
 	}
 	@Override
 	public void turn() throws GameActionException {
-		MapLocation currentLocation = controller.getLocation();
+		MapLocation currentLocation = Cache.CURRENT_LOCATION;
 		// Calculates state
 		int state;
 		if (Cache.ALL_NEARBY_ENEMY_ROBOTS.length > 0) {
