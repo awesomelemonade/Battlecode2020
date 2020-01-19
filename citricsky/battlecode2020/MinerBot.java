@@ -262,34 +262,42 @@ public class MinerBot implements RunnableBot {
 			if (teamSoup < RobotType.DESIGN_SCHOOL.cost) {
 				break designSchool;
 			}
+			// Loop through enemy units - we should be saving for net guns instead if we see an enemy drone
 			boolean seeHQ = false;
+			boolean seeDesignSchool = false;
+			boolean seeFulfillmentCenter = false;
 			for (RobotInfo robot : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
-				if (robot.getType() == RobotType.DELIVERY_DRONE) {
-					// We should be building net gun instead
-					//break designSchool;
-				}
-				if (robot.getType() == RobotType.DESIGN_SCHOOL &&
-						isValidDesignSchoolLocation(robot.getLocation())) {
-					break designSchool;
-				}
-				if (robot.getType() == RobotType.HQ) {
-					seeHQ = true;
+				switch (robot.getType()) {
+					case DESIGN_SCHOOL:
+						if (isValidDesignSchoolLocation(robot.getLocation())) {
+							seeDesignSchool = true;
+						}
+						break;
+					case FULFILLMENT_CENTER:
+						seeFulfillmentCenter = true;
+						break;
+					case HQ:
+						seeHQ = true;
+						break;
 				}
 			}
-			// If we see enemies near our hq, we should build one asap to defend
-			if (!(seeHQ && Cache.ALL_NEARBY_ENEMY_ROBOTS.length > 0)) {
-				// If we have too much soup, we might as well create em
-				if (teamSoup < 2 * RobotType.VAPORATOR.cost) {
-					// If we have little soup, don't spawn unless we haven't spawned one yet
-					if (spawnedDesignSchool) {
-						break designSchool;
+			if (!seeDesignSchool) {
+				// If we see enemies near our hq, we should build one asap to defend
+				if (!(seeHQ && Cache.ALL_NEARBY_ENEMY_ROBOTS.length > 0)) {
+					// If we have too much soup, we might as well create em
+					if (teamSoup < 2 * RobotType.VAPORATOR.cost) {
+						// If we have little soup, don't spawn unless we haven't spawned one yet
+						if (spawnedDesignSchool) {
+							break designSchool;
+						}
 					}
 				}
+				if (teamSoup >= RobotType.DESIGN_SCHOOL.cost + 20) {
+					return RobotType.DESIGN_SCHOOL;
+				}
 			}
-			if (spawnedDesignSchool && Math.random() < 0.2) {
+			if (!seeFulfillmentCenter && teamSoup >= RobotType.FULFILLMENT_CENTER.cost + 70) {
 				return RobotType.FULFILLMENT_CENTER;
-			} else {
-				return RobotType.DESIGN_SCHOOL;
 			}
 		}
 		return null;

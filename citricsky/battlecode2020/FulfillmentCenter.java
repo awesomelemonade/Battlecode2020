@@ -2,6 +2,8 @@ package citricsky.battlecode2020;
 
 import battlecode.common.*;
 import citricsky.RunnableBot;
+import citricsky.battlecode2020.util.Cache;
+import citricsky.battlecode2020.util.SharedInfo;
 import citricsky.battlecode2020.util.Util;
 
 public class FulfillmentCenter implements RunnableBot {
@@ -16,7 +18,12 @@ public class FulfillmentCenter implements RunnableBot {
 	}
 	@Override
 	public void turn() throws GameActionException {
-		if (spawnCount > 0 && controller.getRoundNum() < 1000) {
+		if (SharedInfo.getOurHQState() == HQBot.NEEDS_HELP) {
+			// If hq is in distress, we should probably build landscapers instead
+			return;
+		}
+		if (Cache.ALL_NEARBY_ENEMY_ROBOTS.length == 0 &&
+				spawnCount > 0 && controller.getRoundNum() < 1000) {
 			return;
 		}
 		if (Util.trySafeBuildTowardsEnemyHQ(RobotType.DELIVERY_DRONE)) {
