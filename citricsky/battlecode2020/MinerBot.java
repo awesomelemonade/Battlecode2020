@@ -27,12 +27,12 @@ public class MinerBot implements RunnableBot {
 		}
 		MapLocation currentLocation = controller.getLocation();
 
-		// See if we should build design school
-		if (tryBuildVaporator()) {
-			return;
-		}
-		if (tryBuildDesignSchool()) {
-			return;
+		// See if we should build anything
+		RobotType buildTarget = getBuildTypeTarget();
+		if (buildTarget != null) {
+			if (tryBuildAtBestLocation(buildTarget)) {
+				return;
+			}
 		}
 		if (controller.getSoupCarrying() < RobotType.MINER.soupLimit) {
 			System.out.println("not enough soup :(");
@@ -154,6 +154,11 @@ public class MinerBot implements RunnableBot {
 		return null;
 	}
 	private boolean spawnedDesignSchool = false;
+	public void onBuildRobot(RobotType type) {
+		if (type == RobotType.DESIGN_SCHOOL) {
+			spawnedDesignSchool = true;
+		}
+	}
 	public boolean willNotGetFloodedSoon(MapLocation location) throws GameActionException {
 		if (controller.canSenseLocation(location)) {
 			int turnsToFlooded = Util.getTurnsToFlooded(controller.senseElevation(location));
@@ -161,11 +166,30 @@ public class MinerBot implements RunnableBot {
 		}
 		return false;
 	}
-	public MapLocation findBestBuildLocation() throws GameActionException {
+	public boolean tryBuildAtBestLocation(RobotType type) throws GameActionException {
+		MapLocation location = findBestBuildLocation(type);
+		if (location == null) {
+			return false;
+		}
+		MapLocation currentLocation = controller.getLocation();
+		if (currentLocation.isAdjacentTo(location)) {
+			// Build
+			Direction direction = currentLocation.directionTo(location);
+			if (controller.canBuildRobot(type, direction)) {
+				controller.buildRobot(type, direction);
+				onBuildRobot(type);
+			}
+		} else {
+			Pathfinding.execute(location);
+		}
+		return true;
+	}
+	public MapLocation findBestBuildLocation(RobotType type) throws GameActionException {
 		MapLocation currentLocation = controller.getLocation();
 		MapLocation bestLocation = null;
 		int bestDistanceSquared = Integer.MAX_VALUE;
-		for (int i = 0; i < Util.FLOOD_FILL_DX.length; i++) {
+		// Do not consider the location where the unit currently is (starts at i = 1)
+		for (int i = 1; i < Util.FLOOD_FILL_DX.length; i++) {
 			int dx = Util.FLOOD_FILL_DX[i];
 			int dy = Util.FLOOD_FILL_DY[i];
 			MapLocation location = currentLocation.translate(dx, dy);
@@ -178,46 +202,27 @@ public class MinerBot implements RunnableBot {
 			int distanceSquared = hqLocation.distanceSquaredTo(location);
 			if (distanceSquared < bestDistanceSquared && distanceSquared > Util.ADJACENT_DISTANCE_SQUARED &&
 					LatticeUtil.isBuildLocation(location) && willNotGetFloodedSoon(location)) {
-				// TODO - check whether this location is occupied
-				bestDistanceSquared = distanceSquared;
-				bestLocation = location;
+				// Check for elevation difference
+				if (type != RobotType.DESIGN_SCHOOL || isValidDesignSchoolLocation(location)) {
+					RobotInfo robot = controller.senseRobotAtLocation(location);
+					if (robot != null) {
+						bestDistanceSquared = distanceSquared;
+						bestLocation = location;
+					}
+				}
 			}
 		}
 		return bestLocation;
 	}
-	public boolean tryBuildVaporator() throws GameActionException {
-		if (Cache.ALL_NEARBY_ENEMY_ROBOTS.length > 0) {
-			// Don't build vaporator when you see enemies
+	public boolean isValidDesignSchoolLocation(MapLocation buildingLocation) throws GameActionException {
+		if (!controller.canSenseLocation(buildingLocation)) {
 			return false;
 		}
-		int teamSoup = controller.getTeamSoup();
-		if (teamSoup < RobotType.VAPORATOR.cost || teamSoup > RobotType.VAPORATOR.cost * 2) {
-			return false;
-		}
-		Direction idealDirection = controller.getLocation().directionTo(hqLocation);
-		for (Direction direction : Util.getAttemptOrder(idealDirection)) {
-			MapLocation location = controller.getLocation().add(direction);
-			if (hqLocation.isWithinDistanceSquared(location, 2)) {
-				continue;
-			}
-			if (LatticeUtil.isBuildLocation(location) && willNotGetFloodedSoon(location)) {
-				if (Util.canSafeBuildRobot(RobotType.VAPORATOR, direction)) {
-					controller.buildRobot(RobotType.VAPORATOR, direction);
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-	public boolean isValidDesignSchoolLocation(MapLocation robotLocation) throws GameActionException {
-		if (!controller.canSenseLocation(robotLocation)) {
-			return false;
-		}
-		int elevation = controller.senseElevation(robotLocation);
+		int elevation = controller.senseElevation(buildingLocation);
 		// Design schools can only spawn landscapers in cardinal directions
 		// Because the ordinal directions will be lattice pits
 		for (Direction direction : Util.CARDINAL_DIRECTIONS) {
-			MapLocation location = robotLocation.add(direction);
+			MapLocation location = buildingLocation.add(direction);
 			if (!controller.canSenseLocation(location)) {
 				return false;
 			}
@@ -228,50 +233,45 @@ public class MinerBot implements RunnableBot {
 		}
 		return false;
 	}
-	public boolean tryBuildDesignSchool() throws GameActionException {
-		boolean seeHQ = false;
-		for (RobotInfo robot : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
-			if (robot.getType() == RobotType.DESIGN_SCHOOL &&
-					isValidDesignSchoolLocation(robot.getLocation())) {
-				return false;
+	public RobotType getBuildTypeTarget() throws GameActionException {
+		vaporator: {
+			if (Cache.ALL_NEARBY_ENEMY_ROBOTS.length > 0) {
+				// Don't build vaporator when you see enemies
+				break vaporator;
 			}
-			if (robot.getType() == RobotType.HQ) {
-				seeHQ = true;
+			int teamSoup = controller.getTeamSoup();
+			if (teamSoup < RobotType.VAPORATOR.cost || teamSoup > RobotType.VAPORATOR.cost * 2) {
+				break vaporator;
 			}
+			return RobotType.VAPORATOR;
 		}
-		// If we see enemies near our hq, we should build one asap to defend
-		if (!(seeHQ && Cache.ALL_NEARBY_ENEMY_ROBOTS.length > 0)) {
-			// If we have too much soup, we might as well create em
-			if (controller.getTeamSoup() < 2 * RobotType.VAPORATOR.cost) {
-				// If we have little soup, don't spawn unless we haven't spawned one yet
-				if (spawnedDesignSchool) {
-					return false;
+		designSchool: {
+			boolean seeHQ = false;
+			for (RobotInfo robot : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
+				if (robot.getType() == RobotType.DESIGN_SCHOOL &&
+						isValidDesignSchoolLocation(robot.getLocation())) {
+					break designSchool;
+				}
+				if (robot.getType() == RobotType.HQ) {
+					seeHQ = true;
 				}
 			}
-		}
-		Direction idealDirection = controller.getLocation().directionTo(hqLocation);
-		for (Direction direction : Util.getAttemptOrder(idealDirection)) {
-			MapLocation location = controller.getLocation().add(direction);
-			if (hqLocation.isWithinDistanceSquared(location, 2)) {
-				continue;
-			}
-			if (LatticeUtil.isBuildLocation(location) && willNotGetFloodedSoon(location) &&
-					isValidDesignSchoolLocation(location)) {
-				if (spawnedDesignSchool) {
-					if (Math.random() < 0.2) {
-						if (Util.canSafeBuildRobot(RobotType.FULFILLMENT_CENTER, direction)) {
-							controller.buildRobot(RobotType.FULFILLMENT_CENTER, direction);
-							return true;
-						}
+			// If we see enemies near our hq, we should build one asap to defend
+			if (!(seeHQ && Cache.ALL_NEARBY_ENEMY_ROBOTS.length > 0)) {
+				// If we have too much soup, we might as well create em
+				if (controller.getTeamSoup() < 2 * RobotType.VAPORATOR.cost) {
+					// If we have little soup, don't spawn unless we haven't spawned one yet
+					if (spawnedDesignSchool) {
+						break designSchool;
 					}
 				}
-				if (Util.canSafeBuildRobot(RobotType.DESIGN_SCHOOL, direction)) {
-					controller.buildRobot(RobotType.DESIGN_SCHOOL, direction);
-					spawnedDesignSchool = true;
-					return true;
-				}
+			}
+			if (spawnedDesignSchool && Math.random() < 0.2) {
+				return RobotType.FULFILLMENT_CENTER;
+			} else {
+				return RobotType.DESIGN_SCHOOL;
 			}
 		}
-		return false;
+		return null;
 	}
 }
