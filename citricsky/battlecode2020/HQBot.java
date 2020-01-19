@@ -44,7 +44,7 @@ public class HQBot implements RunnableBot {
 				boolean allNeighborsOccupied = true;
 				for (Direction direction : Util.ADJACENT_DIRECTIONS) {
 					MapLocation location = currentLocation.add(direction);
-					if (!controller.isLocationOccupied(location)) {
+					if (controller.onTheMap(location) && !controller.isLocationOccupied(location)) {
 						allNeighborsOccupied = false;
 						break;
 					}

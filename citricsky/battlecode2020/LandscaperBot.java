@@ -72,13 +72,15 @@ public class LandscaperBot implements RunnableBot {
 		if (controller.canSenseRadiusSquared(Util.ADJACENT_DISTANCE_SQUARED)) {
 			for (Direction direction : Util.ADJACENT_DIRECTIONS) {
 				MapLocation location = currentLocation.add(direction);
-				RobotInfo robot = controller.senseRobotAtLocation(location);
-				if (robot != null && robot.getTeam() == Cache.OPPONENT_TEAM && robot.getType().isBuilding()) {
-					if (controller.canDepositDirt(direction)) {
-						controller.depositDirt(direction);
+				if (Util.onTheMap(location)) {
+					RobotInfo robot = controller.senseRobotAtLocation(location);
+					if (robot != null && robot.getTeam() == Cache.OPPONENT_TEAM && robot.getType().isBuilding()) {
+						if (controller.canDepositDirt(direction)) {
+							controller.depositDirt(direction);
+						}
+						tryDigFromPit();
+						return true;
 					}
-					tryDigFromPit();
-					return true;
 				}
 			}
 		}
@@ -100,8 +102,18 @@ public class LandscaperBot implements RunnableBot {
 			if (controller.canDigDirt(direction)) {
 				controller.digDirt(direction);
 			} else {
-				// Try deposit towards pit
-				tryDepositToPit();
+				int upperTargetElevation = getRealTargetElevation() + GameConstants.MAX_DIRT_DIFFERENCE;
+				int elevation = controller.senseElevation(currentLocation);
+				// Try deposit up to upperTargetElevation
+				if (elevation < upperTargetElevation) {
+					if (controller.canDepositDirt(Direction.CENTER)) {
+						controller.depositDirt(Direction.CENTER);
+					} else {
+						tryDigFromPit();
+					}
+				} else {
+					tryDepositToPit();
+				}
 			}
 			return true;
 		} else {
@@ -182,13 +194,16 @@ public class LandscaperBot implements RunnableBot {
 		}
 		return bestEnemy;
 	}
+	public int getRealTargetElevation() {
+		return (this.targetElevation - this.targetElevation % 3) + 5;
+	}
 	public boolean tryTerraform() throws GameActionException {
 		MapLocation currentLocation = controller.getLocation();
 		MapLocation ourLocationHQ = SharedInfo.getOurHQLocation();
 		if (ourLocationHQ == null) {
 			return false;
 		}
-		int targetElevation = (this.targetElevation - this.targetElevation % 3) + 5;;
+		int targetElevation = getRealTargetElevation();
 		int upperTargetElevation = targetElevation + GameConstants.MAX_DIRT_DIFFERENCE;
 		MapLocation bestLocation = null;
 		int bestDistanceSquared = Integer.MAX_VALUE;

@@ -6,6 +6,7 @@ import citricsky.battlecode2020.util.Util;
 
 public class FulfillmentCenter implements RunnableBot {
 	private RobotController controller;
+	private int spawnCount = 0;
 	public FulfillmentCenter(RobotController controller) {
 		this.controller = controller;
 	}
@@ -15,6 +16,11 @@ public class FulfillmentCenter implements RunnableBot {
 	}
 	@Override
 	public void turn() throws GameActionException {
-		Util.trySafeBuildTowardsEnemyHQ(RobotType.DELIVERY_DRONE);
+		if (spawnCount > 0 && controller.getRoundNum() < 1000) {
+			return;
+		}
+		if (Util.trySafeBuildTowardsEnemyHQ(RobotType.DELIVERY_DRONE)) {
+			spawnCount++;
+		}
 	}
 }

@@ -25,8 +25,20 @@ public class DroneBot implements RunnableBot {
 		}
 		MapLocation currentLocation = controller.getLocation();
 		if (controller.isCurrentlyHoldingUnit()) {
+			// Find adjacent water
+			if (controller.canSenseRadiusSquared(Util.ADJACENT_DISTANCE_SQUARED)) {
+				for (Direction direction : Util.ADJACENT_DIRECTIONS) {
+					MapLocation location = currentLocation.add(direction);
+					if (Util.onTheMap(location) && controller.senseFlooding(location)) {
+						if (controller.canDropUnit(direction)) {
+							controller.dropUnit(direction);
+							return;
+						}
+					}
+				}
+			}
 			// Find Water
-			for (int i = 0; i < Util.FLOOD_FILL_DX.length; i++) {
+			for (int i = 1; i < Util.FLOOD_FILL_DX.length; i++) { // Don't look for water directly underneath
 				int dx = Util.FLOOD_FILL_DX[i];
 				int dy = Util.FLOOD_FILL_DY[i];
 				MapLocation location = currentLocation.translate(dx, dy);
@@ -38,14 +50,7 @@ public class DroneBot implements RunnableBot {
 				}
 				if (controller.senseFlooding(location)) {
 					// Move towards location
-					if (currentLocation.isAdjacentTo(location)) {
-						Direction direction = currentLocation.directionTo(location);
-						if (controller.canDropUnit(direction)) {
-							controller.dropUnit(direction);
-						}
-					} else {
-						Pathfinding.execute(location);
-					}
+					Pathfinding.execute(location);
 					return;
 				}
 			}
