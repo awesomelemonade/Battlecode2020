@@ -27,35 +27,52 @@ public class LandscaperBot implements RunnableBot {
 				Util::randomExplore
 		};
 	}
+
 	public boolean tryDefend() throws GameActionException {
+		int ourHQState = SharedInfo.getOurHQState();
 		MapLocation currentLocation = controller.getLocation();
 		MapLocation ourHQLocation = SharedInfo.getOurHQLocation();
 		if (ourHQLocation == null) {
 			return false;
 		}
-		// Bury nearest building if it is near HQ
-		boolean enemyNearby = false;
-		RobotInfo bestEnemy = null;
-		int bestDistanceSquared = Integer.MAX_VALUE;
-		for (RobotInfo enemy : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
-			MapLocation location = enemy.getLocation();
-			if (location.isWithinDistanceSquared(ourHQLocation, RobotType.HQ.sensorRadiusSquared)) {
-				enemyNearby = true;
-				if (enemy.getType().isBuilding()) {
-					int distanceSquared = currentLocation.distanceSquaredTo(location);
-					if (distanceSquared < bestDistanceSquared) {
-						bestDistanceSquared = distanceSquared;
-						bestEnemy = enemy;
+		if (ourHQState == HQBot.NO_HELP_NEEDED) {
+			return false;
+		}
+		if (currentLocation.isAdjacentTo(ourHQLocation)) {
+			// Try dig towards HQ
+			Direction direction = currentLocation.directionTo(ourHQLocation);
+			if (controller.canDigDirt(direction)) {
+				controller.digDirt(direction);
+			} else {
+				// Try deposit towards pit
+				tryDepositToPit();
+			}
+			return true;
+		} else {
+			if (ourHQState == HQBot.NO_ADDITIONAL_HELP_NEEDED) {
+				// Bury nearest building if it is near HQ
+				RobotInfo bestEnemy = null;
+				int bestDistanceSquared = Integer.MAX_VALUE;
+				for (RobotInfo enemy : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
+					MapLocation location = enemy.getLocation();
+					if (location.isWithinDistanceSquared(ourHQLocation, RobotType.HQ.sensorRadiusSquared)) {
+						if (enemy.getType().isBuilding()) {
+							int distanceSquared = currentLocation.distanceSquaredTo(location);
+							if (distanceSquared < bestDistanceSquared) {
+								bestDistanceSquared = distanceSquared;
+								bestEnemy = enemy;
+							}
+						}
 					}
 				}
+				if (bestEnemy != null) {
+					return tryGoToAttack(bestEnemy.getLocation());
+				}
+			} else { // if (ourHQState == HQBot.NEEDS_HELP)
+				// Pathfind towards our hq
+				Pathfinding.execute(ourHQLocation);
+				return true;
 			}
-		}
-		if (bestEnemy != null) {
-			return tryGoToAttack(bestEnemy.getLocation());
-		}
-		// Then go towards our HQ if there are enemies nearby
-		if (enemyNearby) {
-			return tryGoToHeal(ourHQLocation);
 		}
 		return false;
 	}
@@ -86,20 +103,6 @@ public class LandscaperBot implements RunnableBot {
 					return true;
 				}
 			}
-		}
-		return false;
-	}
-	public boolean tryGoToHeal(MapLocation location) throws GameActionException {
-		// TODO: Consider depositing dirt if full?
-		if (controller.getLocation().isAdjacentTo(location)) {
-			Direction direction = controller.getLocation().directionTo(location);
-			if (controller.canDigDirt(direction)) {
-				controller.digDirt(direction);
-				return true;
-			}
-		} else {
-			Pathfinding.execute(location);
-			return true;
 		}
 		return false;
 	}
@@ -209,12 +212,7 @@ public class LandscaperBot implements RunnableBot {
 			if (controller.canDepositDirt(direction)) {
 				controller.depositDirt(direction);
 			} else {
-				for (Direction pitDirection : LatticeUtil.getPitDirections(currentLocation)) {
-					if (controller.canDigDirt(pitDirection)) {
-						controller.digDirt(pitDirection);
-						break;
-					}
-				}
+				tryDigFromPit();
 			}
 		} else {
 			Pathfinding.execute(location);
@@ -227,15 +225,27 @@ public class LandscaperBot implements RunnableBot {
 			if (controller.canDigDirt(direction)) {
 				controller.digDirt(direction);
 			} else {
-				for (Direction pitDirection : LatticeUtil.getPitDirections(currentLocation)) {
-					if (controller.canDepositDirt(pitDirection)) {
-						controller.depositDirt(pitDirection);
-						break;
-					}
-				}
+				tryDepositToPit();
 			}
 		} else {
 			Pathfinding.execute(location);
+		}
+	}
+	public void tryDigFromPit() throws GameActionException {
+		for (Direction pitDirection : LatticeUtil.getPitDirections(controller.getLocation())) {
+			if (controller.canDigDirt(pitDirection)) {
+				controller.digDirt(pitDirection);
+				break;
+			}
+		}
+	}
+	public boolean tryDepositToPit() throws GameActionException {
+		for (Direction pitDirection : LatticeUtil.getPitDirections(controller.getLocation())) {
+			MapLocation location = controller.getLocation().add(pitDirection);
+			if (controller.canDepositDirt(pitDirection) && (!location.equals(SharedInfo.getOurHQLocation()))) {
+				controller.depositDirt(pitDirection);
+				break;
+			}
 		}
 	}
 }

@@ -1,10 +1,12 @@
 package citricsky.battlecode2020.util;
 
 import battlecode.common.*;
+import citricsky.battlecode2020.HQBot;
 
 public class SharedInfo {
 	public static final int TRANSACTION_COST = 3;
 
+	private static final int OURHQ_STATE_SIGNATURE = 8963124;
 	private static final int ENEMYHQ_SIGNATURE = 2130985;
 	private static final int ENEMYHQ_MODE_SIGNATURE = 415912;
 	private static final int OURHQ_SIGNATURE = 51351235;
@@ -15,7 +17,7 @@ public class SharedInfo {
 	private static int ourHQParityY = -1;
 	private static MapLocation enemyHQLocation;
 	private static int enemyHQGuesserMode = EnemyHQGuesser.UNKNOWN_MODE;
-
+	private static int ourHQState = HQBot.NO_HELP_NEEDED;
 
 	public static void init(RobotController controller) {
 		SharedInfo.controller = controller;
@@ -45,22 +47,27 @@ public class SharedInfo {
 		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
 	}
-
+	public static void sendOurHQState(int state) {
+		setOurHQState(state);
+		int[] message = new int[] {
+				OURHQ_STATE_SIGNATURE, 0, 0, 0, 0, state, controller.getRoundNum()
+		};
+		Communication.encryptMessage(message);
+		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
+	}
 	public static void processMessage(int[] message) {
 		switch(message[0]) {
 			case ENEMYHQ_SIGNATURE:
-				int x = message[4];
-				int y = message[5];
-				setEnemyHQLocation(new MapLocation(x, y));
+				setEnemyHQLocation(new MapLocation(message[4], message[5]));
 				break;
 			case OURHQ_SIGNATURE:
-				int x2 = message[4];
-				int y2 = message[5];
-				setOurHQLocation(new MapLocation(x2, y2));
+				setOurHQLocation(new MapLocation(message[4], message[5]));
 				break;
 			case ENEMYHQ_MODE_SIGNATURE:
-				int mode = message[5];
-				setEnemyHQGuesserMode(mode);
+				setEnemyHQGuesserMode(message[5]);
+				break;
+			case OURHQ_STATE_SIGNATURE:
+				setOurHQState(message[5]);
 				break;
 		}
 	}
@@ -90,5 +97,11 @@ public class SharedInfo {
 	}
 	public static int getEnemyHQGuesserMode() {
 		return enemyHQGuesserMode;
+	}
+	private static void setOurHQState(int state) {
+		ourHQState = state;
+	}
+	public static int getOurHQState() {
+		return ourHQState;
 	}
 }

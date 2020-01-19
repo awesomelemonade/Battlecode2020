@@ -2,13 +2,19 @@ package citricsky.battlecode2020;
 
 import battlecode.common.*;
 import citricsky.RunnableBot;
+import citricsky.battlecode2020.util.Cache;
 import citricsky.battlecode2020.util.SharedInfo;
 import citricsky.battlecode2020.util.Util;
 
 public class HQBot implements RunnableBot {
+	public static final int NO_HELP_NEEDED = 0;
+	public static final int NO_ADDITIONAL_HELP_NEEDED = 1;
+	public static final int NEEDS_HELP = 2;
 	private RobotController controller;
 	private int spawnCount;
 	private int initialSoupCount = 0;
+
+
 	public HQBot(RobotController controller) {
 		this.controller = controller;
 		this.spawnCount = 0;
@@ -30,10 +36,26 @@ public class HQBot implements RunnableBot {
 	}
 	@Override
 	public void turn() throws GameActionException {
+		MapLocation currentLocation = controller.getLocation();
+		// Calculates state
+		int state;
+		if (Cache.ALL_NEARBY_ENEMY_ROBOTS.length > 0) {
+			int count = 0;
+			for (RobotInfo robot : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
+				if (robot.getLocation().isAdjacentTo(currentLocation)) {
+					count++;
+				}
+			}
+			state = count >= 4 ? NO_ADDITIONAL_HELP_NEEDED : NEEDS_HELP;
+		} else {
+			state = NO_HELP_NEEDED;
+		}
+		if (SharedInfo.getOurHQState() != state) {
+			SharedInfo.sendOurHQState(state);
+		}
 		if (!controller.isReady()) {
 			return;
 		}
-		MapLocation currentLocation = controller.getLocation();
 		if (Util.tryShootDrone()) {
 			return;
 		}
