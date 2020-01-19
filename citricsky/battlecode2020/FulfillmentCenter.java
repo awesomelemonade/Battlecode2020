@@ -22,12 +22,22 @@ public class FulfillmentCenter implements RunnableBot {
 			// If hq is in distress, we should probably build landscapers instead
 			return;
 		}
-		if (Cache.ALL_NEARBY_ENEMY_ROBOTS.length == 0 &&
-				spawnCount > 0 && controller.getRoundNum() < 1000) {
+		if (Cache.ALL_NEARBY_ENEMY_ROBOTS.length == 0 && controller.getRoundNum() < 1000) {
+			return;
+		}
+		if (seeEnemyNetGun()) {
 			return;
 		}
 		if (Util.trySafeBuildTowardsEnemyHQ(RobotType.DELIVERY_DRONE)) {
 			spawnCount++;
 		}
+	}
+	public boolean seeEnemyNetGun() {
+		for (RobotInfo robot : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
+			if (robot.getType() == RobotType.NET_GUN) {
+				return true;
+			}
+		}
+		return false;
 	}
 }
