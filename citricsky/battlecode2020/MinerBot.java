@@ -138,7 +138,8 @@ public class MinerBot implements RunnableBot {
 			// Don't build vaporator when you see enemies
 			return false;
 		}
-		if (controller.getTeamSoup() < RobotType.VAPORATOR.cost) {
+		int teamSoup = controller.getTeamSoup();
+		if (teamSoup < RobotType.VAPORATOR.cost || teamSoup > RobotType.VAPORATOR.cost * 2) {
 			return false;
 		}
 		Direction idealDirection = controller.getLocation().directionTo(SharedInfo.getOurHQLocation());

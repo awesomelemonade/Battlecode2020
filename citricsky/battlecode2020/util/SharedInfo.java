@@ -21,10 +21,6 @@ public class SharedInfo {
 		SharedInfo.controller = controller;
 		EnemyHQGuesser.init(controller);
 	}
-	private static void checkEnemyHQLocation() {
-		// TODO: Remove
-
-	}
 	public static void sendEnemyHQ(MapLocation location) {
 		setEnemyHQLocation(location);
 		int[] message = new int[] {
