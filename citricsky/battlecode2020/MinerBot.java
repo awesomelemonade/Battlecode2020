@@ -161,6 +161,30 @@ public class MinerBot implements RunnableBot {
 		}
 		return false;
 	}
+	public MapLocation findBestBuildLocation() throws GameActionException {
+		MapLocation currentLocation = controller.getLocation();
+		MapLocation bestLocation = null;
+		int bestDistanceSquared = Integer.MAX_VALUE;
+		for (int i = 0; i < Util.FLOOD_FILL_DX.length; i++) {
+			int dx = Util.FLOOD_FILL_DX[i];
+			int dy = Util.FLOOD_FILL_DY[i];
+			MapLocation location = currentLocation.translate(dx, dy);
+			if (!Util.onTheMap(location)) {
+				continue;
+			}
+			if (!controller.canSenseLocation(location)) {
+				break;
+			}
+			int distanceSquared = hqLocation.distanceSquaredTo(location);
+			if (distanceSquared < bestDistanceSquared && distanceSquared > Util.ADJACENT_DISTANCE_SQUARED &&
+					LatticeUtil.isBuildLocation(location) && willNotGetFloodedSoon(location)) {
+				// TODO - check whether this location is occupied
+				bestDistanceSquared = distanceSquared;
+				bestLocation = location;
+			}
+		}
+		return bestLocation;
+	}
 	public boolean tryBuildVaporator() throws GameActionException {
 		if (Cache.ALL_NEARBY_ENEMY_ROBOTS.length > 0) {
 			// Don't build vaporator when you see enemies
@@ -170,11 +194,7 @@ public class MinerBot implements RunnableBot {
 		if (teamSoup < RobotType.VAPORATOR.cost || teamSoup > RobotType.VAPORATOR.cost * 2) {
 			return false;
 		}
-		MapLocation ourHQLocation = SharedInfo.getOurHQLocation();
-		if (ourHQLocation == null) {
-			return false;
-		}
-		Direction idealDirection = controller.getLocation().directionTo(ourHQLocation);
+		Direction idealDirection = controller.getLocation().directionTo(hqLocation);
 		for (Direction direction : Util.getAttemptOrder(idealDirection)) {
 			MapLocation location = controller.getLocation().add(direction);
 			if (hqLocation.isWithinDistanceSquared(location, 2)) {
@@ -229,11 +249,7 @@ public class MinerBot implements RunnableBot {
 				}
 			}
 		}
-		MapLocation ourHQLocation = SharedInfo.getOurHQLocation();
-		if (ourHQLocation == null) {
-			return false;
-		}
-		Direction idealDirection = controller.getLocation().directionTo(ourHQLocation);
+		Direction idealDirection = controller.getLocation().directionTo(hqLocation);
 		for (Direction direction : Util.getAttemptOrder(idealDirection)) {
 			MapLocation location = controller.getLocation().add(direction);
 			if (hqLocation.isWithinDistanceSquared(location, 2)) {
