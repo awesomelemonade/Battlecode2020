@@ -22,8 +22,11 @@ public class DroneBot implements RunnableBot {
 	@Override
 	public void turn() throws GameActionException {
 		if (!sent) {
-			SharedInfo.builtNewDrone();
-			sent = true;
+			MapLocation enemyHQLocation = SharedInfo.getEnemyHQLocation();
+			if (enemyHQLocation!= null && Cache.CURRENT_LOCATION.distanceSquaredTo(enemyHQLocation) < 100) {
+				SharedInfo.builtNewDrone();
+				sent = true;
+			}
 		}
 		if (!controller.isReady()) {
 			return;

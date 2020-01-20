@@ -46,7 +46,7 @@ public class HQBot implements RunnableBot {
 					SharedInfo.sendAttackState(SharedInfo.ATTACK_STATE_NONE);
 					SharedInfo.dronesBuilt = 0;
 				}
-			} else if (SharedInfo.dronesBuilt >= 30) {
+			} else if (SharedInfo.dronesBuilt >= 30 || SharedInfo.dronesBuilt >= 15 && turnTimer > 250) {
 				SharedInfo.sendAttackState(SharedInfo.ATTACK_STATE_ENEMYHQ_IGNORE_NETGUNS);
 				SharedInfo.dronesBuilt = 0;
 				turnTimer = 0;
