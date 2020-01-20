@@ -40,7 +40,7 @@ public class HQBot implements RunnableBot {
 		turnTimer++;
 		MapLocation currentLocation = Cache.CURRENT_LOCATION;
 		if(SharedInfo.attacking) {
-			if(turnTimer > 20) {
+			if(turnTimer > 35) {
 				SharedInfo.waitSignal();
 			}
 		}
