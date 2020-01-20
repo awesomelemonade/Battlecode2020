@@ -1,6 +1,7 @@
 package citricsky.battlecode2020.util;
 
 import battlecode.common.*;
+import citricsky.battlecode2020.LandscaperBot;
 
 public class Pathfinding {
 	private static RobotController controller;
@@ -11,7 +12,6 @@ public class Pathfinding {
 		Pathfinding.controller = controller;
 		visitedSet = new FastIntSet2D(controller.getMapWidth(), controller.getMapHeight());
 	}
-	// Assumes landscaping is not a possibility and it's not a simple drone
 	public static void execute(MapLocation target) throws GameActionException {
 		if (lastTarget == null || !lastTarget.equals(target)) {
 			lastTarget = target;
@@ -61,12 +61,40 @@ public class Pathfinding {
 			// TODO - Miners do not need to avoid pits all the time
 			return false;
 		}
-		if (!checkDirtDifference(location)) {
-			if (Cache.ROBOT_TYPE == RobotType.LANDSCAPER) {
-				// TODO: Try terraform
-				return false;
-			} else {
-				return false;
+		if (!controller.canSenseLocation(location)) {
+			return false;
+		}
+		if (Cache.ROBOT_TYPE != RobotType.DELIVERY_DRONE) {
+			int currentElevation = controller.senseElevation(Cache.CURRENT_LOCATION);
+			int toElevation = controller.senseElevation(location);
+			if (Math.abs(currentElevation - toElevation) > GameConstants.MAX_DIRT_DIFFERENCE) {
+				if (Cache.ROBOT_TYPE == RobotType.LANDSCAPER) {
+					// Try terraform
+					int lower = LandscaperBot.getRealTargetElevation();
+					int upper = lower + GameConstants.MAX_DIRT_DIFFERENCE;
+					// Figure out which one is more out of line - currentElevation or toElevation
+					int currentDifference = calculateDifference(currentElevation, lower, upper);
+					int toDifference = calculateDifference(currentElevation, lower, upper);
+					if (toDifference > currentDifference) {
+						// Deposit/dig from to, then deposit/dig from current
+						if (tryTerraform(location, toElevation, lower, upper)) {
+							return true;
+						}
+						if (tryTerraform(Cache.CURRENT_LOCATION, currentElevation, lower, upper)) {
+							return true;
+						}
+					} else {
+						// Deposit/dig from current, then deposit/dig from to
+						if (tryTerraform(Cache.CURRENT_LOCATION, currentElevation, lower, upper)) {
+							return true;
+						}
+						if (tryTerraform(location, toElevation, lower, upper)) {
+							return true;
+						}
+					}
+				} else {
+					return false;
+				}
 			}
 		}
 		if (controller.canMove(direction)) {
@@ -74,14 +102,28 @@ public class Pathfinding {
 		}
 		return true;
 	}
-	private static boolean checkDirtDifference(MapLocation location) throws GameActionException {
-		if (Cache.ROBOT_TYPE == RobotType.DELIVERY_DRONE) {
-			return true;
+	private static boolean tryTerraform(MapLocation location, int elevation, int lower, int upper) throws GameActionException {
+		Direction direction = Cache.CURRENT_LOCATION.directionTo(location);
+		if (elevation < lower) {
+			if (controller.canDepositDirt(direction)) {
+				controller.depositDirt(direction);
+				return true;
+			}
+		} else { // if (elevation > upper)
+			if (controller.canDigDirt(direction)) {
+				controller.digDirt(direction);
+				return true;
+			}
 		}
-		if (!controller.canSenseLocation(location)) {
-			return false;
+		return false;
+	}
+	private static int calculateDifference(int elevation, int lower, int upper) {
+		if (elevation < lower) {
+			return lower - elevation;
 		}
-		return Math.abs(controller.senseElevation(Cache.CURRENT_LOCATION) -
-				controller.senseElevation(location)) <= GameConstants.MAX_DIRT_DIFFERENCE;
+		if (elevation > upper) {
+			return elevation - upper;
+		}
+		return 0;
 	}
 }
