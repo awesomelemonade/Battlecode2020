@@ -9,10 +9,8 @@ import citricsky.battlecode2020.util.Util;
 
 public class DesignSchoolBot implements RunnableBot {
 	private RobotController controller;
-	private int spawnCount;
 	public DesignSchoolBot(RobotController controller) {
 		this.controller = controller;
-		this.spawnCount = 0;
 	}
 	@Override
 	public void init() {
@@ -33,9 +31,9 @@ public class DesignSchoolBot implements RunnableBot {
 			}
 			// Listen to distress signal
 			if (SharedInfo.getOurHQState() != HQBot.NEEDS_HELP) {
-				boolean buildInitialTwoLandscapers = spawnCount < 2;
-				boolean buildAfterThreeVaporators = spawnCount < 6 && SharedInfo.getVaporatorCount() >= 3;
-				boolean buildAfterFulfillmentCenterAndVaporators = spawnCount < 12 &&
+				boolean buildInitialTwoLandscapers = SharedInfo.landscapersBuilt < 2;
+				boolean buildAfterThreeVaporators = SharedInfo.landscapersBuilt < 6 && SharedInfo.getVaporatorCount() >= 3;
+				boolean buildAfterFulfillmentCenterAndVaporators = SharedInfo.landscapersBuilt < 12 &&
 						SharedInfo.getFulfillmentCenterCount() > 0 && SharedInfo.getVaporatorCount() >= 3;
 				if (!(buildInitialTwoLandscapers || buildAfterThreeVaporators || buildAfterFulfillmentCenterAndVaporators)) {
 					if ((controller.getTeamSoup() < RobotType.VAPORATOR.cost + RobotType.LANDSCAPER.cost +
@@ -74,7 +72,7 @@ public class DesignSchoolBot implements RunnableBot {
 				if (!LatticeUtil.isPit(temp) &&
 						Util.canSafeBuildRobot(RobotType.LANDSCAPER, direction)) {
 					controller.buildRobot(RobotType.LANDSCAPER, direction);
-					spawnCount++;
+					SharedInfo.builtNewLandscaper();
 					return;
 				}
 			}

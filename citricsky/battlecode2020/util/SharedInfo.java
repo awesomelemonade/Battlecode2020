@@ -12,6 +12,7 @@ public class SharedInfo {
 	private static final int OURHQ_SIGNATURE = 51351235;
 	private static final int NEWSOUP_SIGNATURE = -1352350;
 	private static final int SOUPGONE_SIGNATURE = 72952835;
+	private static final int NEWLANDSCAPER_SIGNATURE = -8892517;
 	private static final int NEWDRONE_SIGNATURE = -2951958;
 	private static final int ATTACK_STATE_SIGNATURE = 1295952;
 	private static final int OURHQ_UNITCOUNT_SIGNATURE = 695318;
@@ -28,6 +29,8 @@ public class SharedInfo {
 	
 	public static MapLocationArray soupLocations = new MapLocationArray(100);
 
+	public static int landscapersBuilt = 0;
+	
 	// Attack with drones info
 	public static int dronesBuilt = 0;
 	public static final int ATTACK_STATE_NONE = 0;
@@ -93,6 +96,13 @@ public class SharedInfo {
 		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
 	}
+	public static void builtNewLandscaper() {
+		int[] message = new int[] {
+				NEWLANDSCAPER_SIGNATURE, 0, 0, 0, 0, 0, controller.getRoundNum()
+		};
+		Communication.encryptMessage(message);
+		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
+	}
 	public static void builtNewDrone() {
 		int[] message = new int[] {
 				NEWDRONE_SIGNATURE, 0, 0, 0, 0, 0, controller.getRoundNum()
@@ -150,6 +160,9 @@ public class SharedInfo {
 				break;
 			case SOUPGONE_SIGNATURE:
 				soupLocations.remove(new MapLocation(message[4], message[5]));
+				break;
+			case NEWLANDSCAPER_SIGNATURE:
+				landscapersBuilt++;
 				break;
 			case NEWDRONE_SIGNATURE:
 				dronesBuilt++;
