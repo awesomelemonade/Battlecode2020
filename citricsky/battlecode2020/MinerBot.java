@@ -243,6 +243,7 @@ public class MinerBot implements RunnableBot {
 		MapLocation currentLocation = Cache.CURRENT_LOCATION;
 		MapLocation bestLocation = null;
 		int bestDistanceSquared = Integer.MAX_VALUE;
+		int currentElevation = controller.senseElevation(Cache.CURRENT_LOCATION);
 		int targetElevation = LandscaperBot.getRealTargetElevation();
 		// Do not consider the location where the unit currently is (starts at i = 1)
 		for (int i = 1; i < Util.FLOOD_FILL_DX.length; i++) {
@@ -273,6 +274,9 @@ public class MinerBot implements RunnableBot {
 			}
 			int distanceSquared = (int) (Math.sqrt(hqDistanceSquared) + Math.sqrt(currentLocation.distanceSquaredTo(location)));
 			int elevation = Cache.controller.senseElevation(location);
+			if (Math.abs(currentElevation - elevation) > GameConstants.MAX_DIRT_DIFFERENCE) {
+				continue;
+			}
 			if (elevation >= targetElevation) {
 				distanceSquared -= 1000; // Artificially increase the score
 			}
