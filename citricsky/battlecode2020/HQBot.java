@@ -43,22 +43,30 @@ public class HQBot implements RunnableBot {
 		if (controller.getRoundNum() > 1000) {
 			turnTimer++;
 			turnsToPickupLandscapers++;
+			int newAttackState = -1;
 			if (SharedInfo.attackState == SharedInfo.ATTACK_STATE_ENEMYHQ_IGNORE_NETGUNS) {
 				if (turnTimer > 70) {
-					SharedInfo.sendAttackState(SharedInfo.ATTACK_STATE_NONE);
+					newAttackState = SharedInfo.ATTACK_STATE_NONE;
 					SharedInfo.dronesBuilt = 0;
 				}
 			} else if (turnsToPickupLandscapers >= 0 && (SharedInfo.dronesBuilt >= 30 || SharedInfo.dronesBuilt >= 15 && turnTimer > 250)) {
-				SharedInfo.sendAttackState(SharedInfo.ATTACK_STATE_ENEMYHQ_IGNORE_NETGUNS);
+				newAttackState = SharedInfo.ATTACK_STATE_ENEMYHQ_IGNORE_NETGUNS;
 				SharedInfo.dronesBuilt = 0;
 				turnTimer = 0;
 				attackWaves++;
 			} else if (SharedInfo.dronesBuilt >= 5) {
 				if (attackWaves % 2 == 1) {
-					SharedInfo.sendAttackState(SharedInfo.ATTACK_STATE_ENEMYHQ);
+					newAttackState = SharedInfo.ATTACK_STATE_ENEMYHQ;
 				} else {
-					SharedInfo.sendAttackState(SharedInfo.ATTACK_STATE_ENEMYHQ_WITH_LANDSCAPERS);
-					turnsToPickupLandscapers = -20;
+					newAttackState = SharedInfo.ATTACK_STATE_ENEMYHQ_WITH_LANDSCAPERS;
+				}
+			}
+			if (newAttackState != -1) {
+				if (newAttackState != SharedInfo.attackState) {
+					SharedInfo.sendAttackState(newAttackState);
+					if (newAttackState == SharedInfo.ATTACK_STATE_ENEMYHQ_WITH_LANDSCAPERS) {
+						turnsToPickupLandscapers = -20;
+					}
 				}
 			}
 		}
