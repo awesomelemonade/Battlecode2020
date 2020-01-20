@@ -29,9 +29,8 @@ public class DesignSchoolBot implements RunnableBot {
 		if (controller.getTeamSoup() >= RobotType.LANDSCAPER.cost) {
 			// Listen to distress signal
 			if (SharedInfo.getOurHQState() != HQBot.NEEDS_HELP) {
-				// TODO something is wack here
-				if (!(spawnCount < 2 || spawnCount < 6 && SharedInfo.getVaporatorCount() >= 3 ||
-						spawnCount < 12 && SharedInfo.getFulfillmentCenterCount() == 0)) {
+				if (!(spawnCount < 2 || (spawnCount < 6 && SharedInfo.getVaporatorCount() >= 3) ||
+						(spawnCount < 12 && SharedInfo.getFulfillmentCenterCount() > 0))) {
 					if (controller.getTeamSoup() < RobotType.VAPORATOR.cost + RobotType.LANDSCAPER.cost || Math.random() < 0.5) {
 						int friendlyLandscapersCount = 0;
 						int enemyLandscapersCount = 0;
@@ -49,7 +48,7 @@ public class DesignSchoolBot implements RunnableBot {
 									friendlyLandscapersCount++;
 								}
 							}
-							if (enemyLandscapersCount * 2 < friendlyLandscapersCount) {
+							if (enemyLandscapersCount * 2 <= friendlyLandscapersCount) {
 								return;
 							}
 						}
