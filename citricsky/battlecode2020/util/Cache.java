@@ -3,7 +3,7 @@ package citricsky.battlecode2020.util;
 import battlecode.common.*;
 
 public class Cache {
-	private static RobotController controller;
+	public static RobotController controller;
 	public static Team OUR_TEAM;
 	public static Team OPPONENT_TEAM;
 	public static RobotInfo[] ALL_NEARBY_ROBOTS;

@@ -207,20 +207,20 @@ public class MinerBot implements RunnableBot {
 		}
 		return bestLocation;
 	}
-	public boolean isValidDesignSchoolLocation(MapLocation buildingLocation) throws GameActionException {
-		if (!controller.canSenseLocation(buildingLocation)) {
+	public static boolean isValidDesignSchoolLocation(MapLocation buildingLocation) throws GameActionException {
+		if (!Cache.controller.canSenseLocation(buildingLocation)) {
 			return false;
 		}
-		int elevation = controller.senseElevation(buildingLocation);
+		int elevation = Cache.controller.senseElevation(buildingLocation);
 		// Design schools can only spawn landscapers in cardinal directions
 		// Because the ordinal directions will be lattice pits
 		for (Direction direction : Util.CARDINAL_DIRECTIONS) {
 			MapLocation location = buildingLocation.add(direction);
-			if (!controller.canSenseLocation(location)) {
+			if (!Cache.controller.canSenseLocation(location)) {
 				return false;
 			}
 			// Checks whether there is a spawn point
-			if (Math.abs(controller.senseElevation(location) - elevation) <= GameConstants.MAX_DIRT_DIFFERENCE) {
+			if (Math.abs(Cache.controller.senseElevation(location) - elevation) <= GameConstants.MAX_DIRT_DIFFERENCE) {
 				return true;
 			}
 		}
