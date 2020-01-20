@@ -343,7 +343,7 @@ public class MinerBot implements RunnableBot {
 				break fulfillmentCenter;
 			}
 			// Check if we built 3 vaporators or there are enemies nearby
-			if (SharedInfo.getVaporatorCount() >= 3 || FulfillmentCenterBot.seeEnemyMinerOrLandscaper()) {
+			if (SharedInfo.getVaporatorCount() >= 3 || seeEnemyMinerOrLandscaper()) {
 				return RobotType.FULFILLMENT_CENTER;
 			}
 		}
@@ -367,6 +367,14 @@ public class MinerBot implements RunnableBot {
 			return RobotType.VAPORATOR;
 		}
 		return null;
+	}
+	public static boolean seeEnemyMinerOrLandscaper() {
+		for (RobotInfo enemy : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
+			if (enemy.getType() == RobotType.MINER || enemy.getType() == RobotType.LANDSCAPER) {
+				return true;
+			}
+		}
+		return false;
 	}
 	public boolean netGunIsClose() {
 		for (int i = Cache.ALL_NEARBY_ENEMY_NET_GUNS_SIZE; --i >= 0;) {
