@@ -36,9 +36,7 @@ public class FulfillmentCenterBot implements RunnableBot {
 		if (seeEnemyNetGun()) {
 			return;
 		}
-		if (Util.trySafeBuildTowardsEnemyHQ(RobotType.DELIVERY_DRONE)) {
-			SharedInfo.builtNewDrone();
-		}
+		Util.trySafeBuildTowardsEnemyHQ(RobotType.DELIVERY_DRONE);
 	}
 	public static boolean seeEnemyMinerOrLandscaper() {
 		for (RobotInfo robot : Cache.ALL_NEARBY_ENEMY_ROBOTS) {

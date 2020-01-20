@@ -13,9 +13,7 @@ public class SharedInfo {
 	private static final int NEWSOUP_SIGNATURE = -1352350;
 	private static final int SOUPGONE_SIGNATURE = 72952835;
 	private static final int NEWDRONE_SIGNATURE = -2951958;
-	private static final int DRONEATTACK_SIGNATURE = 1295952;
-	private static final int DRONEWAIT_SIGNATURE = -92158992;
-	private static final int FLYINGLANDSCAPERS_SIGNATURE = -6268936;
+	private static final int ATTACK_STATE_SIGNATURE = 1295952;
 	private static final int OURHQ_UNITCOUNT_SIGNATURE = 695318;
 	private static final int VAPORATOR_COUNT_INCREMENT_SIGNATURE = 3431285;
 
@@ -31,7 +29,11 @@ public class SharedInfo {
 
 	// Attack with drones info
 	public static int dronesBuilt = 0;
-	public static int attackMode = -1; //-1 -> never attacked, 0 -> not currently attacking, 1 -> rush enemy HQ, 2 -> find landscapers
+	public static final int ATTACK_STATE_NONE = 0;
+	public static final int ATTACK_STATE_ENEMYHQ = 1;
+	public static final int ATTACK_STATE_ENEMYHQ_WITH_LANDSCAPERS = 2;
+	public static final int ATTACK_STATE_ENEMYHQ_IGNORE_NETGUNS = 3;
+	public static int attackState = ATTACK_STATE_NONE;
 
 	// Build order info
 	private static int designSchoolCount = 0;
@@ -95,23 +97,10 @@ public class SharedInfo {
 		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
 	}
-	public static void attackSignal() {
+	public static void sendAttackState(int attackState) {
+		SharedInfo.attackState = attackState;
 		int[] message = new int[] {
-				DRONEATTACK_SIGNATURE, 0, 0, 0, 0, 0, controller.getRoundNum()
-		};
-		Communication.encryptMessage(message);
-		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
-	}
-	public static void waitSignal() {
-		int[] message = new int[] {
-				DRONEWAIT_SIGNATURE, 0, 0, 0, 0, 0, controller.getRoundNum()
-		};
-		Communication.encryptMessage(message);
-		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
-	}
-	public static void flyingLandscapersSignal() {
-		int[] message = new int[] {
-				FLYINGLANDSCAPERS_SIGNATURE, 0, 0, 0, 0, 0, controller.getRoundNum()
+				ATTACK_STATE_SIGNATURE, 0, 0, 0, 0, attackState, controller.getRoundNum()
 		};
 		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
@@ -154,17 +143,9 @@ public class SharedInfo {
 			case NEWDRONE_SIGNATURE:
 				dronesBuilt++;
 				break;
-			case DRONEATTACK_SIGNATURE:
-				attackMode = 1;
-				Pathfinding.ignoreNetGuns = true;
-				break;
-			case DRONEWAIT_SIGNATURE:
-				attackMode = 0;
-				Pathfinding.ignoreNetGuns = false;
-				break;
-			case FLYINGLANDSCAPERS_SIGNATURE:
-				attackMode = 2;
-				Pathfinding.ignoreNetGuns = true;
+			case ATTACK_STATE_SIGNATURE:
+				attackState = message[5];
+				Pathfinding.ignoreNetGuns = (attackState == ATTACK_STATE_ENEMYHQ_IGNORE_NETGUNS);
 				break;
 			case OURHQ_UNITCOUNT_SIGNATURE:
 				setOurHQUnitCount(message[4], message[5]);

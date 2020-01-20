@@ -22,7 +22,8 @@ public class Cache {
 		MAP_CENTER_LOCATION = new MapLocation(controller.getMapWidth() / 2, controller.getMapHeight() / 2);
 		ROBOT_TYPE = controller.getType();
 		CURRENT_LOCATION = controller.getLocation();
-		if (ROBOT_TYPE == RobotType.DELIVERY_DRONE) {
+		if (ROBOT_TYPE == RobotType.DELIVERY_DRONE || ROBOT_TYPE == RobotType.MINER ||
+				ROBOT_TYPE == RobotType.FULFILLMENT_CENTER) {
 			ALL_NEARBY_ENEMY_NET_GUNS = new MapLocation[68]; // max number of net guns in vision range
 			ALL_NEARBY_ENEMY_NET_GUNS_SIZE = 0;
 		}
@@ -32,7 +33,8 @@ public class Cache {
 		Cache.ALL_NEARBY_FRIENDLY_ROBOTS = controller.senseNearbyRobots(-1, OUR_TEAM);
 		Cache.ALL_NEARBY_ENEMY_ROBOTS = controller.senseNearbyRobots(-1, OPPONENT_TEAM);
 		Cache.CURRENT_LOCATION = controller.getLocation();
-		if (ROBOT_TYPE == RobotType.DELIVERY_DRONE) {
+		if (ROBOT_TYPE == RobotType.DELIVERY_DRONE || ROBOT_TYPE == RobotType.MINER ||
+				ROBOT_TYPE == RobotType.FULFILLMENT_CENTER) {
 			ALL_NEARBY_ENEMY_NET_GUNS_SIZE = 0;
 			for (RobotInfo robot : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
 				if (robot.getType() == RobotType.DELIVERY_DRONE) {
