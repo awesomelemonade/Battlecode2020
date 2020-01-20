@@ -35,7 +35,7 @@ public class RobotPlayer {
 				bot = new NetGunBot(controller);
 				break;
 			case FULFILLMENT_CENTER:
-				bot = new FulfillmentCenter(controller);
+				bot = new FulfillmentCenterBot(controller);
 				break;
 			case VAPORATOR:
 				bot = new VaporatorBot(controller);

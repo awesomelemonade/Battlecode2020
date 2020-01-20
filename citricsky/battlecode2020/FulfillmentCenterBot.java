@@ -6,10 +6,9 @@ import citricsky.battlecode2020.util.Cache;
 import citricsky.battlecode2020.util.SharedInfo;
 import citricsky.battlecode2020.util.Util;
 
-public class FulfillmentCenter implements RunnableBot {
+public class FulfillmentCenterBot implements RunnableBot {
 	private RobotController controller;
-	private int spawnCount = 0;
-	public FulfillmentCenter(RobotController controller) {
+	public FulfillmentCenterBot(RobotController controller) {
 		this.controller = controller;
 	}
 	@Override
@@ -25,18 +24,23 @@ public class FulfillmentCenter implements RunnableBot {
 			// If hq is in distress, we should probably build landscapers instead
 			return;
 		}
-		if (!seeEnemyMinerOrLandscaper() && controller.getTeamSoup() < RobotType.VAPORATOR.cost + 20) {
-			return;
+		if (seeEnemyMinerOrLandscaper()) {
+			if (controller.getTeamSoup() < RobotType.DELIVERY_DRONE.cost + 20) {
+				return;
+			}
+		} else {
+			if (controller.getTeamSoup() < RobotType.VAPORATOR.cost + RobotType.DELIVERY_DRONE.cost || Math.random() < 0.5) {
+				return;
+			}
 		}
 		if (seeEnemyNetGun()) {
 			return;
 		}
 		if (Util.trySafeBuildTowardsEnemyHQ(RobotType.DELIVERY_DRONE)) {
-			spawnCount++;
 			SharedInfo.builtNewDrone();
 		}
 	}
-	public boolean seeEnemyMinerOrLandscaper() {
+	public static boolean seeEnemyMinerOrLandscaper() {
 		for (RobotInfo robot : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
 			if (robot.getType() == RobotType.MINER || robot.getType() == RobotType.LANDSCAPER) {
 				return true;

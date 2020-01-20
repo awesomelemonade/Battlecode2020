@@ -143,7 +143,7 @@ public class LandscaperBot implements RunnableBot {
 			return true;
 		} else {
 			if (ourHQState == HQBot.NO_ADDITIONAL_HELP_NEEDED) {
-				// Bury nearest building if it is near HQ
+				// Bury nearest building if it is near HQ - TODO - should we really do this? maybe only fulfillment centers and net guns?
 				RobotInfo bestEnemy = null;
 				int bestDistanceSquared = Integer.MAX_VALUE;
 				for (RobotInfo enemy : Cache.ALL_NEARBY_ENEMY_ROBOTS) {

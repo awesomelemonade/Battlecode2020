@@ -195,6 +195,12 @@ public class MinerBot implements RunnableBot {
 			int distanceSquared = (int) (Math.sqrt(hqLocation.distanceSquaredTo(location)) + Math.sqrt(currentLocation.distanceSquaredTo(location)));
 			if (distanceSquared < bestDistanceSquared && (!hqLocation.isWithinDistanceSquared(location, 2)) &&
 					LatticeUtil.isBuildLocation(location) && willNotGetFloodedSoon(location)) {
+				// If it's a design school or fulfillment center, ensure that we are close enough to the hq
+				if (type == RobotType.DESIGN_SCHOOL || type == RobotType.FULFILLMENT_CENTER) {
+					if (!hqLocation.isWithinDistanceSquared(location, RobotType.HQ.sensorRadiusSquared)) {
+						continue;
+					}
+				}
 				// Check for elevation difference
 				if (type != RobotType.DESIGN_SCHOOL || isValidDesignSchoolLocation(location)) {
 					RobotInfo robot = controller.senseRobotAtLocation(location);
@@ -228,16 +234,6 @@ public class MinerBot implements RunnableBot {
 	}
 	public RobotType getBuildTypeTarget() throws GameActionException {
 		int teamSoup = controller.getTeamSoup();
-		vaporator: {
-			if (Cache.ALL_NEARBY_ENEMY_ROBOTS.length > 0) {
-				// Don't build vaporator when you see enemies
-				break vaporator;
-			}
-			if (teamSoup < RobotType.VAPORATOR.cost || teamSoup > RobotType.VAPORATOR.cost * 2) {
-				break vaporator;
-			}
-			return RobotType.VAPORATOR;
-		}
 		/* TODO: only place net guns near enemy drones
 		netGun: {
 			if (teamSoup < RobotType.NET_GUN.cost) {
@@ -251,47 +247,45 @@ public class MinerBot implements RunnableBot {
 			}
 		}*/
 		designSchool: {
-			if (teamSoup < RobotType.DESIGN_SCHOOL.cost) {
+			if (SharedInfo.getDesignSchoolCount() > 0 || teamSoup < RobotType.DESIGN_SCHOOL.cost) {
 				break designSchool;
 			}
-			// Loop through enemy units - we should be saving for net guns instead if we see an enemy drone
-			boolean seeHQ = false;
-			boolean seeDesignSchool = false;
-			boolean seeFulfillmentCenter = false;
-			for (RobotInfo robot : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
-				switch (robot.getType()) {
-					case DESIGN_SCHOOL:
-						if (isValidDesignSchoolLocation(robot.getLocation())) {
-							seeDesignSchool = true;
-						}
-						break;
-					case FULFILLMENT_CENTER:
-						seeFulfillmentCenter = true;
-						break;
-					case HQ:
-						seeHQ = true;
-						break;
-				}
+			return RobotType.DESIGN_SCHOOL;
+		}
+		fulfillmentCenter: {
+			if (SharedInfo.getFulfillmentCenterCount() > 0 || teamSoup < RobotType.FULFILLMENT_CENTER.cost + 15) {
+				break fulfillmentCenter;
 			}
-			if (!seeDesignSchool) {
-				// If we see enemies near our hq, we should build one asap to defend
-				if (!(seeHQ && Cache.ALL_NEARBY_ENEMY_ROBOTS.length > 0)) {
-					// If we have too much soup, we might as well create em
-					if (teamSoup < 2 * RobotType.VAPORATOR.cost) {
-						// If we have little soup, don't spawn unless we haven't spawned one yet
-						if (spawnedDesignSchool) {
-							break designSchool;
-						}
-					}
-				}
-				if (teamSoup >= RobotType.DESIGN_SCHOOL.cost + 20) {
-					return RobotType.DESIGN_SCHOOL;
-				}
+			if (netGunIsClose()) {
+				break fulfillmentCenter;
 			}
-			if (!seeFulfillmentCenter && teamSoup >= RobotType.FULFILLMENT_CENTER.cost + 70) {
+			// Check if we built 3 vaporators or there are enemies nearby
+			if (SharedInfo.getVaporatorCount() >= 3 || FulfillmentCenterBot.seeEnemyMinerOrLandscaper()) {
 				return RobotType.FULFILLMENT_CENTER;
 			}
 		}
+		vaporator: {
+			if (Cache.ALL_NEARBY_ENEMY_ROBOTS.length > 0) {
+				// Don't build vaporator when you see enemies
+				break vaporator;
+			}
+			if (SharedInfo.getVaporatorCount() > 120) {
+				break vaporator;
+			}
+			if (teamSoup < RobotType.VAPORATOR.cost || teamSoup > RobotType.VAPORATOR.cost * 2) {
+				break vaporator;
+			}
+			return RobotType.VAPORATOR;
+		}
 		return null;
+	}
+	public boolean netGunIsClose() {
+		for (int i = Cache.ALL_NEARBY_ENEMY_NET_GUNS_SIZE; --i >= 0;) {
+			MapLocation location = Cache.ALL_NEARBY_ENEMY_NET_GUNS[i];
+			if (Cache.CURRENT_LOCATION.isWithinDistanceSquared(location, RobotType.MINER.sensorRadiusSquared)) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

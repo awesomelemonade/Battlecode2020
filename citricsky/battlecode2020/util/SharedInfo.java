@@ -16,6 +16,8 @@ public class SharedInfo {
 	private static final int DRONEATTACK_SIGNATURE = 1295952;
 	private static final int DRONEWAIT_SIGNATURE = -92158992;
 	private static final int FLYINGLANDSCAPERS_SIGNATURE = -6268936;
+	private static final int OURHQ_UNITCOUNT_SIGNATURE = 695318;
+	private static final int VAPORATOR_COUNT_INCREMENT_SIGNATURE = 3431285;
 
 	private static RobotController controller;
 	private static MapLocation ourHQLocation;
@@ -26,9 +28,16 @@ public class SharedInfo {
 	private static int ourHQState = HQBot.NO_HELP_NEEDED;
 	
 	public static MapLocationArray soupLocations = new MapLocationArray(100);
-	
+
+	// Attack with drones info
 	public static int dronesBuilt = 0;
 	public static int attackMode = -1; //-1 -> never attacked, 0 -> not currently attacking, 1 -> rush enemy HQ, 2 -> find landscapers
+
+	// Build order info
+	private static int designSchoolCount = 0;
+	private static int fulfillmentCenterCount = 0;
+	private static int vaporatorCount = 0;
+
 	public static void init(RobotController controller) {
 		SharedInfo.controller = controller;
 		EnemyHQGuesser.init(controller);
@@ -107,7 +116,21 @@ public class SharedInfo {
 		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
 	}
-		
+	public static void sendOurHQUnitCount(int designSchoolCount, int fulfillmentCenterCount) {
+		setOurHQUnitCount(designSchoolCount, fulfillmentCenterCount);
+		int[] message = new int[] {
+				OURHQ_UNITCOUNT_SIGNATURE, 0, 0, 0, designSchoolCount, fulfillmentCenterCount, controller.getRoundNum()
+		};
+		Communication.encryptMessage(message);
+		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
+	}
+	public static void sendVaporatorCountIncrement() {
+		int[] message = new int[] {
+				VAPORATOR_COUNT_INCREMENT_SIGNATURE, 0, 0, 0, 0, 0, controller.getRoundNum()
+		};
+		Communication.encryptMessage(message);
+		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
+	}
 	public static void processMessage(int[] message) {
 		switch(message[0]) {
 			case ENEMYHQ_SIGNATURE:
@@ -143,6 +166,12 @@ public class SharedInfo {
 				attackMode = 2;
 				Pathfinding.ignoreNetGuns = true;
 				break;
+			case OURHQ_UNITCOUNT_SIGNATURE:
+				setOurHQUnitCount(message[4], message[5]);
+				break;
+			case VAPORATOR_COUNT_INCREMENT_SIGNATURE:
+				vaporatorCount++;
+				break;
 		}
 	}
 	private static void setOurHQLocation(MapLocation location) {
@@ -177,5 +206,18 @@ public class SharedInfo {
 	}
 	public static int getOurHQState() {
 		return ourHQState;
+	}
+	private static void setOurHQUnitCount(int designSchoolCount, int fulfillmentCenterCount) {
+		SharedInfo.designSchoolCount = designSchoolCount;
+		SharedInfo.fulfillmentCenterCount = fulfillmentCenterCount;
+	}
+	public static int getDesignSchoolCount() {
+		return designSchoolCount;
+	}
+	public static int getFulfillmentCenterCount() {
+		return fulfillmentCenterCount;
+	}
+	public static int getVaporatorCount() {
+		return vaporatorCount;
 	}
 }

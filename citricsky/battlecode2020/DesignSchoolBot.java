@@ -29,25 +29,29 @@ public class DesignSchoolBot implements RunnableBot {
 		if (controller.getTeamSoup() >= RobotType.LANDSCAPER.cost) {
 			// Listen to distress signal
 			if (SharedInfo.getOurHQState() != HQBot.NEEDS_HELP) {
-				if (controller.getTeamSoup() < RobotType.VAPORATOR.cost + RobotType.LANDSCAPER.cost + 50) {
-					int friendlyLandscapersCount = 0;
-					int enemyLandscapersCount = 0;
-					boolean seeEnemyBuilding = false;
-					for (RobotInfo robot : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
-						if (robot.getType() == RobotType.LANDSCAPER) {
-							enemyLandscapersCount++;
-						} else if (robot.getType().isBuilding()) {
-							seeEnemyBuilding = true;
-						}
-					}
-					if (!seeEnemyBuilding) {
-						for (RobotInfo robot : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
+				// TODO something is wack here
+				if (!(spawnCount < 2 || spawnCount < 6 && SharedInfo.getVaporatorCount() >= 3 ||
+						spawnCount < 12 && SharedInfo.getFulfillmentCenterCount() == 0)) {
+					if (controller.getTeamSoup() < RobotType.VAPORATOR.cost + RobotType.LANDSCAPER.cost || Math.random() < 0.5) {
+						int friendlyLandscapersCount = 0;
+						int enemyLandscapersCount = 0;
+						boolean seeEnemyBuilding = false;
+						for (RobotInfo robot : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
 							if (robot.getType() == RobotType.LANDSCAPER) {
-								friendlyLandscapersCount++;
+								enemyLandscapersCount++;
+							} else if (robot.getType().isBuilding()) {
+								seeEnemyBuilding = true;
 							}
 						}
-						if (enemyLandscapersCount * 2 < friendlyLandscapersCount) {
-							return;
+						if (!seeEnemyBuilding) {
+							for (RobotInfo robot : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
+								if (robot.getType() == RobotType.LANDSCAPER) {
+									friendlyLandscapersCount++;
+								}
+							}
+							if (enemyLandscapersCount * 2 < friendlyLandscapersCount) {
+								return;
+							}
 						}
 					}
 				}
@@ -63,6 +67,7 @@ public class DesignSchoolBot implements RunnableBot {
 				if (!LatticeUtil.isPit(temp) &&
 						Util.canSafeBuildRobot(RobotType.LANDSCAPER, direction)) {
 					controller.buildRobot(RobotType.LANDSCAPER, direction);
+					spawnCount++;
 					return;
 				}
 			}

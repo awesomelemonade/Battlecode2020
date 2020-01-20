@@ -105,6 +105,20 @@ public class HQBot implements RunnableBot {
 		if (SharedInfo.getOurHQState() != state) {
 			SharedInfo.sendOurHQState(state);
 		}
+		int designSchoolCount = 0;
+		int fulfillmentCenterCount = 0;
+		for (RobotInfo robot : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
+			if (robot.getType() == RobotType.DESIGN_SCHOOL) {
+				designSchoolCount++;
+			}
+			if (robot.getType() == RobotType.FULFILLMENT_CENTER) {
+				fulfillmentCenterCount++;
+			}
+		}
+		if (designSchoolCount != SharedInfo.getDesignSchoolCount() ||
+				fulfillmentCenterCount != SharedInfo.getFulfillmentCenterCount()) {
+			SharedInfo.sendOurHQUnitCount(designSchoolCount, fulfillmentCenterCount);
+		}
 		if (!controller.isReady()) {
 			return;
 		}
