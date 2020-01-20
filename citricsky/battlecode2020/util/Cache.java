@@ -37,7 +37,7 @@ public class Cache {
 				ROBOT_TYPE == RobotType.FULFILLMENT_CENTER) {
 			ALL_NEARBY_ENEMY_NET_GUNS_SIZE = 0;
 			for (RobotInfo robot : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
-				if (robot.getType() == RobotType.DELIVERY_DRONE) {
+				if (robot.getType() == RobotType.NET_GUN) {
 					ALL_NEARBY_ENEMY_NET_GUNS[ALL_NEARBY_ENEMY_NET_GUNS_SIZE++] = robot.getLocation();
 				}
 			}

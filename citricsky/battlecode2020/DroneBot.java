@@ -28,7 +28,6 @@ public class DroneBot implements RunnableBot {
 		if (!controller.isReady()) {
 			return;
 		}
-		System.out.println("Drone State: " + SharedInfo.attackState + " - " + Pathfinding.ignoreNetGuns);
 		MapLocation currentLocation = Cache.CURRENT_LOCATION;
 		if (controller.isCurrentlyHoldingUnit()) {
 			if (carryingAllyLandscaper) {
@@ -84,9 +83,7 @@ public class DroneBot implements RunnableBot {
 		} else {
 			// Not currently holding any unit
 			int attackState = SharedInfo.attackState;
-			if (attackState == SharedInfo.ATTACK_STATE_ENEMYHQ || attackState == SharedInfo.ATTACK_STATE_ENEMYHQ_IGNORE_NETGUNS) {
-				goTowardsEnemyHQ();
-			} else if (attackState == SharedInfo.ATTACK_STATE_ENEMYHQ_WITH_LANDSCAPERS) {
+			if (attackState == SharedInfo.ATTACK_STATE_ENEMYHQ_WITH_LANDSCAPERS) {
 				int bestDistanceSquared = Integer.MAX_VALUE;
 				RobotInfo best = null;
 				for (RobotInfo ally : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
@@ -111,10 +108,14 @@ public class DroneBot implements RunnableBot {
 				} else {
 					goTowardsEnemyHQ();
 				}
-			} else { // attackState == SharedInfo.ATTACK_STATE_NONE
+			} else {
 				RobotInfo target = findBestEnemyTarget();
 				if (target == null) {
-					Util.randomExplore();
+					if (attackState == SharedInfo.ATTACK_STATE_ENEMYHQ || attackState == SharedInfo.ATTACK_STATE_ENEMYHQ_IGNORE_NETGUNS) {
+						goTowardsEnemyHQ();
+					} else {
+						Util.randomExplore();
+					}
 				} else {
 					if (currentLocation.isAdjacentTo(target.getLocation())) {
 						if (controller.canPickUpUnit(target.getID())) {

@@ -38,26 +38,27 @@ public class HQBot implements RunnableBot {
 	}
 	@Override
 	public void turn() throws GameActionException {
-		turnTimer++;
 		MapLocation currentLocation = Cache.CURRENT_LOCATION;
-		if (SharedInfo.attackState == SharedInfo.ATTACK_STATE_ENEMYHQ_IGNORE_NETGUNS) {
-			if (turnTimer > 70) {
-				SharedInfo.sendAttackState(SharedInfo.ATTACK_STATE_NONE);
+		if (controller.getRoundNum() > 1000) {
+			turnTimer++;
+			if (SharedInfo.attackState == SharedInfo.ATTACK_STATE_ENEMYHQ_IGNORE_NETGUNS) {
+				if (turnTimer > 70) {
+					SharedInfo.sendAttackState(SharedInfo.ATTACK_STATE_NONE);
+					SharedInfo.dronesBuilt = 0;
+				}
+			} else if (SharedInfo.dronesBuilt >= 30) {
+				SharedInfo.sendAttackState(SharedInfo.ATTACK_STATE_ENEMYHQ_IGNORE_NETGUNS);
 				SharedInfo.dronesBuilt = 0;
-			}
-		} else if (SharedInfo.dronesBuilt > 29) {
-			SharedInfo.sendAttackState(SharedInfo.ATTACK_STATE_ENEMYHQ_IGNORE_NETGUNS);
-			SharedInfo.dronesBuilt = 0;
-			turnTimer = 0;
-			attackWaves++;
-		} else if (SharedInfo.dronesBuilt > 15) {
-			if (attackWaves <= 1 || attackWaves % 2 == 0) {
-				SharedInfo.sendAttackState(SharedInfo.ATTACK_STATE_ENEMYHQ);
-			} else {
-				SharedInfo.sendAttackState(SharedInfo.ATTACK_STATE_ENEMYHQ_WITH_LANDSCAPERS);
+				turnTimer = 0;
+				attackWaves++;
+			} else if (SharedInfo.dronesBuilt >= 5) {
+				if (attackWaves % 2 == 1) {
+					SharedInfo.sendAttackState(SharedInfo.ATTACK_STATE_ENEMYHQ);
+				} else {
+					SharedInfo.sendAttackState(SharedInfo.ATTACK_STATE_ENEMYHQ_WITH_LANDSCAPERS);
+				}
 			}
 		}
-		System.out.println("Attack State: " + SharedInfo.attackState + " - " + SharedInfo.dronesBuilt + " - " + turnTimer);
 		// Calculates state
 		int state;
 		if (Cache.ALL_NEARBY_ENEMY_ROBOTS.length > 0) {

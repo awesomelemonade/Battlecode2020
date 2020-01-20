@@ -14,7 +14,7 @@ public class Pathfinding {
 		visitedSet = new FastIntSet2D(controller.getMapWidth(), controller.getMapHeight());
 	}
 	public static void execute(MapLocation target) throws GameActionException {
-		if (lastTarget == null || !lastTarget.equals(target)) {
+		if (lastTarget == null || !lastTarget.equals(target) || Cache.ROBOT_TYPE == RobotType.DELIVERY_DRONE) {
 			lastTarget = target;
 			visitedSet.reset();
 		}
@@ -67,7 +67,14 @@ public class Pathfinding {
 		}
 		if (Cache.ROBOT_TYPE == RobotType.DELIVERY_DRONE) {
 			if (!ignoreNetGuns) {
-				for (int i = Cache.ALL_NEARBY_ENEMY_NET_GUNS_SIZE; --i >= 0; ) {
+				switch (direction) {
+					case NORTHEAST:
+					case NORTHWEST:
+					case SOUTHEAST:
+					case SOUTHWEST:
+						return false; // don't allow diagonal moves if not ignoring net guns
+				}
+				for (int i = Cache.ALL_NEARBY_ENEMY_NET_GUNS_SIZE; --i >= 0;) {
 					MapLocation netgunLocation = Cache.ALL_NEARBY_ENEMY_NET_GUNS[i];
 					if (location.isWithinDistanceSquared(netgunLocation, GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED)) {
 						return false;
