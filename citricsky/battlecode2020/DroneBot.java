@@ -112,6 +112,9 @@ public class DroneBot implements RunnableBot {
 				}
 			}
 			RobotInfo target = findBestEnemyTarget();
+			if(target == null) {
+				target = findCowTarget();
+			}
 			if (target == null) {
 				if (attackState == SharedInfo.ATTACK_STATE_ENEMYHQ || attackState == SharedInfo.ATTACK_STATE_ENEMYHQ_IGNORE_NETGUNS) {
 					goTowardsEnemyHQ();
@@ -157,6 +160,20 @@ public class DroneBot implements RunnableBot {
 				best = enemy;
 				bestPriority = priority;
 				bestDistanceSquared = distanceSquared;
+			}
+		}
+		return best;
+	}
+	public RobotInfo findCowTarget() {
+		RobotInfo best = null;
+		int bestDistanceSquared = -1;
+		for(RobotInfo robot : Cache.ALL_NEARBY_ROBOTS) {
+			if(robot.getTeam() == Team.NEUTRAL) {
+				int distanceSquared = Cache.CURRENT_LOCATION.distanceSquaredTo(robot.getLocation());
+				if(best == null || distanceSquared < bestDistanceSquared) {
+					best = robot;
+					bestDistanceSquared = distanceSquared;
+				}
 			}
 		}
 		return best;
