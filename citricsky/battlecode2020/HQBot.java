@@ -63,12 +63,16 @@ public class HQBot implements RunnableBot {
 		int state;
 		if (Cache.ALL_NEARBY_ENEMY_ROBOTS.length > 0) {
 			if (controller.canSenseRadiusSquared(Util.ADJACENT_DISTANCE_SQUARED)) { // If we can see all adjacent locations
+				int hqElevation = controller.senseElevation(Cache.CURRENT_LOCATION);
 				boolean allNeighborsOccupied = true;
 				for (Direction direction : Util.ADJACENT_DIRECTIONS) {
 					MapLocation location = currentLocation.add(direction);
-					if (controller.onTheMap(location) && !controller.isLocationOccupied(location)) {
-						allNeighborsOccupied = false;
-						break;
+					if (controller.onTheMap(location)) {
+						int elevation = controller.senseElevation(location);
+						if (!controller.isLocationOccupied(location) && Math.abs(hqElevation - elevation) <= 15) {
+							allNeighborsOccupied = false;
+							break;
+						}
 					}
 				}
 				if (allNeighborsOccupied) {

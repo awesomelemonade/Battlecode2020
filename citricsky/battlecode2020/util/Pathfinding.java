@@ -141,7 +141,7 @@ public class Pathfinding {
 				// Check if toLocation is within hq vision range
 				if (!MinerBot.hqLocation.isWithinDistanceSquared(location, RobotType.HQ.sensorRadiusSquared)) {
 					// Check if toElevation is lower than lower bound
-					if (toElevation < lower || toElevation > upper) {
+					if (toElevation < lower || toElevation > upper || toElevation <= 5) {
 						// If it's not within vision range AND elevation is lower
 						return false;
 					}
