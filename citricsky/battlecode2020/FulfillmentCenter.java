@@ -28,8 +28,10 @@ public class FulfillmentCenter implements RunnableBot {
 		if (seeEnemyNetGun()) {
 			return;
 		}
-		if (Util.trySafeBuildTowardsEnemyHQ(RobotType.DELIVERY_DRONE)) {
+		//WARNING: hardcoded Drone value to make sure there is enough soup to broadcast creation
+		if (controller.getTeamSoup() > 150 && Util.trySafeBuildTowardsEnemyHQ(RobotType.DELIVERY_DRONE)) {
 			spawnCount++;
+			SharedInfo.builtNewDrone();
 		}
 	}
 	public boolean seeEnemyMinerOrLandscaper() {

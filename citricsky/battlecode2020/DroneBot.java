@@ -10,6 +10,7 @@ import citricsky.battlecode2020.util.Util;
 public class DroneBot implements RunnableBot {
 	private RobotController controller;
 	private boolean pickedUpUnit;
+	private Direction lastRandomDirection;
 	public DroneBot(RobotController controller) {
 		this.controller = controller;
 		this.pickedUpUnit = false;
@@ -56,19 +57,40 @@ public class DroneBot implements RunnableBot {
 			}
 			Util.randomExplore();
 		} else {
+			//if we don't know where the enemy HQ is, proceed as normal (or if the game is early enough that potential disruption > drone life value)
+			if (SharedInfo.getEnemyHQLocation() == null || (SharedInfo.getEnemyHQLocation() != null && controller.getRoundNum() < 500)) {
 			// Find Target
-			RobotInfo target = findBestTarget();
-			if (target == null) {
-				Util.randomExplore();
-			} else {
-				if (currentLocation.isAdjacentTo(target.getLocation())) {
-					if (controller.canPickUpUnit(target.getID())) {
-						controller.pickUpUnit(target.getID());
-					}
+				RobotInfo target = findBestTarget();
+				if (target == null) {
+					Util.randomExplore();
 				} else {
-					Pathfinding.execute(target.getLocation());
+					if (currentLocation.isAdjacentTo(target.getLocation())) {
+						if (controller.canPickUpUnit(target.getID())) {
+							controller.pickUpUnit(target.getID());
+						}
+					} else {
+						Pathfinding.execute(target.getLocation());
+					}
 				}
 			}
+			else {
+				for (Direction dir : Util.ADJACENT_DIRECTIONS) {
+					RobotInfo target = controller.senseRobotAtLocation(Cache.CURRENT_LOCATION.add(dir));
+					if(target != null){
+						if(controller.canPickUpUnit(target.getID())) {
+							controller.pickUpUnit(target.getID());
+						}
+					}
+				}
+				if(SharedInfo.attacking) {
+					Pathfinding.execute(SharedInfo.getEnemyHQLocation());
+				}
+				else {
+					avoidHQWalk();
+				}
+				
+			}
+			
 		}
 	}
 	public RobotInfo findBestTarget() {
@@ -100,5 +122,20 @@ public class DroneBot implements RunnableBot {
 				// Cannot pick up
 				return 0;
 		}
+	}
+	//assumes enemyHQLocation is not null
+	public boolean avoidHQWalk() throws GameActionException {
+		if (lastRandomDirection == null) {
+			lastRandomDirection = Util.randomAdjacentDirection();
+		}
+		boolean success = false;
+		for (int i = 0; i < 16 && !success; i++) {
+			if (Cache.CURRENT_LOCATION.add(lastRandomDirection).distanceSquaredTo(SharedInfo.getEnemyHQLocation()) > 20) {
+				success = Pathfinding.naiveMove(lastRandomDirection);
+				lastRandomDirection = Util.randomAdjacentDirection();
+			}
+				
+		}
+		return success;
 	}
 }

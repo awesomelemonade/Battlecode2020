@@ -37,6 +37,10 @@ public class HQBot implements RunnableBot {
 	@Override
 	public void turn() throws GameActionException {
 		MapLocation currentLocation = Cache.CURRENT_LOCATION;
+		if(SharedInfo.dronesBuilt > 24) {
+			SharedInfo.attackSignal();
+			SharedInfo.dronesBuilt = 0;
+		}
 		// Calculates state
 		int state;
 		if (Cache.ALL_NEARBY_ENEMY_ROBOTS.length > 0) {

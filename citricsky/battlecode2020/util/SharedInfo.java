@@ -12,6 +12,8 @@ public class SharedInfo {
 	private static final int OURHQ_SIGNATURE = 51351235;
 	private static final int NEWSOUP_SIGNATURE = -1352350;
 	private static final int SOUPGONE_SIGNATURE = 72952835;
+	private static final int NEWDRONE_SIGNATURE = -2951958;
+	private static final int DRONEATTACK_SIGNATURE = 1295952;
 
 	private static RobotController controller;
 	private static MapLocation ourHQLocation;
@@ -22,6 +24,9 @@ public class SharedInfo {
 	private static int ourHQState = HQBot.NO_HELP_NEEDED;
 	
 	public static MapLocationArray soupLocations = new MapLocationArray(100);
+	
+	public static int dronesBuilt = 0;
+	public static boolean attacking = false;
 
 	public static void init(RobotController controller) {
 		SharedInfo.controller = controller;
@@ -73,6 +78,20 @@ public class SharedInfo {
 		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
 	}
+	public static void builtNewDrone() {
+		int[] message = new int[] {
+				NEWDRONE_SIGNATURE, 0, 0, 0, 0, 0, controller.getRoundNum()
+		};
+		Communication.encryptMessage(message);
+		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
+	}
+	public static void attackSignal() {
+		int[] message = new int[] {
+				DRONEATTACK_SIGNATURE, 0, 0, 0, 0, 0, controller.getRoundNum()
+		};
+		Communication.encryptMessage(message);
+		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
+	}
 		
 	public static void processMessage(int[] message) {
 		switch(message[0]) {
@@ -93,6 +112,12 @@ public class SharedInfo {
 				break;
 			case SOUPGONE_SIGNATURE:
 				soupLocations.remove(new MapLocation(message[4], message[5]));
+				break;
+			case NEWDRONE_SIGNATURE:
+				dronesBuilt++;
+				break;
+			case DRONEATTACK_SIGNATURE:
+				attacking = true;
 				break;
 		}
 	}
