@@ -4,6 +4,7 @@ import battlecode.common.*;
 import citricsky.battlecode2020.LandscaperBot;
 
 public class Pathfinding {
+	public static boolean ignoreNetGuns = false;
 	private static RobotController controller;
 	private static FastIntSet2D visitedSet;
 	private static MapLocation lastTarget;
@@ -64,7 +65,16 @@ public class Pathfinding {
 		if (!controller.canSenseLocation(location)) {
 			return false;
 		}
-		if (Cache.ROBOT_TYPE != RobotType.DELIVERY_DRONE) {
+		if (Cache.ROBOT_TYPE == RobotType.DELIVERY_DRONE) {
+			if (ignoreNetGuns) {
+				for (int i = Cache.ALL_NEARBY_ENEMY_NET_GUNS_SIZE; --i >= 0; ) {
+					MapLocation netgunLocation = Cache.ALL_NEARBY_ENEMY_NET_GUNS[i].getLocation();
+					if (location.isWithinDistanceSquared(netgunLocation, GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED)) {
+						return false;
+					}
+				}
+			}
+		} else {
 			int currentElevation = controller.senseElevation(Cache.CURRENT_LOCATION);
 			int toElevation = controller.senseElevation(location);
 			if (Math.abs(currentElevation - toElevation) > GameConstants.MAX_DIRT_DIFFERENCE) {
