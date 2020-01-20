@@ -255,6 +255,9 @@ public class MinerBot implements RunnableBot {
 			if (!controller.canSenseLocation(location)) {
 				break;
 			}
+			if (controller.senseFlooding(location)) {
+				continue;
+			}
 			if (!LatticeUtil.isBuildLocation(location)) {
 				continue;
 			}
