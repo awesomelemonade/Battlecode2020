@@ -105,26 +105,24 @@ public class DroneBot implements RunnableBot {
 					} else {
 						Pathfinding.execute(best.getLocation());
 					}
-				} else {
+					return;
+				}
+			}
+			RobotInfo target = findBestEnemyTarget();
+			if (target == null) {
+				if (attackState == SharedInfo.ATTACK_STATE_ENEMYHQ || attackState == SharedInfo.ATTACK_STATE_ENEMYHQ_IGNORE_NETGUNS) {
 					goTowardsEnemyHQ();
+				} else {
+					Util.randomExplore();
 				}
 			} else {
-				RobotInfo target = findBestEnemyTarget();
-				if (target == null) {
-					if (attackState == SharedInfo.ATTACK_STATE_ENEMYHQ || attackState == SharedInfo.ATTACK_STATE_ENEMYHQ_IGNORE_NETGUNS) {
-						goTowardsEnemyHQ();
-					} else {
-						Util.randomExplore();
+				if (currentLocation.isAdjacentTo(target.getLocation())) {
+					if (controller.canPickUpUnit(target.getID())) {
+						controller.pickUpUnit(target.getID());
+						carryingAllyLandscaper = false;
 					}
 				} else {
-					if (currentLocation.isAdjacentTo(target.getLocation())) {
-						if (controller.canPickUpUnit(target.getID())) {
-							controller.pickUpUnit(target.getID());
-							carryingAllyLandscaper = false;
-						}
-					} else {
-						Pathfinding.execute(target.getLocation());
-					}
+					Pathfinding.execute(target.getLocation());
 				}
 			}
 		}
@@ -149,6 +147,9 @@ public class DroneBot implements RunnableBot {
 				continue;
 			}
 			int distanceSquared = Cache.CURRENT_LOCATION.distanceSquaredTo(enemy.getLocation());
+			if (distanceSquared <= Util.ADJACENT_DISTANCE_SQUARED) {
+				priority += 1000;
+			}
 			if (best == null || priority > bestPriority || (priority == bestPriority && distanceSquared < bestDistanceSquared)) {
 				best = enemy;
 				bestPriority = priority;
