@@ -2,6 +2,7 @@ package citricsky.battlecode2020.util;
 
 import battlecode.common.*;
 import citricsky.battlecode2020.LandscaperBot;
+import citricsky.battlecode2020.MinerBot;
 
 public class Pathfinding {
 	public static boolean ignoreNetGuns = false;
@@ -91,11 +92,11 @@ public class Pathfinding {
 		} else {
 			int currentElevation = controller.senseElevation(Cache.CURRENT_LOCATION);
 			int toElevation = controller.senseElevation(location);
+			int lower = LandscaperBot.getRealTargetElevation();
+			int upper = lower + GameConstants.MAX_DIRT_DIFFERENCE;
 			if (Math.abs(currentElevation - toElevation) > GameConstants.MAX_DIRT_DIFFERENCE) {
 				if (Cache.ROBOT_TYPE == RobotType.LANDSCAPER) {
 					// Try terraform
-					int lower = LandscaperBot.getRealTargetElevation();
-					int upper = lower + GameConstants.MAX_DIRT_DIFFERENCE;
 					// Figure out which one is more out of line - currentElevation or toElevation
 					int currentDifference = calculateDifference(currentElevation, lower, upper);
 					int toDifference = calculateDifference(toElevation, lower, upper);
@@ -135,7 +136,19 @@ public class Pathfinding {
 					return false;
 				}
 			}
+			// Miners should not move outside of union(lattice, hq vision range)
+			if (Cache.ROBOT_TYPE == RobotType.MINER) {
+				// Check if toLocation is within hq vision range
+				if (!MinerBot.hqLocation.isWithinDistanceSquared(location, RobotType.HQ.sensorRadiusSquared)) {
+					// Check if toElevation is lower than lower bound
+					if (toElevation < lower) {
+						// If it's not within vision range AND elevation is lower
+						return false;
+					}
+				}
+			}
 		}
+
 		if (controller.canMove(direction)) {
 			controller.move(direction);
 		}

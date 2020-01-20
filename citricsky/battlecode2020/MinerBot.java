@@ -9,7 +9,7 @@ public class MinerBot implements RunnableBot {
 	public MinerBot(RobotController controller) {
 		this.controller = controller;
 	}
-	private MapLocation hqLocation;
+	public static MapLocation hqLocation;
 
 	@Override
 	public void init() {
