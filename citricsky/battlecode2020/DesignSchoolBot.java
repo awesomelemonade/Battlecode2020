@@ -35,8 +35,9 @@ public class DesignSchoolBot implements RunnableBot {
 			if (SharedInfo.getOurHQState() != HQBot.NEEDS_HELP) {
 				boolean buildInitialTwoLandscapers = spawnCount < 2;
 				boolean buildAfterThreeVaporators = spawnCount < 6 && SharedInfo.getVaporatorCount() >= 3;
-				boolean buildAfterFulfillmentCenter = spawnCount < 12 && SharedInfo.getFulfillmentCenterCount() > 0;
-				if (!(buildInitialTwoLandscapers || buildAfterThreeVaporators || buildAfterFulfillmentCenter)) {
+				boolean buildAfterFulfillmentCenterAndVaporators = spawnCount < 12 &&
+						SharedInfo.getFulfillmentCenterCount() > 0 && SharedInfo.getVaporatorCount() >= 3;
+				if (!(buildInitialTwoLandscapers || buildAfterThreeVaporators || buildAfterFulfillmentCenterAndVaporators)) {
 					if ((controller.getTeamSoup() < RobotType.VAPORATOR.cost + RobotType.LANDSCAPER.cost +
 							SharedInfo.getMissingBuildingsCost()) || Math.random() < 0.5) {
 						int friendlyLandscapersCount = 0;
