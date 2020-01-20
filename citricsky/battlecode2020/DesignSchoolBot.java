@@ -27,6 +27,10 @@ public class DesignSchoolBot implements RunnableBot {
 			controller.disintegrate();
 		}
 		if (controller.getTeamSoup() >= RobotType.LANDSCAPER.cost) {
+			if (SharedInfo.getOurHQState() == HQBot.NO_ADDITIONAL_HELP_NEEDED) {
+				// We need to create drones or net guns
+				return;
+			}
 			// Listen to distress signal
 			if (SharedInfo.getOurHQState() != HQBot.NEEDS_HELP) {
 				boolean buildInitialTwoLandscapers = spawnCount < 2;
@@ -50,7 +54,7 @@ public class DesignSchoolBot implements RunnableBot {
 									friendlyLandscapersCount++;
 								}
 							}
-							if (enemyLandscapersCount * 2 <= friendlyLandscapersCount) {
+							if (enemyLandscapersCount <= friendlyLandscapersCount) {
 								return;
 							}
 						}

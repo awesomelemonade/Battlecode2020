@@ -5,7 +5,7 @@ import citricsky.RunnableBot;
 import citricsky.battlecode2020.util.*;
 
 public class LandscaperBot implements RunnableBot {
-	private static final int LANDSCAPING_THRESHOLD = 200; // If the dirt difference is this high, we won't terraform
+	public static final int LANDSCAPING_THRESHOLD = 200; // If the dirt difference is this high, we won't terraform
 	private RobotController controller;
 	private RobotBehavior[] behaviors;
 
@@ -150,7 +150,7 @@ public class LandscaperBot implements RunnableBot {
 				for (RobotInfo enemy : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
 					MapLocation location = enemy.getLocation();
 					if (location.isWithinDistanceSquared(ourHQLocation, RobotType.HQ.sensorRadiusSquared)) {
-						if (enemy.getType().isBuilding()) {
+						if (enemy.getType() == RobotType.FULFILLMENT_CENTER || enemy.getType() == RobotType.NET_GUN) {
 							int distanceSquared = currentLocation.distanceSquaredTo(location);
 							if (distanceSquared < bestDistanceSquared) {
 								bestDistanceSquared = distanceSquared;
@@ -317,19 +317,19 @@ public class LandscaperBot implements RunnableBot {
 			Pathfinding.execute(location);
 		}
 	}
-	public void tryDigFromPit() throws GameActionException {
+	public static void tryDigFromPit() throws GameActionException {
 		for (Direction pitDirection : LatticeUtil.getPitDirections(Cache.CURRENT_LOCATION)) {
-			if (controller.canDigDirt(pitDirection)) {
-				controller.digDirt(pitDirection);
+			if (Cache.controller.canDigDirt(pitDirection)) {
+				Cache.controller.digDirt(pitDirection);
 				break;
 			}
 		}
 	}
-	public void tryDepositToPit() throws GameActionException {
+	public static void tryDepositToPit() throws GameActionException {
 		for (Direction pitDirection : LatticeUtil.getPitDirections(Cache.CURRENT_LOCATION)) {
 			MapLocation location = Cache.CURRENT_LOCATION.add(pitDirection);
-			if (controller.canDepositDirt(pitDirection) && (!location.equals(SharedInfo.getOurHQLocation()))) {
-				controller.depositDirt(pitDirection);
+			if (Cache.controller.canDepositDirt(pitDirection) && (!location.equals(SharedInfo.getOurHQLocation()))) {
+				Cache.controller.depositDirt(pitDirection);
 				break;
 			}
 		}

@@ -25,7 +25,7 @@ public class FulfillmentCenterBot implements RunnableBot {
 			return;
 		}
 		if (seeEnemyMinerOrLandscaper()) {
-			if (controller.getTeamSoup() < RobotType.DELIVERY_DRONE.cost + 20) {
+			if (controller.getTeamSoup() < RobotType.DELIVERY_DRONE.cost) {
 				return;
 			}
 		} else {

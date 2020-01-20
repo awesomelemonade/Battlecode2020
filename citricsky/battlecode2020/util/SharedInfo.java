@@ -58,7 +58,7 @@ public class SharedInfo {
 				OURHQ_SIGNATURE, 0, 0, 0, location.x, location.y, controller.getRoundNum()
 		};
 		Communication.encryptMessage(message);
-		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
+		CommunicationProcessor.queueMessage(message, TRANSACTION_COST + 2);
 	}
 	public static void sendEnemyGuessMode(int mode) {
 		setEnemyHQGuesserMode(mode);

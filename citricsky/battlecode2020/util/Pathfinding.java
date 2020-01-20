@@ -53,6 +53,7 @@ public class Pathfinding {
 			}
 		}
 	}
+	private static int designSchoolSpawnedTurn = -1;
 	public static boolean naiveMove(Direction direction) throws GameActionException {
 		MapLocation location = Cache.CURRENT_LOCATION.add(direction);
 		if (Util.isBlocked(location)) {
@@ -60,7 +61,12 @@ public class Pathfinding {
 		}
 		if (Cache.ROBOT_TYPE != RobotType.DELIVERY_DRONE && LatticeUtil.isPit(location)) {
 			if (SharedInfo.getDesignSchoolCount() > 0) {
-				return false;
+				if (designSchoolSpawnedTurn == -1) {
+					designSchoolSpawnedTurn = controller.getRoundNum();
+				}
+				if (Cache.ROBOT_TYPE != RobotType.MINER || controller.getRoundNum() - designSchoolSpawnedTurn > 100) {
+					return false;
+				}
 			}
 		}
 		if (!controller.canSenseLocation(location)) {
@@ -92,7 +98,12 @@ public class Pathfinding {
 					int upper = lower + GameConstants.MAX_DIRT_DIFFERENCE;
 					// Figure out which one is more out of line - currentElevation or toElevation
 					int currentDifference = calculateDifference(currentElevation, lower, upper);
-					int toDifference = calculateDifference(currentElevation, lower, upper);
+					int toDifference = calculateDifference(toElevation, lower, upper);
+					int threshold = (controller.getRoundNum() < 200 ? 20 : LandscaperBot.LANDSCAPING_THRESHOLD);
+					if (currentDifference > threshold || toDifference > threshold) {
+						// Not worth terraforming
+						return false;
+					}
 					if (toDifference > currentDifference) {
 						// Deposit/dig from to, then deposit/dig from current
 						if (tryTerraform(location, toElevation, lower, upper)) {
@@ -109,6 +120,16 @@ public class Pathfinding {
 						if (tryTerraform(location, toElevation, lower, upper)) {
 							return true;
 						}
+					}
+					// We're either too full of dirt, or have no dirt
+					// So deposit/dig from pit
+					if (currentElevation < lower && toElevation < lower) {
+						LandscaperBot.tryDigFromPit();
+						return true;
+					}
+					if (currentElevation > upper && toElevation > upper) {
+						LandscaperBot.tryDepositToPit();
+						return true;
 					}
 				} else {
 					return false;
