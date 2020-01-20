@@ -59,6 +59,7 @@ public class HQBot implements RunnableBot {
 				}
 			}
 		}
+		System.out.println("Attack State: " + SharedInfo.attackState);
 		// Calculates state
 		int state;
 		if (Cache.ALL_NEARBY_ENEMY_ROBOTS.length > 0) {

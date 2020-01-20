@@ -21,6 +21,7 @@ public class LandscaperBot implements RunnableBot {
 				this::tryDefend,
 				() -> tryHeal(SharedInfo.getOurHQLocation()),
 				() -> tryHeal(getNearestBuilding(Cache.ALL_NEARBY_FRIENDLY_ROBOTS)),
+				this::tryWall,
 				this::tryTerraform,
 				() -> tryGoToAttack(getNearestBuilding(Cache.ALL_NEARBY_ENEMY_ROBOTS)),
 				() -> tryGoToAttack(SharedInfo.getEnemyHQLocation()),
@@ -172,6 +173,29 @@ public class LandscaperBot implements RunnableBot {
 		}
 		return false;
 	}
+	public boolean tryWall() throws GameActionException {
+		MapLocation hqLocation = SharedInfo.getOurHQLocation();
+		if (hqLocation == null) {
+			return false;
+		}
+		// Check if we need to wall
+		if (SharedInfo.wallState == SharedInfo.WALL_STATE_NONE) {
+			return false;
+		}
+		if (hqLocation.isAdjacentTo(Cache.CURRENT_LOCATION)) {
+			if (controller.canDepositDirt(Direction.CENTER)) {
+				controller.depositDirt(Direction.CENTER);
+			} else {
+				tryDigFromPit();
+			}
+			return true;
+		} else {
+			if (SharedInfo.wallState == SharedInfo.WALL_STATE_NEEDS) {
+				Pathfinding.execute(hqLocation);
+			}
+		}
+		return false;
+	}
 	public boolean tryHeal(MapLocation location) throws GameActionException {
 		// TODO: Consider depositing dirt if full?
 		if (location != null) {
@@ -227,8 +251,8 @@ public class LandscaperBot implements RunnableBot {
 	}
 	public boolean tryTerraform() throws GameActionException {
 		MapLocation currentLocation = Cache.CURRENT_LOCATION;
-		MapLocation ourLocationHQ = SharedInfo.getOurHQLocation();
-		if (ourLocationHQ == null) {
+		MapLocation ourHQLocation = SharedInfo.getOurHQLocation();
+		if (ourHQLocation == null) {
 			return false;
 		}
 		int targetElevation = getRealTargetElevation();
@@ -252,7 +276,7 @@ public class LandscaperBot implements RunnableBot {
 				if (elevation < targetElevation) {
 					if (targetElevation - elevation <= LANDSCAPING_THRESHOLD) {
 						// Try to raise elevation
-						int distanceSquared = (int) (Math.sqrt(ourLocationHQ.distanceSquaredTo(location)) + Math.sqrt(currentLocation.distanceSquaredTo(location)));
+						int distanceSquared = (int) (Math.sqrt(ourHQLocation.distanceSquaredTo(location)) + Math.sqrt(currentLocation.distanceSquaredTo(location)));
 						if (distanceSquared < bestDistanceSquared) {
 							RobotInfo robot = controller.senseRobotAtLocation(location);
 							if (robot != null && robot.getTeam() == Cache.OUR_TEAM && robot.getType().isBuilding()) {
@@ -265,9 +289,13 @@ public class LandscaperBot implements RunnableBot {
 						}
 					}
 				} else if (elevation > upperTargetElevation) {
+					// Check if we're next to hq and we don't want to do that anymore
+					if (ourHQLocation.isAdjacentTo(location) && SharedInfo.wallState != SharedInfo.WALL_STATE_NONE) {
+						continue;
+					}
 					if (elevation - upperTargetElevation <= LANDSCAPING_THRESHOLD) {
 						// Try to lower elevation
-						int distanceSquared = (int) (Math.sqrt(ourLocationHQ.distanceSquaredTo(location)) + Math.sqrt(currentLocation.distanceSquaredTo(location)));
+						int distanceSquared = (int) (Math.sqrt(ourHQLocation.distanceSquaredTo(location)) + Math.sqrt(currentLocation.distanceSquaredTo(location)));
 						if (distanceSquared < bestDistanceSquared) {
 							RobotInfo robot = controller.senseRobotAtLocation(location);
 							if (robot != null && robot.getTeam() == Cache.OUR_TEAM && robot.getType().isBuilding()) {

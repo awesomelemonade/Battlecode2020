@@ -112,11 +112,11 @@ public class DroneBot implements RunnableBot {
 				}
 			}
 			RobotInfo target = findBestEnemyTarget();
-			if(target == null) {
+			if (target == null) {
 				target = findCowTarget();
 			}
 			if (target == null) {
-				if (attackState == SharedInfo.ATTACK_STATE_ENEMYHQ || attackState == SharedInfo.ATTACK_STATE_ENEMYHQ_IGNORE_NETGUNS) {
+				if (attackState != SharedInfo.ATTACK_STATE_NONE) {
 					goTowardsEnemyHQ();
 				} else {
 					Util.randomExplore();
