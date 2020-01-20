@@ -10,8 +10,6 @@ public class HQBot implements RunnableBot {
 	public static final int NO_HELP_NEEDED = 0;
 	public static final int NO_ADDITIONAL_HELP_NEEDED = 1;
 	public static final int NEEDS_HELP = 2;
-	public static final int NEEDS_WALL = 3;
-	public static final int STAY_WALL = 4;
 	private RobotController controller;
 	private int spawnCount;
 	private int initialSoupCount = 0;
@@ -114,7 +112,7 @@ public class HQBot implements RunnableBot {
 					}
 				}
 			}
-			else if(SharedInfo.wallState == SharedInfo.WALL_STATE_NEEDS || SharedInfo.wallState == SharedInfo.WALL_STATE_STAYS) {
+			else if(SharedInfo.wallState == SharedInfo.WALL_STATE_NEEDS) {
 				boolean allNeighborsOccupied = true;
 				for(Direction direction : Util.ADJACENT_DIRECTIONS) {
 					MapLocation location = currentLocation.add(direction);
@@ -124,11 +122,8 @@ public class HQBot implements RunnableBot {
 						}
 					}
 				}
-				if(allNeighborsOccupied && SharedInfo.wallState == SharedInfo.WALL_STATE_NEEDS) {
+				if(allNeighborsOccupied) {
 					SharedInfo.sendWallState(SharedInfo.WALL_STATE_STAYS);
-				}
-				else if(!allNeighborsOccupied && SharedInfo.wallState == SharedInfo.WALL_STATE_STAYS) {
-					SharedInfo.sendWallState(SharedInfo.WALL_STATE_NEEDS);
 				}
 			}
 		}
