@@ -16,6 +16,7 @@ public class SharedInfo {
 	private static final int ATTACK_STATE_SIGNATURE = 1295952;
 	private static final int OURHQ_UNITCOUNT_SIGNATURE = 695318;
 	private static final int VAPORATOR_COUNT_INCREMENT_SIGNATURE = 3431285;
+	private static final int TOGGLE_SAVEFOR_NETGUN_SIGNATURE = -9988235;
 
 	private static RobotController controller;
 	private static MapLocation ourHQLocation;
@@ -39,6 +40,8 @@ public class SharedInfo {
 	private static int designSchoolCount = 0;
 	private static int fulfillmentCenterCount = 0;
 	private static int vaporatorCount = 0;
+	
+	private static boolean savingForNetgun = false;
 
 	public static void init(RobotController controller) {
 		SharedInfo.controller = controller;
@@ -120,6 +123,14 @@ public class SharedInfo {
 		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
 	}
+	public static void saveForNetgunSignal(boolean saving) {
+		int[] message = new int[] {
+				TOGGLE_SAVEFOR_NETGUN_SIGNATURE, 0, 0, (saving ? 1 : 0), 0, 0, controller.getRoundNum()
+		};
+		Communication.encryptMessage(message);
+		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
+	}
+	
 	public static void processMessage(int[] message) {
 		switch(message[0]) {
 			case ENEMYHQ_SIGNATURE:
@@ -153,6 +164,10 @@ public class SharedInfo {
 			case VAPORATOR_COUNT_INCREMENT_SIGNATURE:
 				vaporatorCount++;
 				break;
+			case TOGGLE_SAVEFOR_NETGUN_SIGNATURE:
+				toggleSavingForNetgun(message[3]);
+				break;
+				
 		}
 	}
 	private static void setOurHQLocation(MapLocation location) {
@@ -204,5 +219,16 @@ public class SharedInfo {
 	public static int getMissingBuildingsCost() {
 		return (SharedInfo.getDesignSchoolCount() == 0 ? RobotType.DESIGN_SCHOOL.cost : 0) +
 				(SharedInfo.getFulfillmentCenterCount() == 0 ? RobotType.FULFILLMENT_CENTER.cost : 0);
+	}
+	public static void toggleSavingForNetgun(int saving) {
+		if(saving == 1) {
+			savingForNetgun = true;
+		}
+		else if(saving == 0){
+			savingForNetgun = false;
+		}
+		else {
+			System.out.println("Invalid state passed to toggleSavingForNetgun");
+		}
 	}
 }
