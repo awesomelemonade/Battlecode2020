@@ -23,6 +23,9 @@ public class DesignSchoolBot implements RunnableBot {
 		if (!controller.isReady()) {
 			return;
 		}
+		if (!MinerBot.isValidDesignSchoolLocation(Cache.CURRENT_LOCATION)) {
+			controller.disintegrate();
+		}
 		if (controller.getTeamSoup() >= RobotType.LANDSCAPER.cost) {
 			// Listen to distress signal
 			if (SharedInfo.getOurHQState() != HQBot.NEEDS_HELP) {
