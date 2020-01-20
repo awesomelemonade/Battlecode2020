@@ -69,22 +69,47 @@ public class LandscaperBot implements RunnableBot {
 	}
 	public boolean tryBuryAdjacentEnemyBuildings() throws GameActionException {
 		MapLocation currentLocation = Cache.CURRENT_LOCATION;
+		Direction bestDirection = null;
+		int bestBuryPriority = 0;
 		if (controller.canSenseRadiusSquared(Util.ADJACENT_DISTANCE_SQUARED)) {
 			for (Direction direction : Util.ADJACENT_DIRECTIONS) {
 				MapLocation location = currentLocation.add(direction);
 				if (Util.onTheMap(location)) {
 					RobotInfo robot = controller.senseRobotAtLocation(location);
 					if (robot != null && robot.getTeam() == Cache.OPPONENT_TEAM && robot.getType().isBuilding()) {
-						if (controller.canDepositDirt(direction)) {
-							controller.depositDirt(direction);
+						int buryPriority = getBuryPriority(robot.getType());
+						if (buryPriority > bestBuryPriority) {
+							bestBuryPriority = buryPriority;
+							bestDirection = direction;
 						}
-						tryDigFromPit();
-						return true;
 					}
 				}
 			}
 		}
+		if (bestDirection != null) {
+			if (controller.canDepositDirt(bestDirection)) {
+				controller.depositDirt(bestDirection);
+			}
+			tryDigFromPit();
+			return true;
+		}
 		return false;
+	}
+	public int getBuryPriority(RobotType type) {
+		switch (type) {
+			case FULFILLMENT_CENTER:
+				return 5;
+			case NET_GUN:
+				return 4;
+			case DESIGN_SCHOOL:
+				return 3;
+			case VAPORATOR:
+				return 2;
+			case HQ:
+				return 1;
+			default:
+				return 0;
+		}
 	}
 	public boolean tryDefend() throws GameActionException {
 		int ourHQState = SharedInfo.getOurHQState();

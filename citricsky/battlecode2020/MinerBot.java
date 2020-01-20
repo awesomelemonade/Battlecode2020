@@ -26,7 +26,6 @@ public class MinerBot implements RunnableBot {
 			return;
 		}
 		MapLocation currentLocation = Cache.CURRENT_LOCATION;
-
 		// See if we should build anything
 		RobotType buildTarget = getBuildTypeTarget();
 		if (buildTarget != null) {
@@ -35,7 +34,7 @@ public class MinerBot implements RunnableBot {
 			}
 		}
 		if (controller.getSoupCarrying() < RobotType.MINER.soupLimit) {
-			//mine adjacent, broadcast location if new
+			// Mine adjacent, broadcast location if new
 			for (Direction direction : Direction.values()) {
 				if (controller.canMineSoup(direction)) {
 					controller.mineSoup(direction);
@@ -45,40 +44,33 @@ public class MinerBot implements RunnableBot {
 					return;
 				}
 			}
-			
 			// Move towards visible soup
 			MapLocation soupLocation = findSoupLocation();
-			if(soupLocation != null) {
+			if (soupLocation != null) {
 				Pathfinding.execute(soupLocation);
-			}
-			else {
-				if(!SharedInfo.soupLocations.isEmpty()) {
+			} else {
+				if (!SharedInfo.soupLocations.isEmpty()) {
 					MapLocation nearestSoup = SharedInfo.soupLocations.nearestSoup(currentLocation);
-					if(currentLocation.isAdjacentTo(nearestSoup)) {
-						//if the soup is gone
+					if (currentLocation.isAdjacentTo(nearestSoup)) {
+						// if the soup is gone
 						if(controller.senseSoup(nearestSoup) == 0) {
 							SharedInfo.sendSoupGone(nearestSoup);
 							return;
-						}
-						//mine if there is still soup
-						else {
+						} else { // mine if there is still soup
 							Direction directionToSoup = currentLocation.directionTo(nearestSoup);
 							if(controller.canMineSoup(directionToSoup)) {
 								controller.mineSoup(directionToSoup);
 								return;
 							}
 						}
-					}
-					//if not adjacent, path to the soupLocation
-					else {
+					} else { //if not adjacent, path to the soupLocation
 						Pathfinding.execute(nearestSoup);
 					}
-				}
-				else {
+				} else {
 					Util.randomExplore();
 				}
 			}
-		}else {
+		} else {
 			// Try to deposit soup
 			for (Direction direction : Direction.values()) {
 				if (controller.canDepositSoup(direction)) {
