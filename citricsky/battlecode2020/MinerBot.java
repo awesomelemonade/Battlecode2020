@@ -255,6 +255,9 @@ public class MinerBot implements RunnableBot {
 			return RobotType.DESIGN_SCHOOL;
 		}
 		fulfillmentCenter: {
+			if (SharedInfo.getOurHQState() == HQBot.NEEDS_HELP) {
+				break fulfillmentCenter;
+			}
 			if (SharedInfo.getFulfillmentCenterCount() > 0 || teamSoup < missingBuildingsCost + 15) {
 				break fulfillmentCenter;
 			}

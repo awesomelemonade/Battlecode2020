@@ -59,8 +59,9 @@ public class Pathfinding {
 			return false;
 		}
 		if (Cache.ROBOT_TYPE != RobotType.DELIVERY_DRONE && LatticeUtil.isPit(location)) {
-			// TODO - Miners do not need to avoid pits all the time
-			return false;
+			if (SharedInfo.getDesignSchoolCount() > 0) {
+				return false;
+			}
 		}
 		if (!controller.canSenseLocation(location)) {
 			return false;

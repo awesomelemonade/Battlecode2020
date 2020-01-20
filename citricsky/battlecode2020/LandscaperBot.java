@@ -7,7 +7,6 @@ import citricsky.battlecode2020.util.*;
 public class LandscaperBot implements RunnableBot {
 	private static final int LANDSCAPING_THRESHOLD = 200; // If the dirt difference is this high, we won't terraform
 	private RobotController controller;
-	//private InfoMap infoMap;
 	private RobotBehavior[] behaviors;
 
 	public LandscaperBot(RobotController controller) {
@@ -15,7 +14,6 @@ public class LandscaperBot implements RunnableBot {
 	}
 	@Override
 	public void init() {
-		//infoMap = new InfoMap(controller.getMapWidth(), controller.getMapHeight());
 		// Order of behaviors to be executed
 		behaviors = new RobotBehavior[] {
 				this::tryEmergencyHealHQ,
@@ -89,8 +87,11 @@ public class LandscaperBot implements RunnableBot {
 		if (bestDirection != null) {
 			if (controller.canDepositDirt(bestDirection)) {
 				controller.depositDirt(bestDirection);
+			} else {
+				tryDigFromPit();
+				controller.setIndicatorDot(currentLocation, 255, 255, 0);
 			}
-			tryDigFromPit();
+			controller.setIndicatorLine(currentLocation, currentLocation.add(bestDirection), 255, 128, 0);
 			return true;
 		}
 		return false;
