@@ -140,6 +140,19 @@ public class MinerBot implements RunnableBot {
 			}
 		}
 	}
+	public int closestDistanceSquaredToOurNetGun(MapLocation location) {
+		int bestDistanceSquared = Integer.MAX_VALUE;
+		for (RobotInfo ally : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
+			if (ally.getType() == RobotType.NET_GUN) {
+				int distanceSquared = ally.getLocation().distanceSquaredTo(location);
+				if (distanceSquared < bestDistanceSquared) {
+					bestDistanceSquared = distanceSquared;
+				}
+			}
+		}
+		return bestDistanceSquared;
+	}
+
 	private boolean localSaveForNetGun = true;
 	public boolean tryBuildNetGun() throws GameActionException {
 		// Find closest enemy drone
@@ -147,9 +160,13 @@ public class MinerBot implements RunnableBot {
 		RobotInfo bestEnemy = null;
 		for (RobotInfo enemy : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
 			if (enemy.getType() == RobotType.DELIVERY_DRONE) {
-				int distanceSquared = enemy.getLocation().distanceSquaredTo(Cache.CURRENT_LOCATION);
+				MapLocation enemyLocation = enemy.getLocation();
+				int distanceSquared = enemyLocation.distanceSquaredTo(Cache.CURRENT_LOCATION);
 				if (distanceSquared < bestDistanceSquared) {
-					// TODO: Check if there is an ally net gun nearby
+					// Check if there is an ally net gun nearby
+					if (closestDistanceSquaredToOurNetGun(enemyLocation) <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED) {
+						continue;
+					}
 					bestDistanceSquared = distanceSquared;
 					bestEnemy = enemy;
 				}
