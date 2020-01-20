@@ -22,6 +22,7 @@ public class SharedInfo {
 
 	private static RobotController controller;
 	private static MapLocation ourHQLocation;
+	private static int ourHQElevation;
 	private static int ourHQParityX = -1;
 	private static int ourHQParityY = -1;
 	private static MapLocation enemyHQLocation;
@@ -65,10 +66,10 @@ public class SharedInfo {
 		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
 	}
-	public static void sendOurHQ(MapLocation location) {
-		setOurHQLocation(location);
+	public static void sendOurHQ(MapLocation location, int elevation) {
+		setOurHQLocation(location, elevation);
 		int[] message = new int[] {
-				OURHQ_SIGNATURE, 0, 0, 0, location.x, location.y, controller.getRoundNum()
+				OURHQ_SIGNATURE, 0, 0, elevation, location.x, location.y, controller.getRoundNum()
 		};
 		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST + 2);
@@ -161,7 +162,7 @@ public class SharedInfo {
 				setEnemyHQLocation(new MapLocation(message[4], message[5]));
 				break;
 			case OURHQ_SIGNATURE:
-				setOurHQLocation(new MapLocation(message[4], message[5]));
+				setOurHQLocation(new MapLocation(message[4], message[5]), message[3]);
 				break;
 			case ENEMYHQ_MODE_SIGNATURE:
 				setEnemyHQGuesserMode(message[5]);
@@ -199,11 +200,12 @@ public class SharedInfo {
 				break;
 		}
 	}
-	private static void setOurHQLocation(MapLocation location) {
+	private static void setOurHQLocation(MapLocation location, int elevation) {
 		EnemyHQGuesser.setGuesses(location.x, location.y);
 		ourHQLocation = location;
 		ourHQParityX = location.x % 2;
 		ourHQParityY = location.y % 2;
+		ourHQElevation = elevation;
 	}
 	public static MapLocation getOurHQLocation() {
 		return ourHQLocation;
@@ -213,6 +215,9 @@ public class SharedInfo {
 	}
 	public static int getOurHQParityY() {
 		return ourHQParityY;
+	}
+	public static int getOurHQElevation() {
+		return ourHQElevation;
 	}
 	private static void setEnemyHQLocation(MapLocation location) {
 		enemyHQLocation = location;

@@ -34,7 +34,7 @@ public class HQBot implements RunnableBot {
 				break;
 			}
 		}
-		SharedInfo.sendOurHQ(currentLocation);
+		SharedInfo.sendOurHQ(currentLocation, controller.senseElevation(currentLocation));
 	}
 	@Override
 	public void turn() throws GameActionException {

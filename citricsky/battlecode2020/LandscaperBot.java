@@ -5,7 +5,8 @@ import citricsky.RunnableBot;
 import citricsky.battlecode2020.util.*;
 
 public class LandscaperBot implements RunnableBot {
-	public static final int LANDSCAPING_THRESHOLD = 200; // If the dirt difference is this high, we won't terraform
+	// If the dirt difference is this high, we won't terraform
+	public static final int LANDSCAPING_THRESHOLD = 120;
 	private RobotController controller;
 	private RobotBehavior[] behaviors;
 
