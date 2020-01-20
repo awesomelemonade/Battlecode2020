@@ -14,6 +14,7 @@ public class HQBot implements RunnableBot {
 	private int spawnCount;
 	private int initialSoupCount = 0;
 	private int turnTimer = 0;
+	private int attackWaves = 0;
 
 
 	public HQBot(RobotController controller) {
@@ -39,15 +40,37 @@ public class HQBot implements RunnableBot {
 	public void turn() throws GameActionException {
 		turnTimer++;
 		MapLocation currentLocation = Cache.CURRENT_LOCATION;
-		if(SharedInfo.attacking) {
-			if(turnTimer > 35) {
-				SharedInfo.waitSignal();
+		if(SharedInfo.attackMode > 0) {
+			if(SharedInfo.attackMode == 1) {
+				if(turnTimer > 50) {
+					SharedInfo.waitSignal();
+				}
+			}
+			else if(SharedInfo.attackMode == 2){
+				if(turnTimer > 70) {
+					SharedInfo.waitSignal();
+				}
 			}
 		}
 		if(SharedInfo.dronesBuilt > 29) {
-			SharedInfo.attackSignal();
-			SharedInfo.dronesBuilt = 0;
-			turnTimer = 0;
+			if(attackWaves <3) {
+				SharedInfo.attackSignal();
+				SharedInfo.dronesBuilt = 0;
+				turnTimer = 0;
+				attackWaves++;
+			}
+			else if(attackWaves % 2 == 0) {
+				SharedInfo.attackSignal();
+				SharedInfo.dronesBuilt = 0;
+				turnTimer = 0;
+				attackWaves++;
+			}
+			else {
+				SharedInfo.flyingLandscapersSignal();
+				SharedInfo.dronesBuilt = 0;
+				turnTimer = 0;
+				attackWaves++;
+			}
 		}
 		// Calculates state
 		int state;

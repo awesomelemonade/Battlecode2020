@@ -9,11 +9,11 @@ import citricsky.battlecode2020.util.Util;
 
 public class DroneBot implements RunnableBot {
 	private RobotController controller;
-	private boolean pickedUpUnit;
 	private Direction lastRandomDirection;
+	private boolean carryingAllyLandscaper;
 	public DroneBot(RobotController controller) {
 		this.controller = controller;
-		this.pickedUpUnit = false;
+		this.carryingAllyLandscaper = false;
 	}
 	@Override
 	public void init() {
@@ -25,7 +25,7 @@ public class DroneBot implements RunnableBot {
 			return;
 		}
 		MapLocation currentLocation = Cache.CURRENT_LOCATION;
-		if (controller.isCurrentlyHoldingUnit()) {
+		if (controller.isCurrentlyHoldingUnit() && carryingAllyLandscaper == false) {
 			// Find adjacent water
 			if (controller.canSenseRadiusSquared(Util.ADJACENT_DISTANCE_SQUARED)) {
 				for (Direction direction : Util.ADJACENT_DIRECTIONS) {
@@ -57,21 +57,64 @@ public class DroneBot implements RunnableBot {
 			}
 			Util.randomExplore();
 		} else {
-			RobotInfo target = findBestTarget();
-			if (target == null) {
-				if(SharedInfo.getEnemyHQLocation() != null) {
-					Pathfinding.execute(SharedInfo.getEnemyHQLocation());
+			if (SharedInfo.attackMode == 2 && carryingAllyLandscaper == false) {
+				int bestDistanceSquared = -1;
+				RobotInfo best = null;
+				for(RobotInfo ally : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
+					if (!ally.getType().equals(RobotType.LANDSCAPER)) {
+						continue;
+					}
+					int distanceSquared = Cache.CURRENT_LOCATION.distanceSquaredTo(ally.getLocation());
+					if (best == null || distanceSquared < bestDistanceSquared) {
+						best = ally;
+						bestDistanceSquared = distanceSquared;
+					}
+				}
+				if(best != null) {
+					if (currentLocation.isAdjacentTo(best.getLocation())) {
+						if (controller.canPickUpUnit(best.getID())) {
+							controller.pickUpUnit(best.getID());
+							carryingAllyLandscaper = true;
+						}
+					} else {
+						Pathfinding.execute(best.getLocation());
+					}
 				}
 				else {
 					Util.randomExplore();
 				}
-			} else {
-				if (currentLocation.isAdjacentTo(target.getLocation())) {
-					if (controller.canPickUpUnit(target.getID())) {
-						controller.pickUpUnit(target.getID());
+			}
+			else {
+				RobotInfo target = null;
+				if(!controller.isCurrentlyHoldingUnit()) {
+					target = findBestTarget();
+				}
+				if (target == null) {
+					if (SharedInfo.getEnemyHQLocation() != null) {
+						int distanceToEnemyHQ = Cache.CURRENT_LOCATION.distanceSquaredTo(SharedInfo.getEnemyHQLocation());
+						if(distanceToEnemyHQ > 3 && distanceToEnemyHQ < 9) {
+							for(Direction dir : Util.ADJACENT_DIRECTIONS) {
+								if(Cache.CURRENT_LOCATION.add(dir).isAdjacentTo(SharedInfo.getEnemyHQLocation())) {
+									if (controller.canDropUnit(dir)) {
+										controller.dropUnit(dir);
+										return;
+									}
+								}
+							}
+						}
+						Pathfinding.execute(SharedInfo.getEnemyHQLocation());
+					}
+					else {
+						Util.randomExplore();
 					}
 				} else {
-					Pathfinding.execute(target.getLocation());
+					if (currentLocation.isAdjacentTo(target.getLocation())) {
+						if (controller.canPickUpUnit(target.getID())) {
+							controller.pickUpUnit(target.getID());
+						}
+					} else {
+						Pathfinding.execute(target.getLocation());
+					}
 				}
 			}
 		}
@@ -105,20 +148,5 @@ public class DroneBot implements RunnableBot {
 				// Cannot pick up
 				return 0;
 		}
-	}
-	//assumes enemyHQLocation is not null
-	public boolean avoidHQWalk() throws GameActionException {
-		if (lastRandomDirection == null) {
-			lastRandomDirection = Util.randomAdjacentDirection();
-		}
-		boolean success = false;
-		for (int i = 0; i < 16 && !success; i++) {
-			if (Cache.CURRENT_LOCATION.add(lastRandomDirection).distanceSquaredTo(SharedInfo.getEnemyHQLocation()) > 20) {
-				success = Pathfinding.naiveMove(lastRandomDirection);
-				lastRandomDirection = Util.randomAdjacentDirection();
-			}
-				
-		}
-		return success;
 	}
 }

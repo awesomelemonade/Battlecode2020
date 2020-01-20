@@ -15,6 +15,7 @@ public class SharedInfo {
 	private static final int NEWDRONE_SIGNATURE = -2951958;
 	private static final int DRONEATTACK_SIGNATURE = 1295952;
 	private static final int DRONEWAIT_SIGNATURE = -92158992;
+	private static final int FLYINGLANDSCAPERS_SIGNATURE = -6268936;
 
 	private static RobotController controller;
 	private static MapLocation ourHQLocation;
@@ -27,8 +28,7 @@ public class SharedInfo {
 	public static MapLocationArray soupLocations = new MapLocationArray(100);
 	
 	public static int dronesBuilt = 0;
-	public static boolean attacking = false;
-
+	public static int attackMode = -1; //-1 -> never attacked, 0 -> not currently attacking, 1 -> rush enemy HQ, 2 -> find landscapers
 	public static void init(RobotController controller) {
 		SharedInfo.controller = controller;
 		EnemyHQGuesser.init(controller);
@@ -100,6 +100,13 @@ public class SharedInfo {
 		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
 	}
+	public static void flyingLandscapersSignal() {
+		int[] message = new int[] {
+				FLYINGLANDSCAPERS_SIGNATURE, 0, 0, 0, 0, 0, controller.getRoundNum()
+		};
+		Communication.encryptMessage(message);
+		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
+	}
 		
 	public static void processMessage(int[] message) {
 		switch(message[0]) {
@@ -125,12 +132,16 @@ public class SharedInfo {
 				dronesBuilt++;
 				break;
 			case DRONEATTACK_SIGNATURE:
-				attacking = true;
+				attackMode = 1;
 				Pathfinding.ignoreNetGuns = true;
 				break;
 			case DRONEWAIT_SIGNATURE:
-				attacking = false;
+				attackMode = 0;
 				Pathfinding.ignoreNetGuns = false;
+				break;
+			case FLYINGLANDSCAPERS_SIGNATURE:
+				attackMode = 2;
+				Pathfinding.ignoreNetGuns = true;
 				break;
 		}
 	}
