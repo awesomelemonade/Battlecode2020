@@ -7,6 +7,7 @@ import citricsky.battlecode2020.util.SharedInfo;
 import citricsky.battlecode2020.util.Util;
 
 public class FulfillmentCenterBot implements RunnableBot {
+	public static final int MASS_SPAWN_VAPORATOR_THRESHOLD = 15;
 	private RobotController controller;
 	public FulfillmentCenterBot(RobotController controller) {
 		this.controller = controller;
@@ -30,8 +31,8 @@ public class FulfillmentCenterBot implements RunnableBot {
 				return;
 			}
 		} else {
-			if (SharedInfo.getVaporatorCount() >= 15) {
-				if (controller.getTeamSoup() < RobotType.DELIVERY_DRONE.cost) {
+			if (SharedInfo.getVaporatorCount() >= MASS_SPAWN_VAPORATOR_THRESHOLD) {
+				if (controller.getTeamSoup() < RobotType.DELIVERY_DRONE.cost || Math.random() < 0.5) {
 					return;
 				}
 			} else {

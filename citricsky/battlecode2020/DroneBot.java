@@ -89,26 +89,33 @@ public class DroneBot implements RunnableBot {
 			if (attackState == SharedInfo.ATTACK_STATE_ENEMYHQ_WITH_LANDSCAPERS) {
 				int bestDistanceSquared = Integer.MAX_VALUE;
 				RobotInfo best = null;
-				for (RobotInfo ally : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
-					if (!ally.getType().equals(RobotType.LANDSCAPER)) {
-						continue;
-					}
-					int distanceSquared = Cache.CURRENT_LOCATION.distanceSquaredTo(ally.getLocation());
-					if (distanceSquared < bestDistanceSquared) {
-						best = ally;
-						bestDistanceSquared = distanceSquared;
-					}
-				}
-				if (best != null) {
-					if (currentLocation.isAdjacentTo(best.getLocation())) {
-						if (controller.canPickUpUnit(best.getID())) {
-							controller.pickUpUnit(best.getID());
-							carryingAllyLandscaper = true;
+				MapLocation ourHQLocation = SharedInfo.getOurHQLocation();
+				if (ourHQLocation != null) {
+					for (RobotInfo ally : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
+						if (!ally.getType().equals(RobotType.LANDSCAPER)) {
+							continue;
 						}
-					} else {
-						Pathfinding.execute(best.getLocation());
+						MapLocation allyLocation = ally.getLocation();
+						if (ourHQLocation.isAdjacentTo(allyLocation)) {
+							continue;
+						}
+						int distanceSquared = Cache.CURRENT_LOCATION.distanceSquaredTo(allyLocation);
+						if (distanceSquared < bestDistanceSquared) {
+							best = ally;
+							bestDistanceSquared = distanceSquared;
+						}
 					}
-					return;
+					if (best != null) {
+						if (currentLocation.isAdjacentTo(best.getLocation())) {
+							if (controller.canPickUpUnit(best.getID())) {
+								controller.pickUpUnit(best.getID());
+								carryingAllyLandscaper = true;
+							}
+						} else {
+							Pathfinding.execute(best.getLocation());
+						}
+						return;
+					}
 				}
 			}
 			RobotInfo target = findBestEnemyTarget();
