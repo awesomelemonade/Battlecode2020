@@ -14,6 +14,7 @@ public class HQBot implements RunnableBot {
 	private int spawnCount;
 	private int initialSoupCount = 0;
 	private int turnTimer = 0;
+	private int turnsToPickupLandscapers = 0;
 	private int attackWaves = 0;
 
 
@@ -41,12 +42,13 @@ public class HQBot implements RunnableBot {
 		MapLocation currentLocation = Cache.CURRENT_LOCATION;
 		if (controller.getRoundNum() > 1000) {
 			turnTimer++;
+			turnsToPickupLandscapers++;
 			if (SharedInfo.attackState == SharedInfo.ATTACK_STATE_ENEMYHQ_IGNORE_NETGUNS) {
 				if (turnTimer > 70) {
 					SharedInfo.sendAttackState(SharedInfo.ATTACK_STATE_NONE);
 					SharedInfo.dronesBuilt = 0;
 				}
-			} else if (SharedInfo.dronesBuilt >= 30 || SharedInfo.dronesBuilt >= 15 && turnTimer > 250) {
+			} else if (turnsToPickupLandscapers >= 0 && (SharedInfo.dronesBuilt >= 30 || SharedInfo.dronesBuilt >= 15 && turnTimer > 250)) {
 				SharedInfo.sendAttackState(SharedInfo.ATTACK_STATE_ENEMYHQ_IGNORE_NETGUNS);
 				SharedInfo.dronesBuilt = 0;
 				turnTimer = 0;
@@ -56,6 +58,7 @@ public class HQBot implements RunnableBot {
 					SharedInfo.sendAttackState(SharedInfo.ATTACK_STATE_ENEMYHQ);
 				} else {
 					SharedInfo.sendAttackState(SharedInfo.ATTACK_STATE_ENEMYHQ_WITH_LANDSCAPERS);
+					turnsToPickupLandscapers = -20;
 				}
 			}
 		}
