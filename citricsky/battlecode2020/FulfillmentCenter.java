@@ -22,7 +22,7 @@ public class FulfillmentCenter implements RunnableBot {
 			// If hq is in distress, we should probably build landscapers instead
 			return;
 		}
-		if (Cache.ALL_NEARBY_ENEMY_ROBOTS.length == 0 && controller.getRoundNum() < 1000) {
+		if (!seeEnemyMinerOrLandscaper() && controller.getTeamSoup() < RobotType.VAPORATOR.cost + 20) {
 			return;
 		}
 		if (seeEnemyNetGun()) {
@@ -31,6 +31,14 @@ public class FulfillmentCenter implements RunnableBot {
 		if (Util.trySafeBuildTowardsEnemyHQ(RobotType.DELIVERY_DRONE)) {
 			spawnCount++;
 		}
+	}
+	public boolean seeEnemyMinerOrLandscaper() {
+		for (RobotInfo robot : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
+			if (robot.getType() == RobotType.MINER || robot.getType() == RobotType.LANDSCAPER) {
+				return true;
+			}
+		}
+		return false;
 	}
 	public boolean seeEnemyNetGun() {
 		for (RobotInfo robot : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
