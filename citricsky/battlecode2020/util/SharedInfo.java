@@ -18,6 +18,7 @@ public class SharedInfo {
 	private static final int OURHQ_UNITCOUNT_SIGNATURE = 695318;
 	private static final int VAPORATOR_COUNT_INCREMENT_SIGNATURE = 3431285;
 	private static final int TOGGLE_SAVEFOR_NETGUN_SIGNATURE = -9988235;
+	private static final int WALLSTATE_CHANGE_SIGNATURE = 35289359;
 
 	private static RobotController controller;
 	private static MapLocation ourHQLocation;
@@ -45,6 +46,12 @@ public class SharedInfo {
 	private static int vaporatorCount = 0;
 	
 	public static boolean isSavingForNetgun = false;
+	
+	// Wall state for HQ
+	public static int wallState = 0;
+	public static final int WALL_STATE_NONE = 0;
+	public static final int WALL_STATE_NEEDS = 1;
+	public static final int WALL_STATE_STAYS = 2;
 
 	public static void init(RobotController controller) {
 		SharedInfo.controller = controller;
@@ -140,6 +147,13 @@ public class SharedInfo {
 		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
 	}
+	public static void sendWallState(int state) {
+		int[] message = new int[] {
+				WALLSTATE_CHANGE_SIGNATURE, 0, 0, 0, state, 0, controller.getRoundNum()
+		};
+		Communication.encryptMessage(message);
+		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
+	}
 	
 	public static void processMessage(int[] message) {
 		switch(message[0]) {
@@ -179,6 +193,9 @@ public class SharedInfo {
 				break;
 			case TOGGLE_SAVEFOR_NETGUN_SIGNATURE:
 				isSavingForNetgun = message[3] == 1;
+				break;
+			case WALLSTATE_CHANGE_SIGNATURE:
+				wallState = message[4];
 				break;
 		}
 	}

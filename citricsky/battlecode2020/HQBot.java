@@ -10,6 +10,8 @@ public class HQBot implements RunnableBot {
 	public static final int NO_HELP_NEEDED = 0;
 	public static final int NO_ADDITIONAL_HELP_NEEDED = 1;
 	public static final int NEEDS_HELP = 2;
+	public static final int NEEDS_WALL = 3;
+	public static final int STAY_WALL = 4;
 	private RobotController controller;
 	private int spawnCount;
 	private int initialSoupCount = 0;
@@ -90,12 +92,47 @@ public class HQBot implements RunnableBot {
 				// This really shouldn't happen
 				state = NO_ADDITIONAL_HELP_NEEDED;
 			}
-		} else {
+		}
+		else {
 			state = NO_HELP_NEEDED;
 		}
 		if (SharedInfo.getOurHQState() != state) {
 			SharedInfo.sendOurHQState(state);
 		}
+		//Landscaper wall state
+		if (SharedInfo.getVaporatorCount() >= 8) {
+			if(SharedInfo.wallState == SharedInfo.WALL_STATE_NONE) {
+				if(controller.canSenseRadiusSquared(Util.ADJACENT_DISTANCE_SQUARED)) {
+					for(Direction direction : Util.ADJACENT_DIRECTIONS) {
+						MapLocation location = currentLocation.add(direction);
+						if(controller.onTheMap(location)) {
+							if(!controller.isLocationOccupied(location)) {
+								SharedInfo.sendWallState(SharedInfo.WALL_STATE_NEEDS);
+								break;
+							}
+						}
+					}
+				}
+			}
+			else if(SharedInfo.wallState == SharedInfo.WALL_STATE_NEEDS || SharedInfo.wallState == SharedInfo.WALL_STATE_STAYS) {
+				boolean allNeighborsOccupied = true;
+				for(Direction direction : Util.ADJACENT_DIRECTIONS) {
+					MapLocation location = currentLocation.add(direction);
+					if(controller.onTheMap(location)) {
+						if(!controller.isLocationOccupied(location)) {
+							allNeighborsOccupied = false;
+						}
+					}
+				}
+				if(allNeighborsOccupied && SharedInfo.wallState == SharedInfo.WALL_STATE_NEEDS) {
+					SharedInfo.sendWallState(SharedInfo.WALL_STATE_STAYS);
+				}
+				else if(!allNeighborsOccupied && SharedInfo.wallState == SharedInfo.WALL_STATE_STAYS) {
+					SharedInfo.sendWallState(SharedInfo.WALL_STATE_NEEDS);
+				}
+			}
+		}
+		
 		int designSchoolCount = 0;
 		int fulfillmentCenterCount = 0;
 		for (RobotInfo robot : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
