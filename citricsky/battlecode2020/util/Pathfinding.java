@@ -68,7 +68,7 @@ public class Pathfinding {
 		if (Cache.ROBOT_TYPE == RobotType.DELIVERY_DRONE) {
 			if (ignoreNetGuns) {
 				for (int i = Cache.ALL_NEARBY_ENEMY_NET_GUNS_SIZE; --i >= 0; ) {
-					MapLocation netgunLocation = Cache.ALL_NEARBY_ENEMY_NET_GUNS[i].getLocation();
+					MapLocation netgunLocation = Cache.ALL_NEARBY_ENEMY_NET_GUNS[i];
 					if (location.isWithinDistanceSquared(netgunLocation, GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED)) {
 						return false;
 					}

@@ -13,7 +13,7 @@ public class Cache {
 	public static MapLocation CURRENT_LOCATION;
 	public static RobotType ROBOT_TYPE;
 	// RobotType specific
-	public static RobotInfo[] ALL_NEARBY_ENEMY_NET_GUNS;
+	public static MapLocation[] ALL_NEARBY_ENEMY_NET_GUNS;
 	public static int ALL_NEARBY_ENEMY_NET_GUNS_SIZE;
 	public static void init(RobotController controller) {
 		Cache.controller = controller;
@@ -23,7 +23,7 @@ public class Cache {
 		ROBOT_TYPE = controller.getType();
 		CURRENT_LOCATION = controller.getLocation();
 		if (ROBOT_TYPE == RobotType.DELIVERY_DRONE) {
-			ALL_NEARBY_ENEMY_NET_GUNS = new RobotInfo[68]; // max number of net guns in vision range
+			ALL_NEARBY_ENEMY_NET_GUNS = new MapLocation[68]; // max number of net guns in vision range
 			ALL_NEARBY_ENEMY_NET_GUNS_SIZE = 0;
 		}
 	}
@@ -35,9 +35,13 @@ public class Cache {
 		if (ROBOT_TYPE == RobotType.DELIVERY_DRONE) {
 			ALL_NEARBY_ENEMY_NET_GUNS_SIZE = 0;
 			for (RobotInfo robot : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
-				if (robot.getType() == RobotType.HQ || robot.getType() == RobotType.DELIVERY_DRONE) {
-					ALL_NEARBY_ENEMY_NET_GUNS[ALL_NEARBY_ENEMY_NET_GUNS_SIZE++] = robot;
+				if (robot.getType() == RobotType.DELIVERY_DRONE) {
+					ALL_NEARBY_ENEMY_NET_GUNS[ALL_NEARBY_ENEMY_NET_GUNS_SIZE++] = robot.getLocation();
 				}
+			}
+			MapLocation enemyHQ = SharedInfo.getEnemyHQLocation();
+			if (enemyHQ != null) {
+				ALL_NEARBY_ENEMY_NET_GUNS[ALL_NEARBY_ENEMY_NET_GUNS_SIZE++] = enemyHQ;
 			}
 		}
 	}
