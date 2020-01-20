@@ -248,7 +248,7 @@ public class LandscaperBot implements RunnableBot {
 		return bestEnemy;
 	}
 	public static int getRealTargetElevation() {
-		return (targetElevation - targetElevation % 3) + 5;
+		return Math.max((targetElevation - targetElevation % 3) + 5, SharedInfo.getOurHQElevation());
 	}
 	public boolean tryTerraform() throws GameActionException {
 		MapLocation currentLocation = Cache.CURRENT_LOCATION;
