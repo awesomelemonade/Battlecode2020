@@ -99,12 +99,14 @@ public class LandscaperBot implements RunnableBot {
 	public int getBuryPriority(RobotType type) {
 		switch (type) {
 			case FULFILLMENT_CENTER:
-				return 5;
+				return 6;
 			case NET_GUN:
-				return 4;
+				return 5;
 			case DESIGN_SCHOOL:
-				return 3;
+				return 4;
 			case VAPORATOR:
+				return 3;
+			case REFINERY:
 				return 2;
 			case HQ:
 				return 1;
