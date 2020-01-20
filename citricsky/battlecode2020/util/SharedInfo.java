@@ -220,4 +220,8 @@ public class SharedInfo {
 	public static int getVaporatorCount() {
 		return vaporatorCount;
 	}
+	public static int getMissingBuildingsCost() {
+		return (SharedInfo.getDesignSchoolCount() == 0 ? RobotType.DESIGN_SCHOOL.cost : 0) +
+				(SharedInfo.getFulfillmentCenterCount() == 0 ? RobotType.FULFILLMENT_CENTER.cost : 0);
+	}
 }

@@ -161,7 +161,8 @@ public class MinerBot implements RunnableBot {
 	public boolean tryBuildAtBestLocation(RobotType type) throws GameActionException {
 		MapLocation location = findBestBuildLocation(type);
 		if (location == null) {
-			return false;
+			Pathfinding.execute(hqLocation);
+			return true;
 		}
 		MapLocation currentLocation = Cache.CURRENT_LOCATION;
 		controller.setIndicatorDot(location, 0, 0, 255);
@@ -234,6 +235,7 @@ public class MinerBot implements RunnableBot {
 	}
 	public RobotType getBuildTypeTarget() throws GameActionException {
 		int teamSoup = controller.getTeamSoup();
+		int missingBuildingsCost = SharedInfo.getMissingBuildingsCost();
 		/* TODO: only place net guns near enemy drones
 		netGun: {
 			if (teamSoup < RobotType.NET_GUN.cost) {
@@ -253,7 +255,7 @@ public class MinerBot implements RunnableBot {
 			return RobotType.DESIGN_SCHOOL;
 		}
 		fulfillmentCenter: {
-			if (SharedInfo.getFulfillmentCenterCount() > 0 || teamSoup < RobotType.FULFILLMENT_CENTER.cost + 15) {
+			if (SharedInfo.getFulfillmentCenterCount() > 0 || teamSoup < missingBuildingsCost + 15) {
 				break fulfillmentCenter;
 			}
 			if (netGunIsClose()) {
@@ -272,8 +274,14 @@ public class MinerBot implements RunnableBot {
 			if (SharedInfo.getVaporatorCount() > 120) {
 				break vaporator;
 			}
-			if (teamSoup < RobotType.VAPORATOR.cost || teamSoup > RobotType.VAPORATOR.cost * 2) {
-				break vaporator;
+			if (SharedInfo.getVaporatorCount() > 3) {
+				if (teamSoup < RobotType.VAPORATOR.cost + missingBuildingsCost) {
+					break vaporator;
+				}
+			} else {
+				if (teamSoup < RobotType.VAPORATOR.cost) {
+					break vaporator;
+				}
 			}
 			return RobotType.VAPORATOR;
 		}

@@ -12,10 +12,14 @@ public class VaporatorBot implements RunnableBot {
 	}
 	@Override
 	public void init() throws GameActionException {
-		SharedInfo.sendVaporatorCountIncrement();
+
 	}
+	boolean sent = false;
 	@Override
 	public void turn() throws GameActionException {
-
+		if (!sent) {
+			SharedInfo.sendVaporatorCountIncrement();
+			sent = true;
+		}
 	}
 }

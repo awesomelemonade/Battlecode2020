@@ -29,9 +29,11 @@ public class DesignSchoolBot implements RunnableBot {
 		if (controller.getTeamSoup() >= RobotType.LANDSCAPER.cost) {
 			// Listen to distress signal
 			if (SharedInfo.getOurHQState() != HQBot.NEEDS_HELP) {
-				if (!(spawnCount < 2 || (spawnCount < 6 && SharedInfo.getVaporatorCount() >= 3) ||
-						(spawnCount < 12 && SharedInfo.getFulfillmentCenterCount() > 0))) {
-					if (controller.getTeamSoup() < RobotType.VAPORATOR.cost + RobotType.LANDSCAPER.cost || Math.random() < 0.5) {
+				boolean buildInitialTwoLandscapers = spawnCount < 2;
+				boolean buildAfterThreeVaporators = spawnCount < 6 && SharedInfo.getVaporatorCount() >= 3;
+				boolean buildAfterFulfillmentCenter = spawnCount < 12 && SharedInfo.getFulfillmentCenterCount() > 0;
+				if (!(buildInitialTwoLandscapers || buildAfterThreeVaporators || buildAfterFulfillmentCenter)) {
+					if (controller.getTeamSoup() < RobotType.VAPORATOR.cost + RobotType.LANDSCAPER.cost + SharedInfo.getMissingBuildingsCost()) {
 						int friendlyLandscapersCount = 0;
 						int enemyLandscapersCount = 0;
 						boolean seeEnemyBuilding = false;
