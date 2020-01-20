@@ -319,6 +319,15 @@ public class LandscaperBot implements RunnableBot {
 	}
 	public static void tryDigFromPit() throws GameActionException {
 		for (Direction pitDirection : LatticeUtil.getPitDirections(Cache.CURRENT_LOCATION)) {
+			MapLocation location = Cache.CURRENT_LOCATION.add(pitDirection);
+			if (Cache.controller.canSenseLocation(location)) {
+				RobotInfo robot = Cache.controller.senseRobotAtLocation(location);
+				if (robot != null && robot.getType().isBuilding() && robot.getTeam() == Cache.OPPONENT_TEAM) {
+					continue;
+				}
+			} else {
+				continue;
+			}
 			if (Cache.controller.canDigDirt(pitDirection)) {
 				Cache.controller.digDirt(pitDirection);
 				break;
@@ -328,7 +337,15 @@ public class LandscaperBot implements RunnableBot {
 	public static void tryDepositToPit() throws GameActionException {
 		for (Direction pitDirection : LatticeUtil.getPitDirections(Cache.CURRENT_LOCATION)) {
 			MapLocation location = Cache.CURRENT_LOCATION.add(pitDirection);
-			if (Cache.controller.canDepositDirt(pitDirection) && (!location.equals(SharedInfo.getOurHQLocation()))) {
+			if (Cache.controller.canSenseLocation(location)) {
+				RobotInfo robot = Cache.controller.senseRobotAtLocation(location);
+				if (robot != null && robot.getType().isBuilding() && robot.getTeam() == Cache.OUR_TEAM) {
+					continue;
+				}
+			} else {
+				continue;
+			}
+			if (Cache.controller.canDepositDirt(pitDirection)) {
 				Cache.controller.depositDirt(pitDirection);
 				break;
 			}
