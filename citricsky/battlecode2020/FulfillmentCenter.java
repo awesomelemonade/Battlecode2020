@@ -18,6 +18,9 @@ public class FulfillmentCenter implements RunnableBot {
 	}
 	@Override
 	public void turn() throws GameActionException {
+		if (!controller.isReady()) {
+			return;
+		}
 		if (SharedInfo.getOurHQState() == HQBot.NEEDS_HELP) {
 			// If hq is in distress, we should probably build landscapers instead
 			return;

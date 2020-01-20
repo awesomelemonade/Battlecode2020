@@ -29,7 +29,7 @@ public class LandscaperBot implements RunnableBot {
 				Util::randomExplore
 		};
 	}
-	private int targetElevation = 1;
+	private static int targetElevation = 1;
 	@Override
 	public void turn() throws GameActionException {
 		while (Util.getTurnsToFlooded(targetElevation) - controller.getRoundNum() < 100) {
@@ -219,8 +219,8 @@ public class LandscaperBot implements RunnableBot {
 		}
 		return bestEnemy;
 	}
-	public int getRealTargetElevation() {
-		return (this.targetElevation - this.targetElevation % 3) + 5;
+	public static int getRealTargetElevation() {
+		return (targetElevation - targetElevation % 3) + 5;
 	}
 	public boolean tryTerraform() throws GameActionException {
 		MapLocation currentLocation = Cache.CURRENT_LOCATION;
