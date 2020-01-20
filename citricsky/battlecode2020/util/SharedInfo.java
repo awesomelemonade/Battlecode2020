@@ -14,6 +14,7 @@ public class SharedInfo {
 	private static final int SOUPGONE_SIGNATURE = 72952835;
 	private static final int NEWDRONE_SIGNATURE = -2951958;
 	private static final int DRONEATTACK_SIGNATURE = 1295952;
+	private static final int DRONEWAIT_SIGNATURE = -92158992;
 
 	private static RobotController controller;
 	private static MapLocation ourHQLocation;
@@ -92,6 +93,13 @@ public class SharedInfo {
 		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
 	}
+	public static void waitSignal() {
+		int[] message = new int[] {
+				DRONEWAIT_SIGNATURE, 0, 0, 0, 0, 0, controller.getRoundNum()
+		};
+		Communication.encryptMessage(message);
+		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
+	}
 		
 	public static void processMessage(int[] message) {
 		switch(message[0]) {
@@ -118,6 +126,11 @@ public class SharedInfo {
 				break;
 			case DRONEATTACK_SIGNATURE:
 				attacking = true;
+				Pathfinding.ignoreNetGuns = true;
+				break;
+			case DRONEWAIT_SIGNATURE:
+				attacking = false;
+				Pathfinding.ignoreNetGuns = false;
 				break;
 		}
 	}

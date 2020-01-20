@@ -57,40 +57,23 @@ public class DroneBot implements RunnableBot {
 			}
 			Util.randomExplore();
 		} else {
-			//if we don't know where the enemy HQ is, proceed as normal (or if the game is early enough that potential disruption > drone life value)
-			if (SharedInfo.getEnemyHQLocation() == null || (SharedInfo.getEnemyHQLocation() != null && controller.getRoundNum() < 500)) {
-			// Find Target
-				RobotInfo target = findBestTarget();
-				if (target == null) {
-					Util.randomExplore();
-				} else {
-					if (currentLocation.isAdjacentTo(target.getLocation())) {
-						if (controller.canPickUpUnit(target.getID())) {
-							controller.pickUpUnit(target.getID());
-						}
-					} else {
-						Pathfinding.execute(target.getLocation());
-					}
-				}
-			}
-			else {
-				for (Direction dir : Util.ADJACENT_DIRECTIONS) {
-					RobotInfo target = controller.senseRobotAtLocation(Cache.CURRENT_LOCATION.add(dir));
-					if(target != null){
-						if(controller.canPickUpUnit(target.getID())) {
-							controller.pickUpUnit(target.getID());
-						}
-					}
-				}
-				if(SharedInfo.attacking) {
+			RobotInfo target = findBestTarget();
+			if (target == null) {
+				if(SharedInfo.getEnemyHQLocation() != null) {
 					Pathfinding.execute(SharedInfo.getEnemyHQLocation());
 				}
 				else {
-					avoidHQWalk();
+					Util.randomExplore();
 				}
-				
+			} else {
+				if (currentLocation.isAdjacentTo(target.getLocation())) {
+					if (controller.canPickUpUnit(target.getID())) {
+						controller.pickUpUnit(target.getID());
+					}
+				} else {
+					Pathfinding.execute(target.getLocation());
+				}
 			}
-			
 		}
 	}
 	public RobotInfo findBestTarget() {
