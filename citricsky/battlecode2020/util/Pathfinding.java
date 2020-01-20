@@ -147,6 +147,10 @@ public class Pathfinding {
 					}
 				}
 			}
+			// TODO: Miners and Landscapers should not move next to drones
+			if (Cache.ROBOT_TYPE == RobotType.MINER || Cache.ROBOT_TYPE == RobotType.LANDSCAPER) {
+				// TODO
+			}
 		}
 
 		if (controller.canMove(direction)) {

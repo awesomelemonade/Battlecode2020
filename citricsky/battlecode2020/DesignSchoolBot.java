@@ -21,9 +21,12 @@ public class DesignSchoolBot implements RunnableBot {
 		if (!controller.isReady()) {
 			return;
 		}
-		if (!MinerBot.isValidDesignSchoolLocation(Cache.CURRENT_LOCATION)) {
+		if (!MinerBot.isValidDesignSchoolLocation(Cache.CURRENT_LOCATION,
+				controller.senseElevation(Cache.CURRENT_LOCATION))) {
 			controller.disintegrate();
 		}
+		// TODO: If we see a drone, we should not build landscapers
+
 		if (controller.getTeamSoup() >= RobotType.LANDSCAPER.cost) {
 			if (SharedInfo.getOurHQState() == HQBot.NO_ADDITIONAL_HELP_NEEDED) {
 				// We need to create drones or net guns

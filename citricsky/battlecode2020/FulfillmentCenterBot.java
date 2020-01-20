@@ -29,7 +29,8 @@ public class FulfillmentCenterBot implements RunnableBot {
 				return;
 			}
 		} else {
-			if (controller.getTeamSoup() < RobotType.VAPORATOR.cost + RobotType.DELIVERY_DRONE.cost || Math.random() < 0.5) {
+			if (controller.getTeamSoup() < RobotType.VAPORATOR.cost + SharedInfo.getMissingBuildingsCost() +
+					RobotType.DELIVERY_DRONE.cost || Math.random() < 0.5) {
 				return;
 			}
 		}

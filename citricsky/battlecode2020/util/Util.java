@@ -103,9 +103,7 @@ public class Util {
 	}
 
 	public static boolean onTheMap(MapLocation location) {
-		int x = location.x;
-		int y = location.y;
-		return x >= 0 && x < controller.getMapWidth() && y >= 0 && y < controller.getMapHeight();
+		return controller.onTheMap(location);
 	}
 	/**
 	 * Whether the given direction is flooding
@@ -235,14 +233,9 @@ public class Util {
 	}
 
 	public static boolean isAdjacentToFlooding(MapLocation location) throws GameActionException {
-		for (Direction direction : Util.ADJACENT_DIRECTIONS) {
-			MapLocation adjacent = location.add(direction);
-			if (controller.canSenseLocation(adjacent)) {
-				if (controller.senseFlooding(location)) {
-					return true;
-				}
-			} else {
-				// Cannot see adjacent
+		for (int i = Util.ADJACENT_DIRECTIONS.length; --i >= 0;) {
+			MapLocation adjacent = location.add(Util.ADJACENT_DIRECTIONS[i]);
+			if (!controller.canSenseLocation(adjacent) || controller.senseFlooding(adjacent)) {
 				return true;
 			}
 		}

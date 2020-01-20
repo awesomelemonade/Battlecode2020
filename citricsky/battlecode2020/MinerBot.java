@@ -26,7 +26,15 @@ public class MinerBot implements RunnableBot {
 			return;
 		}
 		MapLocation currentLocation = Cache.CURRENT_LOCATION;
-		// See if we should build anything
+		// See if we should build net guns
+		if (tryBuildNetGun()) {
+			return;
+		}
+		if (localSaveForNetGun) {
+			localSaveForNetGun = false;
+			SharedInfo.sendSaveForNetgunSignal(false);
+		}
+		// See if we should be design school, fulfillment center, or vaporator
 		RobotType buildTarget = getBuildTypeTarget();
 		if (buildTarget != null) {
 			if (tryBuildAtBestLocation(buildTarget)) {
@@ -132,6 +140,66 @@ public class MinerBot implements RunnableBot {
 			}
 		}
 	}
+	private boolean localSaveForNetGun = true;
+	public boolean tryBuildNetGun() throws GameActionException {
+		// Find closest enemy drone
+		int bestDistanceSquared = Integer.MAX_VALUE;
+		RobotInfo bestEnemy = null;
+		for (RobotInfo enemy : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
+			if (enemy.getType() == RobotType.DELIVERY_DRONE) {
+				int distanceSquared = enemy.getLocation().distanceSquaredTo(Cache.CURRENT_LOCATION);
+				if (distanceSquared < bestDistanceSquared) {
+					// TODO: Check if there is an ally net gun nearby
+					bestDistanceSquared = distanceSquared;
+					bestEnemy = enemy;
+				}
+			}
+		}
+		if (bestEnemy != null) {
+			// We should build a net gun in range of the drone
+			// do we have enough money
+			boolean saveForNetGun = true;
+			turn: {
+				MapLocation enemyLocation = bestEnemy.getLocation();
+				// Pathfind towards enemyLocation if it's not close enough
+				if (!Cache.CURRENT_LOCATION.isWithinDistanceSquared(enemyLocation, 20)) {
+					Pathfinding.execute(enemyLocation);
+					break turn;
+				}
+				// do we have enough money
+				if (controller.getTeamSoup() >= RobotType.NET_GUN.cost) {
+					for (Direction direction : Util.getAttemptOrder(Cache.CURRENT_LOCATION.directionTo(enemyLocation))) {
+						MapLocation location = Cache.CURRENT_LOCATION.add(direction);
+						// Ensure the net gun location would be in range of drone
+						if (!location.isWithinDistanceSquared(enemyLocation, GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED)) {
+							continue;
+						}
+						if (Util.canSafeBuildRobot(RobotType.NET_GUN, direction)) {
+							controller.buildRobot(RobotType.NET_GUN, direction);
+							saveForNetGun = false;
+							break turn;
+						}
+					}
+				}
+				if (Cache.CURRENT_LOCATION.isWithinDistanceSquared(enemyLocation, Util.ADJACENT_DISTANCE_SQUARED)) {
+					// Move away
+					Direction awayDirection = enemyLocation.directionTo(Cache.CURRENT_LOCATION);
+					for (Direction direction : Util.getAttemptOrder(awayDirection)) {
+						if (Pathfinding.naiveMove(direction)) {
+							break turn;
+						}
+					}
+				}
+				// Stay Still
+			}
+			if (saveForNetGun && !SharedInfo.isSavingForNetgun) {
+				localSaveForNetGun = true;
+				SharedInfo.sendSaveForNetgunSignal(true);
+			}
+			return true;
+		}
+		return false;
+	}
 	public MapLocation findSoupLocation() throws GameActionException {
 		MapLocation currentLocation = Cache.CURRENT_LOCATION;
 		for (int i = 0; i < Util.FLOOD_FILL_DX.length; i++) {
@@ -144,12 +212,6 @@ public class MinerBot implements RunnableBot {
 			}
 		}
 		return null;
-	}
-	private boolean spawnedDesignSchool = false;
-	public void onBuildRobot(RobotType type) {
-		if (type == RobotType.DESIGN_SCHOOL) {
-			spawnedDesignSchool = true;
-		}
 	}
 	public boolean willNotGetFloodedSoon(MapLocation location) throws GameActionException {
 		if (controller.canSenseLocation(location)) {
@@ -171,7 +233,6 @@ public class MinerBot implements RunnableBot {
 			Direction direction = currentLocation.directionTo(location);
 			if (controller.canBuildRobot(type, direction)) {
 				controller.buildRobot(type, direction);
-				onBuildRobot(type);
 			}
 		} else {
 			Pathfinding.execute(location);
@@ -182,6 +243,7 @@ public class MinerBot implements RunnableBot {
 		MapLocation currentLocation = Cache.CURRENT_LOCATION;
 		MapLocation bestLocation = null;
 		int bestDistanceSquared = Integer.MAX_VALUE;
+		int targetElevation = LandscaperBot.getRealTargetElevation();
 		// Do not consider the location where the unit currently is (starts at i = 1)
 		for (int i = 1; i < Util.FLOOD_FILL_DX.length; i++) {
 			int dx = Util.FLOOD_FILL_DX[i];
@@ -193,32 +255,45 @@ public class MinerBot implements RunnableBot {
 			if (!controller.canSenseLocation(location)) {
 				break;
 			}
-			int distanceSquared = (int) (Math.sqrt(hqLocation.distanceSquaredTo(location)) + Math.sqrt(currentLocation.distanceSquaredTo(location)));
-			if (distanceSquared < bestDistanceSquared && (!hqLocation.isWithinDistanceSquared(location, 2)) &&
-					LatticeUtil.isBuildLocation(location) && willNotGetFloodedSoon(location)) {
-				// If it's a design school or fulfillment center, ensure that we are close enough to the hq
-				if (type == RobotType.DESIGN_SCHOOL || type == RobotType.FULFILLMENT_CENTER) {
-					if (!hqLocation.isWithinDistanceSquared(location, RobotType.HQ.sensorRadiusSquared)) {
-						continue;
-					}
+			if (!LatticeUtil.isBuildLocation(location)) {
+				continue;
+			}
+			int hqDistanceSquared = hqLocation.distanceSquaredTo(location);
+			if (hqDistanceSquared <= Util.ADJACENT_DISTANCE_SQUARED) {
+				continue;
+			}
+			// If it's a design school or fulfillment center, ensure that we are close enough to the hq
+			if (type == RobotType.DESIGN_SCHOOL || type == RobotType.FULFILLMENT_CENTER) {
+				if (hqDistanceSquared > RobotType.HQ.sensorRadiusSquared) {
+					continue;
 				}
+			}
+			int distanceSquared = (int) (Math.sqrt(hqDistanceSquared) + Math.sqrt(currentLocation.distanceSquaredTo(location)));
+			int elevation = Cache.controller.senseElevation(location);
+			if (elevation >= targetElevation) {
+				distanceSquared -= 1000; // Artificially increase the score
+			}
+			if (distanceSquared < bestDistanceSquared/* && willNotGetFloodedSoon(location)*/) {
 				// Check for elevation difference
-				if (type != RobotType.DESIGN_SCHOOL || isValidDesignSchoolLocation(location)) {
+				if (type != RobotType.DESIGN_SCHOOL || isValidDesignSchoolLocation(location, elevation)) {
 					RobotInfo robot = controller.senseRobotAtLocation(location);
 					if (robot == null) {
 						bestDistanceSquared = distanceSquared;
 						bestLocation = location;
 					}
+					/*if (!UnitsMap.hasBlockingUnit(location)) {
+						bestDistanceSquared = distanceSquared;
+						bestLocation = location;
+					}*/
 				}
 			}
 		}
 		return bestLocation;
 	}
-	public static boolean isValidDesignSchoolLocation(MapLocation buildingLocation) throws GameActionException {
+	public static boolean isValidDesignSchoolLocation(MapLocation buildingLocation, int elevation) throws GameActionException {
 		if (!Cache.controller.canSenseLocation(buildingLocation)) {
 			return false;
 		}
-		int elevation = Cache.controller.senseElevation(buildingLocation);
 		// Design schools can only spawn landscapers in cardinal directions
 		// Because the ordinal directions will be lattice pits
 		for (Direction direction : Util.CARDINAL_DIRECTIONS) {

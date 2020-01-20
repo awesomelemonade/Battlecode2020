@@ -44,7 +44,7 @@ public class SharedInfo {
 	private static int fulfillmentCenterCount = 0;
 	private static int vaporatorCount = 0;
 	
-	private static boolean savingForNetgun = false;
+	public static boolean isSavingForNetgun = false;
 
 	public static void init(RobotController controller) {
 		SharedInfo.controller = controller;
@@ -133,7 +133,7 @@ public class SharedInfo {
 		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
 	}
-	public static void saveForNetgunSignal(boolean saving) {
+	public static void sendSaveForNetgunSignal(boolean saving) {
 		int[] message = new int[] {
 				TOGGLE_SAVEFOR_NETGUN_SIGNATURE, 0, 0, (saving ? 1 : 0), 0, 0, controller.getRoundNum()
 		};
@@ -178,9 +178,8 @@ public class SharedInfo {
 				vaporatorCount++;
 				break;
 			case TOGGLE_SAVEFOR_NETGUN_SIGNATURE:
-				toggleSavingForNetgun(message[3]);
+				isSavingForNetgun = message[3] == 1;
 				break;
-				
 		}
 	}
 	private static void setOurHQLocation(MapLocation location) {
@@ -231,17 +230,7 @@ public class SharedInfo {
 	}
 	public static int getMissingBuildingsCost() {
 		return (SharedInfo.getDesignSchoolCount() == 0 ? RobotType.DESIGN_SCHOOL.cost : 0) +
-				(SharedInfo.getFulfillmentCenterCount() == 0 ? RobotType.FULFILLMENT_CENTER.cost : 0);
-	}
-	public static void toggleSavingForNetgun(int saving) {
-		if(saving == 1) {
-			savingForNetgun = true;
-		}
-		else if(saving == 0){
-			savingForNetgun = false;
-		}
-		else {
-			System.out.println("Invalid state passed to toggleSavingForNetgun");
-		}
+				(SharedInfo.getFulfillmentCenterCount() == 0 ? RobotType.FULFILLMENT_CENTER.cost : 0) +
+				(SharedInfo.isSavingForNetgun ? RobotType.NET_GUN.cost : 0);
 	}
 }
