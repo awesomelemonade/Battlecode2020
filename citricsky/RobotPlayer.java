@@ -45,27 +45,22 @@ public class RobotPlayer {
 		}
 		Util.init(controller);
 		bot.init();
-		try {
-			while (true) {
-				int currentTurn = controller.getRoundNum();
-				Util.loop();
-				bot.turn();
-				Util.postLoop();
-				if (controller.getRoundNum() != currentTurn) {
-					// We ran out of bytecodes! - MAGENTA
-					controller.setIndicatorDot(Cache.CURRENT_LOCATION, 255, 0, 255);
+		while (true) {
+			try {
+				while (true) {
+					int currentTurn = controller.getRoundNum();
+					Util.loop();
+					bot.turn();
+					Util.postLoop();
+					if (controller.getRoundNum() != currentTurn) {
+						// We ran out of bytecodes! - MAGENTA
+						controller.setIndicatorDot(Cache.CURRENT_LOCATION, 255, 0, 255);
+					}
+					Clock.yield();
 				}
-				Clock.yield();
-			}
-		} catch (Exception ex) {
-			int counter = 0;
-			while (true) {
+			} catch (Exception ex) {
 				controller.setIndicatorDot(Cache.CURRENT_LOCATION, 255, 0, 0);
-				if (counter < 10) {
-					ex.printStackTrace();
-				}
 				Clock.yield();
-				counter++;
 			}
 		}
 	}
