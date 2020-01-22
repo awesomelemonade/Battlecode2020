@@ -42,6 +42,7 @@ public class Util {
 		return random;
 	}
 	public static final int ADJACENT_DISTANCE_SQUARED = 2;
+	public static final Direction[] ALL_DIRECTIONS = Direction.values();
 	public static final Direction[] ADJACENT_DIRECTIONS = new Direction[] {
 			Direction.NORTH, Direction.NORTHEAST, Direction.EAST, Direction.SOUTHEAST,
 			Direction.SOUTH, Direction.SOUTHWEST, Direction.WEST, Direction.NORTHWEST
@@ -235,7 +236,17 @@ public class Util {
 	public static boolean isAdjacentToFlooding(MapLocation location) throws GameActionException {
 		for (int i = Util.ADJACENT_DIRECTIONS.length; --i >= 0;) {
 			MapLocation adjacent = location.add(Util.ADJACENT_DIRECTIONS[i]);
-			if (!controller.canSenseLocation(adjacent) || controller.senseFlooding(adjacent)) {
+			if (controller.onTheMap(adjacent) && (!controller.canSenseLocation(adjacent) || controller.senseFlooding(adjacent))) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static boolean isFloodingOrAdjacentToFlooding(MapLocation center) throws GameActionException {
+		for (int i = Util.ALL_DIRECTIONS.length; --i >= 0;) {
+			MapLocation location = center.add(Util.ALL_DIRECTIONS[i]);
+			if (controller.onTheMap(location) && (!controller.canSenseLocation(location) || controller.senseFlooding(location))) {
 				return true;
 			}
 		}
