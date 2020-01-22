@@ -111,31 +111,33 @@ public class HQBot implements RunnableBot {
 		}
 		//Landscaper wall state
 		if (SharedInfo.getVaporatorCount() >= 8) {
-			if(SharedInfo.wallState == SharedInfo.WALL_STATE_NONE) {
-				if(controller.canSenseRadiusSquared(Util.ADJACENT_DISTANCE_SQUARED)) {
-					for(Direction direction : Util.ADJACENT_DIRECTIONS) {
+			if (SharedInfo.wallState == SharedInfo.WALL_STATE_NONE) {
+				if (controller.canSenseRadiusSquared(Util.ADJACENT_DISTANCE_SQUARED)) {
+					for (Direction direction : Util.ADJACENT_DIRECTIONS) {
 						MapLocation location = currentLocation.add(direction);
-						if(controller.onTheMap(location)) {
-							if(!controller.isLocationOccupied(location)) {
+						if (controller.onTheMap(location)) {
+							if (!controller.isLocationOccupied(location)) {
 								SharedInfo.sendWallState(SharedInfo.WALL_STATE_NEEDS);
 								break;
 							}
 						}
 					}
 				}
-			}
-			else if(SharedInfo.wallState == SharedInfo.WALL_STATE_NEEDS) {
-				boolean allNeighborsOccupied = true;
-				for(Direction direction : Util.ADJACENT_DIRECTIONS) {
-					MapLocation location = currentLocation.add(direction);
-					if(controller.onTheMap(location)) {
-						if(!controller.isLocationOccupied(location)) {
-							allNeighborsOccupied = false;
+			} else if(SharedInfo.wallState == SharedInfo.WALL_STATE_NEEDS) {
+				if (controller.canSenseRadiusSquared(Util.ADJACENT_DISTANCE_SQUARED)) {
+					boolean allNeighborsOccupied = true;
+					for (Direction direction : Util.ADJACENT_DIRECTIONS) {
+						MapLocation location = currentLocation.add(direction);
+						if (controller.onTheMap(location)) {
+							if (!controller.isLocationOccupied(location)) {
+								allNeighborsOccupied = false;
+								break;
+							}
 						}
 					}
-				}
-				if(allNeighborsOccupied) {
-					SharedInfo.sendWallState(SharedInfo.WALL_STATE_STAYS);
+					if (allNeighborsOccupied) {
+						SharedInfo.sendWallState(SharedInfo.WALL_STATE_STAYS);
+					}
 				}
 			}
 		}
