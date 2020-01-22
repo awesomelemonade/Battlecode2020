@@ -19,6 +19,7 @@ public class SharedInfo {
 	private static final int VAPORATOR_COUNT_INCREMENT_SIGNATURE = 3431285;
 	private static final int TOGGLE_SAVEFOR_NETGUN_SIGNATURE = -9988235;
 	private static final int WALLSTATE_CHANGE_SIGNATURE = 35289359;
+	private static final int WATER_SIGNATURE = -8529682;
 
 	private static RobotController controller;
 	private static MapLocation ourHQLocation;
@@ -30,6 +31,7 @@ public class SharedInfo {
 	private static int ourHQState = HQBot.NO_HELP_NEEDED;
 	
 	public static MapLocationArray soupLocations = new MapLocationArray(100);
+	public static MapLocationArray waterLocations = new MapLocationArray(100);
 
 	public static int landscapersBuilt = 0;
 	
@@ -155,6 +157,13 @@ public class SharedInfo {
 		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
 	}
+	public static void sendWaterState(MapLocation location, int waterState) {
+		int[] message = new int[] {
+				WATER_SIGNATURE, 0, location.x, location.y, waterState, 0, controller.getRoundNum()
+		};
+		Communication.encryptMessage(message);
+		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
+	}
 	
 	public static void processMessage(int[] message) {
 		switch(message[0]) {
@@ -197,6 +206,9 @@ public class SharedInfo {
 				break;
 			case WALLSTATE_CHANGE_SIGNATURE:
 				wallState = message[4];
+				break;
+			case WATER_SIGNATURE:
+				updateWaterLocations(new MapLocation(message[2], 3), message[4] == 1);
 				break;
 		}
 	}
@@ -254,5 +266,13 @@ public class SharedInfo {
 		return (SharedInfo.getDesignSchoolCount() == 0 ? RobotType.DESIGN_SCHOOL.cost : 0) +
 				(SharedInfo.getFulfillmentCenterCount() == 0 ? RobotType.FULFILLMENT_CENTER.cost : 0) +
 				(SharedInfo.isSavingForNetgun ? RobotType.NET_GUN.cost : 0);
+	}
+	public static void updateWaterLocations(MapLocation location, boolean waterState) {
+		if(waterState) {
+			waterLocations.add(location);
+		}
+		else {
+			waterLocations.remove(location);
+		}
 	}
 }
