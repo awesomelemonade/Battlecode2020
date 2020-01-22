@@ -4,15 +4,24 @@ import battlecode.common.*;
 import citricsky.battlecode2020.LandscaperBot;
 import citricsky.battlecode2020.MinerBot;
 
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.function.IntUnaryOperator;
+import java.util.function.ToIntFunction;
+
 public class Pathfinding {
 	public static boolean ignoreNetGuns = false;
 	private static RobotController controller;
-	private static FastIntSet2D visitedSet;
+	private static FastIntCounter2D visitedSet;
 	private static MapLocation lastTarget;
+	// max 8 directions, heap ignores first element
+	// min heap of counters
+	// private static Direction[] directionsHeap = new Direction[9];
+	// private static int[] countersHeap = new int[9];
 
 	public static void init(RobotController controller) {
 		Pathfinding.controller = controller;
-		visitedSet = new FastIntSet2D(controller.getMapWidth(), controller.getMapHeight());
+		visitedSet = new FastIntCounter2D(controller.getMapWidth(), controller.getMapHeight());
 	}
 	public static void execute(MapLocation target) throws GameActionException {
 		if (lastTarget == null || !lastTarget.equals(target) || Cache.ROBOT_TYPE == RobotType.DELIVERY_DRONE) {
@@ -42,18 +51,77 @@ public class Pathfinding {
 				return;
 			}
 		}
-		// We stuck bois
-		visitedSet.reset();
-		visitedSet.add(currentLocation.x, currentLocation.y);
+		// We stuck bois - let's look for the lowest non-negative
+		Direction[] directions = Util.getAttemptOrder(idealDirection);
+		int[] counters = new int[8];
+		Integer[] indices = new Integer[8];
+		for (int i = counters.length; --i >= 0;) {
+			MapLocation location = currentLocation.add(directions[i]);
+			if (Util.onTheMap(location)) {
+				counters[i] = visitedSet.get(location.x, location.y);
+			} else {
+				counters[i] = Integer.MAX_VALUE;
+			}
+			indices[i] = i;
+		}
+		Arrays.sort(indices, Comparator.comparingInt(i -> counters[i]));
+		for (int i = 0; i < indices.length; i++) {
+			if (naiveMove(directions[indices[i]])) {
+				return;
+			}
+		}
+		// should never happen
+		/*int size = 0;
 		for (Direction direction : Util.getAttemptOrder(idealDirection)) {
 			MapLocation location = currentLocation.add(direction);
 			if (!Util.onTheMap(location)) {
 				continue;
 			}
+			directionsHeap[++size] = direction;
+			countersHeap[size] = visitedSet.get(location.x, location.y);
 			if (naiveMove(direction)) {
 				return;
 			}
 		}
+		// Build heap
+		for (int i = size / 2; --i >= 0;) {
+			// percolate down
+			int index = i;
+			while (index < size / 2) {
+				int current = countersHeap[index];
+				int leftIndex = 2 * index;
+				int rightIndex = 2 * index + 1;
+				int left = countersHeap[leftIndex];
+				int right = countersHeap[rightIndex];
+				if (countersHeap[index] > countersHeap[2 * index] ||
+						countersHeap[index] > countersHeap[2 * index + 1]) {
+					if (countersHeap[2 * index] > countersHeap[2 * index + 1]) {
+						// Swap with left
+						int temp = countersHeap[index];
+						int leftIndex = 2 * index;
+						index = 2 * index;
+					} else {
+						// Swap with right
+
+						index = 2 * index + 1;
+					}
+				}
+			}
+		}
+		// Poll from heap
+		while (size > 0) {
+			Direction peeked = directionsHeap[0];
+			if (naiveMove(peeked)) {
+				return;
+			}
+			// Remove
+			directionsHeap[1] = directionsHeap[size];
+			countersHeap[1] = countersHeap[size];
+			size--;
+			// Percolate down from 1
+			int index = 1;
+
+		}*/
 	}
 	private static int designSchoolSpawnedTurn = -1;
 	public static boolean naiveMove(Direction direction) throws GameActionException {
