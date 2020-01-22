@@ -113,17 +113,17 @@ public class Util {
 		return isFlooding(Cache.CURRENT_LOCATION.add(direction));
 	}
 	public static boolean isFlooding(MapLocation location) throws GameActionException {
-		return controller.canSenseLocation(location) && controller.senseFlooding(location);
+		return !controller.canSenseLocation(location) || controller.senseFlooding(location);
 	}
 	public static boolean isBlocked(MapLocation location) throws GameActionException {
 		return !onTheMap(location) || UnitsMap.hasBlockingUnit(location) ||
 				(Cache.ROBOT_TYPE != RobotType.DELIVERY_DRONE && isFlooding(location));
 	}
 	public static boolean canSafeMove(Direction direction) throws GameActionException {
-		return controller.canMove(direction) && (!isFlooding(direction));
+		return controller.canMove(direction) && (Cache.ROBOT_TYPE == RobotType.DELIVERY_DRONE || (!isFlooding(direction)));
 	}
 	public static boolean canSafeBuildRobot(RobotType type, Direction direction) throws GameActionException {
-		return controller.canBuildRobot(type, direction) && (!isFlooding(direction));
+		return controller.canBuildRobot(type, direction) && (type == RobotType.DELIVERY_DRONE || (!isFlooding(direction)));
 	}
 	public static boolean trySafeBuildTowardsEnemyHQ(RobotType type) throws GameActionException {
 		MapLocation location = SharedInfo.getEnemyHQLocation();
