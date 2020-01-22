@@ -44,6 +44,7 @@ public class Pathfinding {
 		}
 		// We stuck bois
 		visitedSet.reset();
+		visitedSet.add(currentLocation.x, currentLocation.y);
 		for (Direction direction : Util.getAttemptOrder(idealDirection)) {
 			MapLocation location = currentLocation.add(direction);
 			if (!Util.onTheMap(location)) {
@@ -152,7 +153,6 @@ public class Pathfinding {
 				// TODO
 			}
 		}
-
 		if (controller.canMove(direction)) {
 			controller.move(direction);
 		}

@@ -30,7 +30,10 @@ public class DesignSchoolBot implements RunnableBot {
 		if (controller.getTeamSoup() >= RobotType.LANDSCAPER.cost) {
 			if (SharedInfo.getOurHQState() == HQBot.NO_ADDITIONAL_HELP_NEEDED) {
 				// We need to create drones or net guns
-				return;
+				if (controller.getTeamSoup() < SharedInfo.getMissingBuildingsCost() +
+						RobotType.LANDSCAPER.cost + RobotType.NET_GUN.cost) {
+					return;
+				}
 			}
 			boolean shouldMassCreate = SharedInfo.getVaporatorCount() >= FulfillmentCenterBot.MASS_SPAWN_VAPORATOR_THRESHOLD;
 			if (!shouldMassCreate || Math.random() < 0.3) {

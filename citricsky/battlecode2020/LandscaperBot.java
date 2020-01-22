@@ -33,6 +33,10 @@ public class LandscaperBot implements RunnableBot {
 	@Override
 	public void turn() throws GameActionException {
 		while (Util.getTurnsToFlooded(targetElevation) - controller.getRoundNum() < 100) {
+			if (targetElevation >= Util.TURNS_TO_FLOODED.length) {
+				targetElevation = Integer.MAX_VALUE / 2;
+				break;
+			}
 			targetElevation++;
 		}
 		if (!controller.isReady()) {
@@ -132,18 +136,7 @@ public class LandscaperBot implements RunnableBot {
 			if (controller.canDigDirt(direction)) {
 				controller.digDirt(direction);
 			} else {
-				int upperTargetElevation = getRealTargetElevation() + GameConstants.MAX_DIRT_DIFFERENCE;
-				int elevation = controller.senseElevation(currentLocation);
-				// Try deposit up to upperTargetElevation
-				if (elevation < upperTargetElevation) {
-					if (controller.canDepositDirt(Direction.CENTER)) {
-						controller.depositDirt(Direction.CENTER);
-					} else {
-						tryDigFromPit();
-					}
-				} else {
-					tryDepositToPit();
-				}
+				tryWall();
 			}
 			return true;
 		} else {
@@ -179,21 +172,51 @@ public class LandscaperBot implements RunnableBot {
 		if (hqLocation == null) {
 			return false;
 		}
-		// Check if we need to wall
-		if (SharedInfo.wallState == SharedInfo.WALL_STATE_NONE) {
-			return false;
-		}
-		if (hqLocation.isAdjacentTo(Cache.CURRENT_LOCATION)) {
-			if (controller.canDepositDirt(Direction.CENTER)) {
-				controller.depositDirt(Direction.CENTER);
-			} else {
-				tryDigFromPit();
-			}
-			return true;
-		} else {
-			if (SharedInfo.wallState == SharedInfo.WALL_STATE_NEEDS) {
-				Pathfinding.execute(hqLocation);
-			}
+		switch (SharedInfo.wallState) {
+			case SharedInfo.WALL_STATE_NONE:
+				return false;
+			case SharedInfo.WALL_STATE_NEEDS:
+				if (hqLocation.isAdjacentTo(Cache.CURRENT_LOCATION)) {
+					// Shuffle around
+					Direction direction = Util.randomAdjacentDirection();
+					MapLocation location = Cache.CURRENT_LOCATION.add(direction);
+					if (location.isAdjacentTo(hqLocation) && Util.canSafeMove(direction)) {
+						controller.move(direction);
+					}
+				} else {
+					Pathfinding.execute(hqLocation);
+				}
+				return true;
+			case SharedInfo.WALL_STATE_STAYS:
+				if (hqLocation.isAdjacentTo(Cache.CURRENT_LOCATION)) {
+					Direction lowestDirection = null;
+					int lowestElevation = Integer.MAX_VALUE;
+					for (Direction direction : Util.ALL_DIRECTIONS) {
+						MapLocation location = Cache.CURRENT_LOCATION.add(direction);
+						if (controller.canSenseLocation(location) && location.isAdjacentTo(hqLocation) && (!location.equals(hqLocation))) {
+							int elevation = controller.senseElevation(location);
+							if (Util.canPotentiallyBeFlooded(elevation)) {
+								if (controller.canDepositDirt(direction)) {
+									controller.depositDirt(direction);
+									return true;
+								}
+							}
+							if (elevation < lowestElevation) {
+								lowestDirection = direction;
+								lowestElevation = elevation;
+							}
+						}
+					}
+					if (!tryDigFromPit()) {
+						if (lowestDirection != null) {
+							if (controller.canDepositDirt(lowestDirection)) {
+								controller.depositDirt(lowestDirection);
+							}
+						}
+					}
+					return true;
+				}
+				break;
 		}
 		return false;
 	}
@@ -281,7 +304,6 @@ public class LandscaperBot implements RunnableBot {
 						if (distanceSquared < bestDistanceSquared) {
 							RobotInfo robot = controller.senseRobotAtLocation(location);
 							if (robot != null && robot.getTeam() == Cache.OUR_TEAM && robot.getType().isBuilding()) {
-								// TODO: Maybe we should consider burying our own buildings to make space for new buildings
 								continue;
 							}
 							bestDistanceSquared = distanceSquared;
@@ -300,7 +322,6 @@ public class LandscaperBot implements RunnableBot {
 						if (distanceSquared < bestDistanceSquared) {
 							RobotInfo robot = controller.senseRobotAtLocation(location);
 							if (robot != null && robot.getTeam() == Cache.OUR_TEAM && robot.getType().isBuilding()) {
-								// TODO: Maybe we should consider burying our own buildings to make space for new buildings
 								continue;
 							}
 							bestDistanceSquared = distanceSquared;
@@ -348,7 +369,7 @@ public class LandscaperBot implements RunnableBot {
 			Pathfinding.execute(location);
 		}
 	}
-	public static void tryDigFromPit() throws GameActionException {
+	public static boolean tryDigFromPit() throws GameActionException {
 		for (Direction pitDirection : LatticeUtil.getPitDirections(Cache.CURRENT_LOCATION)) {
 			MapLocation location = Cache.CURRENT_LOCATION.add(pitDirection);
 			if (Cache.controller.canSenseLocation(location)) {
@@ -356,16 +377,15 @@ public class LandscaperBot implements RunnableBot {
 				if (robot != null && robot.getType().isBuilding() && robot.getTeam() == Cache.OPPONENT_TEAM) {
 					continue;
 				}
-			} else {
-				continue;
-			}
-			if (Cache.controller.canDigDirt(pitDirection)) {
-				Cache.controller.digDirt(pitDirection);
-				break;
+				if (Cache.controller.canDigDirt(pitDirection)) {
+					Cache.controller.digDirt(pitDirection);
+					return true;
+				}
 			}
 		}
+		return false;
 	}
-	public static void tryDepositToPit() throws GameActionException {
+	public static boolean tryDepositToPit() throws GameActionException {
 		for (Direction pitDirection : LatticeUtil.getPitDirections(Cache.CURRENT_LOCATION)) {
 			MapLocation location = Cache.CURRENT_LOCATION.add(pitDirection);
 			if (Cache.controller.canSenseLocation(location)) {
@@ -373,13 +393,12 @@ public class LandscaperBot implements RunnableBot {
 				if (robot != null && robot.getType().isBuilding() && robot.getTeam() == Cache.OUR_TEAM) {
 					continue;
 				}
-			} else {
-				continue;
-			}
-			if (Cache.controller.canDepositDirt(pitDirection)) {
-				Cache.controller.depositDirt(pitDirection);
-				break;
+				if (Cache.controller.canDepositDirt(pitDirection)) {
+					Cache.controller.depositDirt(pitDirection);
+					return true;
+				}
 			}
 		}
+		return false;
 	}
 }

@@ -26,6 +26,19 @@ public class MinerBot implements RunnableBot {
 			return;
 		}
 		MapLocation currentLocation = Cache.CURRENT_LOCATION;
+		if (SharedInfo.wallState == SharedInfo.WALL_STATE_NEEDS) {
+			if (currentLocation.isAdjacentTo(hqLocation)) {
+				// Try move away
+				for (Direction direction : Util.getAttemptOrder(hqLocation.directionTo(currentLocation))) {
+					if (controller.canMove(direction)) {
+						controller.move(direction);
+						return;
+					}
+				}
+				// Last resort :/
+				controller.disintegrate();
+			}
+		}
 		// See if we should build net guns
 		if (tryBuildNetGun()) {
 			return;
@@ -43,7 +56,7 @@ public class MinerBot implements RunnableBot {
 		}
 		if (controller.getSoupCarrying() < RobotType.MINER.soupLimit) {
 			// Mine adjacent, broadcast location if new
-			for (Direction direction : Direction.values()) {
+			for (Direction direction : Util.ALL_DIRECTIONS) {
 				if (controller.canMineSoup(direction)) {
 					controller.mineSoup(direction);
 					if(!SharedInfo.soupLocations.contains(currentLocation.add(direction))) {
@@ -178,6 +191,7 @@ public class MinerBot implements RunnableBot {
 			boolean saveForNetGun = true;
 			turn: {
 				MapLocation enemyLocation = bestEnemy.getLocation();
+				controller.setIndicatorLine(Cache.CURRENT_LOCATION, enemyLocation, 128, 0, 255);
 				// Pathfind towards enemyLocation if it's not close enough
 				if (!Cache.CURRENT_LOCATION.isWithinDistanceSquared(enemyLocation, 20)) {
 					Pathfinding.execute(enemyLocation);

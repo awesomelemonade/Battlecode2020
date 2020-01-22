@@ -171,7 +171,7 @@ public class Util {
 		Pathfinding.execute(lastExploreTarget);
 		return true;
 	}
-	private static final int[] TURNS_TO_FLOODED = {
+	public static final int[] TURNS_TO_FLOODED = {
 			0, 256, 464, 677, 931, 1210, 1413, 1546, 1640, 1713, 1771, 1819, 1861, 1897, 1929, 1957, 1983, 2007, 2028,
 			2048, 2067, 2084, 2100, 2115, 2129, 2143, 2155, 2168, 2179, 2190, 2201, 2211, 2220, 2230, 2239, 2247, 2256,
 			2264, 2271, 2279, 2286, 2293, 2300, 2307, 2313, 2319, 2325, 2331, 2337, 2343, 2348, 2353, 2359, 2364, 2369,
@@ -257,10 +257,10 @@ public class Util {
 	 * Returns whether the location will be flooded next turn
 	 * Returns true if location cannot be sensed
 	 */
-	public boolean isGoingToBeFloodedNextTurn(MapLocation location) throws GameActionException {
+	public static boolean isGoingToBeFloodedNextTurn(MapLocation location) throws GameActionException {
 		if (controller.canSenseLocation(location)) {
 			int elevation = controller.senseElevation(location);
-			if (controller.getRoundNum() + 1 >= getTurnsToFlooded(elevation)) {
+			if (canPotentiallyBeFlooded(elevation)) {
 				// Check if there is water in the surroundings
 				return isAdjacentToFlooding(location);
 			} else {
@@ -271,6 +271,9 @@ public class Util {
 			// Assume it will be flooded if you can't see it
 			return true;
 		}
+	}
+	public static boolean canPotentiallyBeFlooded(int elevation) {
+		return controller.getRoundNum() + 1 >= getTurnsToFlooded(elevation);
 	}
 	public static boolean tryShootDrone() throws GameActionException {
 		RobotInfo[] enemies = controller.senseNearbyRobots(Cache.CURRENT_LOCATION,

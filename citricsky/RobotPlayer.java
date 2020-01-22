@@ -45,9 +45,13 @@ public class RobotPlayer {
 		}
 		Util.init(controller);
 		bot.init();
+		boolean errored = false;
 		while (true) {
 			try {
 				while (true) {
+					if (errored) {
+						controller.setIndicatorDot(Cache.CURRENT_LOCATION, 255, 0, 0);
+					}
 					int currentTurn = controller.getRoundNum();
 					Util.loop();
 					bot.turn();
@@ -59,7 +63,8 @@ public class RobotPlayer {
 					Clock.yield();
 				}
 			} catch (Exception ex) {
-				controller.setIndicatorDot(Cache.CURRENT_LOCATION, 255, 0, 0);
+				ex.printStackTrace();
+				errored = true;
 				Clock.yield();
 			}
 		}

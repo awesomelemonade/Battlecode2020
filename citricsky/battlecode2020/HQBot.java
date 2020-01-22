@@ -70,7 +70,6 @@ public class HQBot implements RunnableBot {
 				}
 			}
 		}
-		System.out.println("Attack State: " + SharedInfo.attackState);
 		// Calculates state
 		int state;
 		if (Cache.ALL_NEARBY_ENEMY_ROBOTS.length > 0) {
@@ -102,8 +101,7 @@ public class HQBot implements RunnableBot {
 				// This really shouldn't happen
 				state = NO_ADDITIONAL_HELP_NEEDED;
 			}
-		}
-		else {
+		} else {
 			state = NO_HELP_NEEDED;
 		}
 		if (SharedInfo.getOurHQState() != state) {
@@ -111,36 +109,31 @@ public class HQBot implements RunnableBot {
 		}
 		//Landscaper wall state
 		if (SharedInfo.getVaporatorCount() >= 8) {
+			int newWallState = SharedInfo.wallState;
 			if (SharedInfo.wallState == SharedInfo.WALL_STATE_NONE) {
-				if (controller.canSenseRadiusSquared(Util.ADJACENT_DISTANCE_SQUARED)) {
-					for (Direction direction : Util.ADJACENT_DIRECTIONS) {
-						MapLocation location = currentLocation.add(direction);
-						if (controller.onTheMap(location)) {
-							if (!controller.isLocationOccupied(location)) {
-								SharedInfo.sendWallState(SharedInfo.WALL_STATE_NEEDS);
-								break;
-							}
-						}
-					}
-				}
-			} else if(SharedInfo.wallState == SharedInfo.WALL_STATE_NEEDS) {
+				newWallState = SharedInfo.WALL_STATE_NEEDS;
+			}
+			if (newWallState == SharedInfo.WALL_STATE_NEEDS) {
 				if (controller.canSenseRadiusSquared(Util.ADJACENT_DISTANCE_SQUARED)) {
 					boolean allNeighborsOccupied = true;
 					for (Direction direction : Util.ADJACENT_DIRECTIONS) {
 						MapLocation location = currentLocation.add(direction);
-						if (controller.onTheMap(location)) {
-							if (!controller.isLocationOccupied(location)) {
-								allNeighborsOccupied = false;
-								break;
-							}
+						RobotInfo robot = controller.senseRobotAtLocation(location);
+						if (robot == null || robot.getTeam() == Cache.OPPONENT_TEAM || robot.getType() != RobotType.LANDSCAPER) {
+							allNeighborsOccupied = false;
+							break;
 						}
 					}
 					if (allNeighborsOccupied) {
-						SharedInfo.sendWallState(SharedInfo.WALL_STATE_STAYS);
+						newWallState = SharedInfo.WALL_STATE_STAYS;
 					}
 				}
 			}
+			if (SharedInfo.wallState != newWallState) {
+				SharedInfo.sendWallState(newWallState);
+			}
 		}
+		System.out.println("Attack=" + SharedInfo.attackState + "; Wall=" + SharedInfo.wallState + "; HQ=" + SharedInfo.getOurHQState());
 		
 		int designSchoolCount = 0;
 		int fulfillmentCenterCount = 0;
