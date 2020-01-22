@@ -29,9 +29,6 @@ public class SharedInfo {
 	private static MapLocation enemyHQLocation;
 	private static int enemyHQGuesserMode = EnemyHQGuesser.UNKNOWN_MODE;
 	private static int ourHQState = HQBot.NO_HELP_NEEDED;
-	
-	public static MapLocationArray soupLocations = new MapLocationArray(100);
-	public static MapLocationArray waterLocations = new MapLocationArray(100);
 
 	public static int landscapersBuilt = 0;
 	
@@ -59,6 +56,7 @@ public class SharedInfo {
 	public static void init(RobotController controller) {
 		SharedInfo.controller = controller;
 		EnemyHQGuesser.init(controller);
+		MapTracker.init(controller);
 	}
 	public static void sendEnemyHQ(MapLocation location) {
 		setEnemyHQLocation(location);
@@ -180,10 +178,10 @@ public class SharedInfo {
 				setOurHQState(message[5]);
 				break;
 			case NEWSOUP_SIGNATURE:
-				soupLocations.add(new MapLocation(message[4], message[5]));
+				MapTracker.soupLocations.add(new MapLocation(message[4], message[5]));
 				break;
 			case SOUPGONE_SIGNATURE:
-				soupLocations.remove(new MapLocation(message[4], message[5]));
+				MapTracker.soupLocations.remove(new MapLocation(message[4], message[5]));
 				break;
 			case NEWLANDSCAPER_SIGNATURE:
 				landscapersBuilt++;
@@ -269,10 +267,10 @@ public class SharedInfo {
 	}
 	public static void updateWaterLocations(MapLocation location, boolean waterState) {
 		if(waterState) {
-			waterLocations.add(location);
+			MapTracker.waterLocations.add(location);
 		}
 		else {
-			waterLocations.remove(location);
+			MapTracker.waterLocations.remove(location);
 		}
 	}
 }
