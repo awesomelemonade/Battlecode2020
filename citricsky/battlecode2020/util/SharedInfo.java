@@ -32,6 +32,8 @@ public class SharedInfo {
 
 	public static int landscapersBuilt = 0;
 	
+	public static MapTracker mapTracker;
+	
 	// Attack with drones info
 	public static int dronesBuilt = 0;
 	public static final int ATTACK_STATE_NONE = 0;
@@ -56,7 +58,7 @@ public class SharedInfo {
 	public static void init(RobotController controller) {
 		SharedInfo.controller = controller;
 		EnemyHQGuesser.init(controller);
-		MapTracker.init(controller);
+		mapTracker = new MapTracker(controller);
 	}
 	public static void sendEnemyHQ(MapLocation location) {
 		setEnemyHQLocation(location);
@@ -178,10 +180,10 @@ public class SharedInfo {
 				setOurHQState(message[5]);
 				break;
 			case NEWSOUP_SIGNATURE:
-				MapTracker.soupLocations.add(new MapLocation(message[4], message[5]));
+				mapTracker.soupLocations.add(new MapLocation(message[4], message[5]));
 				break;
 			case SOUPGONE_SIGNATURE:
-				MapTracker.soupLocations.remove(new MapLocation(message[4], message[5]));
+				mapTracker.soupLocations.remove(new MapLocation(message[4], message[5]));
 				break;
 			case NEWLANDSCAPER_SIGNATURE:
 				landscapersBuilt++;
@@ -267,10 +269,10 @@ public class SharedInfo {
 	}
 	public static void updateWaterLocations(MapLocation location, boolean waterState) {
 		if(waterState) {
-			MapTracker.waterLocations.add(location);
+			mapTracker.waterLocations.add(location);
 		}
 		else {
-			MapTracker.waterLocations.remove(location);
+			mapTracker.waterLocations.remove(location);
 		}
 	}
 }

@@ -6,19 +6,18 @@ import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 
 public class MapTracker {
-	private static RobotController controller;
+	private RobotController controller;
 	
-	public static MapLocationArray soupLocations = new MapLocationArray(100);
-	public static MapLocationArray waterLocations = new MapLocationArray(100);
+	public MapLocationArray soupLocations = new MapLocationArray(100);
+	public MapLocationArray waterLocations = new MapLocationArray(100);
 	//public static MapLocationArray enemyLocations = new MapLocationArray(100);
 	
-	public static void init(RobotController controller) {
-		MapTracker.controller = controller;
-		//EnemyHQGuesser.init(controller);  ???
+	public MapTracker(RobotController controller) {
+		this.controller = controller;
 	}
 	
 	//loop every round and update adjacent locations
-	public static void updateLocations() throws GameActionException {
+	public void updateLocations() throws GameActionException {
 		for (Direction direction : Util.ADJACENT_DIRECTIONS) {
 			MapLocation adjacentLocation = Cache.CURRENT_LOCATION.add(direction);
 			if (controller.canSenseLocation(adjacentLocation)) {
