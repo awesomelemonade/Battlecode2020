@@ -24,9 +24,12 @@ public class Pathfinding {
 		visitedSet = new FastIntCounter2D(controller.getMapWidth(), controller.getMapHeight());
 	}
 	public static void execute(MapLocation target) throws GameActionException {
-		if (lastTarget == null || !lastTarget.equals(target) || Cache.ROBOT_TYPE == RobotType.DELIVERY_DRONE) {
+		if (lastTarget == null || !lastTarget.equals(target)) {
 			lastTarget = target;
 			visitedSet.reset();
+		}
+		if (Cache.ROBOT_TYPE == RobotType.DELIVERY_DRONE) {
+			visitedSet.updateBaseTrail(5); // Drones only care about the last 5 visited tiles
 		}
 		MapLocation currentLocation = Cache.CURRENT_LOCATION;
 		controller.setIndicatorLine(currentLocation, target, 0, 255, 0);

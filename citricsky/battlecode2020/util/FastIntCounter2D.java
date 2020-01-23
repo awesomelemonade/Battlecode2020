@@ -9,6 +9,9 @@ public class FastIntCounter2D {
 		this.base = 0;
 		this.counter = 0;
 	}
+	public void updateBaseTrail(int n) {
+		base = counter - n;
+	}
 	public void reset() {
 		this.base = counter;
 	}
