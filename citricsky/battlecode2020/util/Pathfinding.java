@@ -137,9 +137,10 @@ public class Pathfinding {
 				if (designSchoolSpawnedTurn == -1) {
 					designSchoolSpawnedTurn = controller.getRoundNum();
 				}
-				if (Cache.ROBOT_TYPE != RobotType.MINER || controller.getRoundNum() - designSchoolSpawnedTurn > 100) {
-					return false;
-				}
+			}
+			if (Cache.ROBOT_TYPE != RobotType.MINER ||
+					(designSchoolSpawnedTurn != -1 && controller.getRoundNum() - designSchoolSpawnedTurn > 100)) {
+				return false;
 			}
 		}
 		if (!controller.canSenseLocation(location)) {
