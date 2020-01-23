@@ -74,27 +74,28 @@ public class LandscaperBot implements RunnableBot {
 	}
 	public boolean tryKiting() throws GameActionException {
 		//more efficient to search Cache if not a lot nearby
-		if(Cache.ALL_NEARBY_ENEMY_ROBOTS.length > 8) {
-			for(RobotInfo enemy : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
+		if (Cache.ALL_NEARBY_ENEMY_ROBOTS.length > 8) {
+			for (RobotInfo enemy : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
 				//if the enemy is a drone and adjacent
-				if(enemy.getType().equals(RobotType.DELIVERY_DRONE)) {
-					if(Cache.CURRENT_LOCATION.distanceSquaredTo(enemy.getLocation()) <= Util.ADJACENT_DISTANCE_SQUARED) {
+				if (enemy.getType() == RobotType.DELIVERY_DRONE) {
+					if (Cache.CURRENT_LOCATION.isAdjacentTo(enemy.getLocation())) {
 						//path-find in opposite direction
-						Pathfinding.execute(Cache.CURRENT_LOCATION.add(Cache.CURRENT_LOCATION.directionTo(enemy.getLocation()).opposite()));
+						Direction awayDirection = enemy.getLocation().directionTo(Cache.CURRENT_LOCATION);
+						Pathfinding.execute(Cache.CURRENT_LOCATION.add(awayDirection).add(awayDirection).add(awayDirection));
 						return true;
 					}
 				}
 			}
-		}//otherwise more efficient to check adjacent tiles
-		else {
-			for(Direction direction : Util.ADJACENT_DIRECTIONS) {
+		} else { //otherwise more efficient to check adjacent tiles
+			for (Direction direction : Util.ADJACENT_DIRECTIONS) {
 				MapLocation adjacentLocation = Cache.CURRENT_LOCATION.add(direction);
-				if(controller.canSenseLocation(adjacentLocation)) {
+				if (Util.onTheMap(adjacentLocation) && controller.canSenseLocation(adjacentLocation)) {
 					//if an enemy drone exists in adjacent tile
 					RobotInfo robot = controller.senseRobotAtLocation(adjacentLocation);
-					if(robot.type.equals(RobotType.DELIVERY_DRONE) && robot.getTeam() == Cache.OUR_TEAM) {
+					if (robot != null && robot.getType() == RobotType.DELIVERY_DRONE && robot.getTeam() == Cache.OPPONENT_TEAM) {
 						//path-find in opposite direction
-						Pathfinding.execute(Cache.CURRENT_LOCATION.add(Cache.CURRENT_LOCATION.directionTo(robot.getLocation()).opposite()));
+						Direction awayDirection = robot.getLocation().directionTo(Cache.CURRENT_LOCATION);
+						Pathfinding.execute(Cache.CURRENT_LOCATION.add(awayDirection).add(awayDirection).add(awayDirection));
 						return true;
 					}
 				}
