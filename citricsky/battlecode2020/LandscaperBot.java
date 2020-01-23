@@ -18,6 +18,7 @@ public class LandscaperBot implements RunnableBot {
 		// Order of behaviors to be executed
 		behaviors = new RobotBehavior[] {
 				this::tryEmergencyHealHQ,
+				this::tryKiting,
 				this::tryBuryAdjacentEnemyBuildings,
 				this::tryDefend,
 				() -> tryHeal(SharedInfo.getOurHQLocation()),
@@ -66,6 +67,36 @@ public class LandscaperBot implements RunnableBot {
 						tryDepositToPit();
 					}
 					return true;
+				}
+			}
+		}
+		return false;
+	}
+	public boolean tryKiting() throws GameActionException {
+		//more efficient to search Cache if not a lot nearby
+		if(Cache.ALL_NEARBY_ENEMY_ROBOTS.length > 8) {
+			for(RobotInfo enemy : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
+				//if the enemy is a drone and adjacent
+				if(enemy.getType().equals(RobotType.DELIVERY_DRONE)) {
+					if(Cache.CURRENT_LOCATION.distanceSquaredTo(enemy.getLocation()) <= Util.ADJACENT_DISTANCE_SQUARED) {
+						//path-find in opposite direction
+						Pathfinding.execute(Cache.CURRENT_LOCATION.add(Cache.CURRENT_LOCATION.directionTo(enemy.getLocation()).opposite()));
+						return true;
+					}
+				}
+			}
+		}//otherwise more efficient to check adjacent tiles
+		else {
+			for(Direction direction : Util.ADJACENT_DIRECTIONS) {
+				MapLocation adjacentLocation = Cache.CURRENT_LOCATION.add(direction);
+				if(controller.canSenseLocation(adjacentLocation)) {
+					//if an enemy drone exists in adjacent tile
+					RobotInfo robot = controller.senseRobotAtLocation(adjacentLocation);
+					if(robot.type.equals(RobotType.DELIVERY_DRONE) && robot.getTeam() == Cache.OUR_TEAM) {
+						//path-find in opposite direction
+						Pathfinding.execute(Cache.CURRENT_LOCATION.add(Cache.CURRENT_LOCATION.directionTo(robot.getLocation()).opposite()));
+						return true;
+					}
 				}
 			}
 		}
