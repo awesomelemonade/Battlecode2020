@@ -116,10 +116,12 @@ public class HQBot implements RunnableBot {
 					boolean allNeighborsOccupied = true;
 					for (Direction direction : Util.ADJACENT_DIRECTIONS) {
 						MapLocation location = currentLocation.add(direction);
-						RobotInfo robot = controller.senseRobotAtLocation(location);
-						if (robot == null || robot.getTeam() == Cache.OPPONENT_TEAM || robot.getType() != RobotType.LANDSCAPER) {
-							allNeighborsOccupied = false;
-							break;
+						if (Util.onTheMap(location)) {
+							RobotInfo robot = controller.senseRobotAtLocation(location);
+							if (robot == null || robot.getTeam() == Cache.OPPONENT_TEAM || robot.getType() != RobotType.LANDSCAPER) {
+								allNeighborsOccupied = false;
+								break;
+							}
 						}
 					}
 					if (allNeighborsOccupied) {
@@ -131,7 +133,8 @@ public class HQBot implements RunnableBot {
 				SharedInfo.sendWallState(newWallState);
 			}
 		}
-		System.out.println("Attack=" + SharedInfo.getAttackState() + "; Wall=" + SharedInfo.wallState + "; HQ=" + SharedInfo.getOurHQState());
+		System.out.printf("Attack=%d; Wall=%d; HQ=%d; DB=%d; DR=%d\n",
+				SharedInfo.getAttackState(), SharedInfo.wallState, SharedInfo.getOurHQState(), SharedInfo.dronesBuilt, SharedInfo.dronesReady);
 		
 		int designSchoolCount = 0;
 		int fulfillmentCenterCount = 0;
