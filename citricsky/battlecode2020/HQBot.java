@@ -44,14 +44,12 @@ public class HQBot implements RunnableBot {
 			turnTimer++;
 			turnsToPickupLandscapers++;
 			int newAttackState = -1;
-			if (SharedInfo.attackState == SharedInfo.ATTACK_STATE_ENEMYHQ_IGNORE_NETGUNS) {
+			if (SharedInfo.getAttackState() == SharedInfo.ATTACK_STATE_ENEMYHQ_IGNORE_NETGUNS) {
 				if (turnTimer > 70) {
 					newAttackState = SharedInfo.ATTACK_STATE_NONE;
-					SharedInfo.dronesBuilt = 0;
 				}
-			} else if (turnsToPickupLandscapers >= 0 && (SharedInfo.dronesBuilt >= 30 || SharedInfo.dronesBuilt >= 15 && turnTimer > 250)) {
+			} else if (turnsToPickupLandscapers >= 0 && (SharedInfo.dronesReady >= 30 || SharedInfo.dronesReady >= 15 && turnTimer > 250)) {
 				newAttackState = SharedInfo.ATTACK_STATE_ENEMYHQ_IGNORE_NETGUNS;
-				SharedInfo.dronesBuilt = 0;
 				turnTimer = 0;
 				attackWaves++;
 			} else if (SharedInfo.dronesBuilt >= 5) {
@@ -62,7 +60,7 @@ public class HQBot implements RunnableBot {
 				}
 			}
 			if (newAttackState != -1) {
-				if (newAttackState != SharedInfo.attackState) {
+				if (newAttackState != SharedInfo.getAttackState()) {
 					SharedInfo.sendAttackState(newAttackState);
 					if (newAttackState == SharedInfo.ATTACK_STATE_ENEMYHQ_WITH_LANDSCAPERS) {
 						turnsToPickupLandscapers = -20;
@@ -133,7 +131,7 @@ public class HQBot implements RunnableBot {
 				SharedInfo.sendWallState(newWallState);
 			}
 		}
-		System.out.println("Attack=" + SharedInfo.attackState + "; Wall=" + SharedInfo.wallState + "; HQ=" + SharedInfo.getOurHQState());
+		System.out.println("Attack=" + SharedInfo.getAttackState() + "; Wall=" + SharedInfo.wallState + "; HQ=" + SharedInfo.getOurHQState());
 		
 		int designSchoolCount = 0;
 		int fulfillmentCenterCount = 0;

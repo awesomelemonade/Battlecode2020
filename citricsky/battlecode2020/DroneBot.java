@@ -8,9 +8,11 @@ import citricsky.battlecode2020.util.SharedInfo;
 import citricsky.battlecode2020.util.Util;
 
 public class DroneBot implements RunnableBot {
+	public static final int PREPARED_TO_RUSH_DISTANCE_SQUARED = 100;
+	public static boolean isReadyForAttack = false;
+	private boolean sent = false;
 	private RobotController controller;
 	private boolean carryingAllyLandscaper;
-	private boolean sent;
 	public DroneBot(RobotController controller) {
 		this.controller = controller;
 		this.carryingAllyLandscaper = false;
@@ -22,10 +24,15 @@ public class DroneBot implements RunnableBot {
 	@Override
 	public void turn() throws GameActionException {
 		if (!sent) {
+			SharedInfo.builtNewDrone();
+			sent = true;
+		}
+		if (!isReadyForAttack) {
 			MapLocation enemyHQLocation = SharedInfo.getEnemyHQLocation();
-			if (enemyHQLocation!= null && Cache.CURRENT_LOCATION.distanceSquaredTo(enemyHQLocation) < 100) {
-				SharedInfo.builtNewDrone();
-				sent = true;
+			if (enemyHQLocation != null &&
+					Cache.CURRENT_LOCATION.isWithinDistanceSquared(enemyHQLocation, PREPARED_TO_RUSH_DISTANCE_SQUARED)) {
+				SharedInfo.sendDroneReady();
+				isReadyForAttack = true;
 			}
 		}
 		if (!controller.isReady()) {
@@ -85,7 +92,7 @@ public class DroneBot implements RunnableBot {
 			}
 		} else {
 			// Not currently holding any unit
-			int attackState = SharedInfo.attackState;
+			int attackState = SharedInfo.getAttackState();
 			if (attackState == SharedInfo.ATTACK_STATE_ENEMYHQ_WITH_LANDSCAPERS) {
 				int bestDistanceSquared = Integer.MAX_VALUE;
 				RobotInfo best = null;

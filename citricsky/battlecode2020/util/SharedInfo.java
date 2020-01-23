@@ -1,6 +1,7 @@
 package citricsky.battlecode2020.util;
 
 import battlecode.common.*;
+import citricsky.battlecode2020.DroneBot;
 import citricsky.battlecode2020.HQBot;
 
 public class SharedInfo {
@@ -14,6 +15,7 @@ public class SharedInfo {
 	private static final int SOUPGONE_SIGNATURE = 72952835;
 	private static final int NEWLANDSCAPER_SIGNATURE = -8892517;
 	private static final int NEWDRONE_SIGNATURE = -2951958;
+	private static final int DRONE_READY_SIGNATURE = 5392350;
 	private static final int ATTACK_STATE_SIGNATURE = 1295952;
 	private static final int OURHQ_UNITCOUNT_SIGNATURE = 695318;
 	private static final int VAPORATOR_COUNT_INCREMENT_SIGNATURE = 3431285;
@@ -36,11 +38,12 @@ public class SharedInfo {
 	
 	// Attack with drones info
 	public static int dronesBuilt = 0;
+	public static int dronesReady = 0;
 	public static final int ATTACK_STATE_NONE = 0;
 	public static final int ATTACK_STATE_ENEMYHQ = 1;
 	public static final int ATTACK_STATE_ENEMYHQ_WITH_LANDSCAPERS = 2;
 	public static final int ATTACK_STATE_ENEMYHQ_IGNORE_NETGUNS = 3;
-	public static int attackState = ATTACK_STATE_NONE;
+	private static int attackState = ATTACK_STATE_NONE;
 
 	// Build order info
 	private static int designSchoolCount = 0;
@@ -120,8 +123,15 @@ public class SharedInfo {
 		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
 	}
+	public static void sendDroneReady() {
+		int[] message = new int[] {
+				DRONE_READY_SIGNATURE, 0, 0, 0, 0, 0, controller.getRoundNum()
+		};
+		Communication.encryptMessage(message);
+		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
+	}
 	public static void sendAttackState(int attackState) {
-		SharedInfo.attackState = attackState;
+		setAttackState(attackState);
 		int[] message = new int[] {
 				ATTACK_STATE_SIGNATURE, 0, 0, 0, 0, attackState, controller.getRoundNum()
 		};
@@ -191,9 +201,11 @@ public class SharedInfo {
 			case NEWDRONE_SIGNATURE:
 				dronesBuilt++;
 				break;
+			case DRONE_READY_SIGNATURE:
+				dronesReady++;
+				break;
 			case ATTACK_STATE_SIGNATURE:
-				attackState = message[5];
-				Pathfinding.ignoreNetGuns = (attackState == ATTACK_STATE_ENEMYHQ_IGNORE_NETGUNS);
+				setAttackState(message[5]);
 				break;
 			case OURHQ_UNITCOUNT_SIGNATURE:
 				setOurHQUnitCount(message[4], message[5]);
@@ -270,9 +282,22 @@ public class SharedInfo {
 	public static void updateWaterLocations(MapLocation location, boolean waterState) {
 		if(waterState) {
 			mapTracker.waterLocations.add(location);
-		}
-		else {
+		} else {
 			mapTracker.waterLocations.remove(location);
 		}
+	}
+	private static void setAttackState(int attackState) {
+		SharedInfo.attackState = attackState;
+		if (DroneBot.isReadyForAttack) {
+			// We should only rush if we're there
+			Pathfinding.ignoreNetGuns = (attackState == ATTACK_STATE_ENEMYHQ_IGNORE_NETGUNS);
+		}
+		if (attackState == ATTACK_STATE_ENEMYHQ_IGNORE_NETGUNS) {
+			dronesBuilt -= dronesReady;
+			dronesReady = 0;
+		}
+	}
+	public static int getAttackState() {
+		return attackState;
 	}
 }
