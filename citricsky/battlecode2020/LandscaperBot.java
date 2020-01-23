@@ -79,9 +79,7 @@ public class LandscaperBot implements RunnableBot {
 				//if the enemy is a drone and adjacent
 				if (enemy.getType() == RobotType.DELIVERY_DRONE) {
 					if (Cache.CURRENT_LOCATION.isAdjacentTo(enemy.getLocation())) {
-						//path-find in opposite direction
-						Direction awayDirection = enemy.getLocation().directionTo(Cache.CURRENT_LOCATION);
-						Pathfinding.execute(Cache.CURRENT_LOCATION.add(awayDirection).add(awayDirection).add(awayDirection));
+						Util.tryKiteAwayFrom(enemy.getLocation());
 						return true;
 					}
 				}
@@ -93,9 +91,7 @@ public class LandscaperBot implements RunnableBot {
 					//if an enemy drone exists in adjacent tile
 					RobotInfo robot = controller.senseRobotAtLocation(adjacentLocation);
 					if (robot != null && robot.getType() == RobotType.DELIVERY_DRONE && robot.getTeam() == Cache.OPPONENT_TEAM) {
-						//path-find in opposite direction
-						Direction awayDirection = robot.getLocation().directionTo(Cache.CURRENT_LOCATION);
-						Pathfinding.execute(Cache.CURRENT_LOCATION.add(awayDirection).add(awayDirection).add(awayDirection));
+						Util.tryKiteAwayFrom(robot.getLocation());
 						return true;
 					}
 				}

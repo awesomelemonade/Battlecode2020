@@ -193,9 +193,14 @@ public class MinerBot implements RunnableBot {
 				MapLocation enemyLocation = bestEnemy.getLocation();
 				controller.setIndicatorLine(Cache.CURRENT_LOCATION, enemyLocation, 128, 0, 255);
 				// Pathfind towards enemyLocation if it's not close enough
-				if (!Cache.CURRENT_LOCATION.isWithinDistanceSquared(enemyLocation, 20)) {
+				if (!Cache.CURRENT_LOCATION.isWithinDistanceSquared(enemyLocation, 8)) {
 					Pathfinding.execute(enemyLocation);
 					break turn;
+				}
+				// Kite away
+				if (Cache.CURRENT_LOCATION.isWithinDistanceSquared(enemyLocation, Util.ADJACENT_DISTANCE_SQUARED)) {
+					// Move away
+					Util.tryKiteAwayFrom(enemyLocation);
 				}
 				// do we have enough money
 				if (controller.getTeamSoup() >= RobotType.NET_GUN.cost) {
@@ -208,15 +213,6 @@ public class MinerBot implements RunnableBot {
 						if (Util.canSafeBuildRobot(RobotType.NET_GUN, direction)) {
 							controller.buildRobot(RobotType.NET_GUN, direction);
 							saveForNetGun = false;
-							break turn;
-						}
-					}
-				}
-				if (Cache.CURRENT_LOCATION.isWithinDistanceSquared(enemyLocation, Util.ADJACENT_DISTANCE_SQUARED)) {
-					// Move away
-					Direction awayDirection = enemyLocation.directionTo(Cache.CURRENT_LOCATION);
-					for (Direction direction : Util.getAttemptOrder(awayDirection)) {
-						if (Pathfinding.naiveMove(direction)) {
 							break turn;
 						}
 					}
