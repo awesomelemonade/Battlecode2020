@@ -5,6 +5,7 @@ import citricsky.RunnableBot;
 import citricsky.battlecode2020.util.Cache;
 import citricsky.battlecode2020.util.SharedInfo;
 import citricsky.battlecode2020.util.Util;
+import citricskysprint.battlecode2020.FulfillmentCenter;
 
 public class HQBot implements RunnableBot {
 	public static final int NO_HELP_NEEDED = 0;
@@ -70,7 +71,7 @@ public class HQBot implements RunnableBot {
 		}
 		// Calculates state
 		int state;
-		if (Cache.ALL_NEARBY_ENEMY_ROBOTS.length > 0) {
+		if (FulfillmentCenterBot.findEnemyMinerOrLandscaper() != null) {
 			if (controller.canSenseRadiusSquared(Util.ADJACENT_DISTANCE_SQUARED)) { // If we can see all adjacent locations
 				int hqElevation = controller.senseElevation(Cache.CURRENT_LOCATION);
 				boolean allNeighborsOccupied = true;
