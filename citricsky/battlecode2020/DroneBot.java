@@ -146,8 +146,10 @@ public class DroneBot implements RunnableBot {
 				}
 			}
 			RobotInfo target = findBestEnemyTarget();
-			if (target == null) {
-				target = findCowTarget();
+			if (SharedInfo.getOurHQState() == HQBot.NO_HELP_NEEDED) {
+				if (target == null) {
+					target = findCowTarget();
+				}
 			}
 			if (target == null) {
 				if (attackState != SharedInfo.ATTACK_STATE_NONE) {
