@@ -47,6 +47,14 @@ public class MinerBot implements RunnableBot {
 			localSaveForNetGun = false;
 			SharedInfo.sendSaveForNetgunSignal(false);
 		}
+		// Check if we're on low elevation
+		if (hqLocation.isWithinDistanceSquared(Cache.CURRENT_LOCATION, RobotType.HQ.sensorRadiusSquared)) {
+			int elevation = controller.senseElevation(Cache.CURRENT_LOCATION);
+			if (Util.getTurnsToFlooded(elevation) - controller.getRoundNum() < 100) {
+				Pathfinding.execute(hqLocation);
+				return;
+			}
+		}
 		// See if we should be design school, fulfillment center, or vaporator
 		RobotType buildTarget = getBuildTypeTarget();
 		if (buildTarget != null) {
