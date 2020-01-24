@@ -61,7 +61,7 @@ public class CommunicationProcessor {
 			return; // Not worth bytecode (for now)
 		}
 		int[] message = transaction.getMessage();
-		if (Communication.decryptMessage(message, turn)) {
+		if (Communication.verifyMessage(message)) {
 			SharedInfo.processMessage(message);
 		}
 	}

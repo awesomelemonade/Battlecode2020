@@ -66,7 +66,7 @@ public class SharedInfo {
 	public static void sendEnemyHQ(MapLocation location) {
 		setEnemyHQLocation(location);
 		int[] message = new int[] {
-				ENEMYHQ_SIGNATURE, 0, 0, 0, enemyHQLocation.x, enemyHQLocation.y, controller.getRoundNum()
+				ENEMYHQ_SIGNATURE, enemyHQLocation.x, enemyHQLocation.y, 0, 0, 0, 0
 		};
 		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
@@ -74,7 +74,7 @@ public class SharedInfo {
 	public static void sendOurHQ(MapLocation location, int elevation) {
 		setOurHQLocation(location, elevation);
 		int[] message = new int[] {
-				OURHQ_SIGNATURE, 0, 0, elevation, location.x, location.y, controller.getRoundNum()
+				OURHQ_SIGNATURE, location.x, location.y, elevation, 0, 0, 0
 		};
 		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST + 2);
@@ -82,7 +82,7 @@ public class SharedInfo {
 	public static void sendEnemyGuessMode(int mode) {
 		setEnemyHQGuesserMode(mode);
 		int[] message = new int[] {
-				ENEMYHQ_MODE_SIGNATURE, 0, 0, 0, 0, mode, controller.getRoundNum()
+				ENEMYHQ_MODE_SIGNATURE, mode, 0, 0, 0, 0, 0
 		};
 		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
@@ -90,42 +90,42 @@ public class SharedInfo {
 	public static void sendOurHQState(int state) {
 		setOurHQState(state);
 		int[] message = new int[] {
-				OURHQ_STATE_SIGNATURE, 0, 0, 0, 0, state, controller.getRoundNum()
+				OURHQ_STATE_SIGNATURE, state, 0, 0, 0, 0, 0
 		};
 		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
 	}
 	public static void sendSoup(MapLocation location) {
 		int[] message = new int[] {
-				NEWSOUP_SIGNATURE, 0, 0, 0, location.x, location.y, controller.getRoundNum()
+				NEWSOUP_SIGNATURE, location.x, location.y, 0, 0, 0, 0
 		};
 		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
 	}
 	public static void sendSoupGone(MapLocation location) {
 		int[] message = new int[] {
-				SOUPGONE_SIGNATURE, 0, 0, 0, location.x, location.y, controller.getRoundNum()
+				SOUPGONE_SIGNATURE, location.x, location.y, 0, 0, 0, 0
 		};
 		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
 	}
 	public static void builtNewLandscaper() {
 		int[] message = new int[] {
-				NEWLANDSCAPER_SIGNATURE, 0, 0, 0, 0, 0, controller.getRoundNum()
+				NEWLANDSCAPER_SIGNATURE, 0, 0, 0, 0, 0, 0
 		};
 		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
 	}
 	public static void builtNewDrone() {
 		int[] message = new int[] {
-				NEWDRONE_SIGNATURE, 0, 0, 0, 0, 0, controller.getRoundNum()
+				NEWDRONE_SIGNATURE, 0, 0, 0, 0, 0, 0
 		};
 		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
 	}
 	public static void sendDroneReady() {
 		int[] message = new int[] {
-				DRONE_READY_SIGNATURE, 0, 0, 0, 0, 0, controller.getRoundNum()
+				DRONE_READY_SIGNATURE, 0, 0, 0, 0, 0, 0
 		};
 		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
@@ -133,7 +133,7 @@ public class SharedInfo {
 	public static void sendAttackState(int attackState) {
 		setAttackState(attackState);
 		int[] message = new int[] {
-				ATTACK_STATE_SIGNATURE, 0, 0, 0, 0, attackState, controller.getRoundNum()
+				ATTACK_STATE_SIGNATURE, attackState, 0, 0, 0, 0, 0
 		};
 		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
@@ -141,35 +141,35 @@ public class SharedInfo {
 	public static void sendOurHQUnitCount(int designSchoolCount, int fulfillmentCenterCount) {
 		setOurHQUnitCount(designSchoolCount, fulfillmentCenterCount);
 		int[] message = new int[] {
-				OURHQ_UNITCOUNT_SIGNATURE, 0, 0, 0, designSchoolCount, fulfillmentCenterCount, controller.getRoundNum()
+				OURHQ_UNITCOUNT_SIGNATURE, designSchoolCount, fulfillmentCenterCount, 0, 0, 0, 0
 		};
 		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
 	}
 	public static void sendVaporatorCountIncrement() {
 		int[] message = new int[] {
-				VAPORATOR_COUNT_INCREMENT_SIGNATURE, 0, 0, 0, 0, 0, controller.getRoundNum()
+				VAPORATOR_COUNT_INCREMENT_SIGNATURE, 0, 0, 0, 0, 0, 0
 		};
 		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
 	}
 	public static void sendSaveForNetgunSignal(boolean saving) {
 		int[] message = new int[] {
-				TOGGLE_SAVEFOR_NETGUN_SIGNATURE, 0, 0, (saving ? 1 : 0), 0, 0, controller.getRoundNum()
+				TOGGLE_SAVEFOR_NETGUN_SIGNATURE, 0, 0, (saving ? 1 : 0), 0, 0, 0
 		};
 		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
 	}
 	public static void sendWallState(int state) {
 		int[] message = new int[] {
-				WALLSTATE_CHANGE_SIGNATURE, 0, 0, 0, state, 0, controller.getRoundNum()
+				WALLSTATE_CHANGE_SIGNATURE, 0, 0, 0, state, 0, 0
 		};
 		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
 	}
 	public static void sendWaterState(MapLocation location, int waterState) {
 		int[] message = new int[] {
-				WATER_SIGNATURE, 0, location.x, location.y, waterState, 0, controller.getRoundNum()
+				WATER_SIGNATURE, 0, location.x, location.y, waterState, 0, 0
 		};
 		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
@@ -178,22 +178,22 @@ public class SharedInfo {
 	public static void processMessage(int[] message) {
 		switch(message[0]) {
 			case ENEMYHQ_SIGNATURE:
-				setEnemyHQLocation(new MapLocation(message[4], message[5]));
+				setEnemyHQLocation(new MapLocation(message[1], message[2]));
 				break;
 			case OURHQ_SIGNATURE:
-				setOurHQLocation(new MapLocation(message[4], message[5]), message[3]);
+				setOurHQLocation(new MapLocation(message[1], message[2]), message[3]);
 				break;
 			case ENEMYHQ_MODE_SIGNATURE:
-				setEnemyHQGuesserMode(message[5]);
+				setEnemyHQGuesserMode(message[1]);
 				break;
 			case OURHQ_STATE_SIGNATURE:
-				setOurHQState(message[5]);
+				setOurHQState(message[1]);
 				break;
 			case NEWSOUP_SIGNATURE:
-				mapTracker.soupLocations.add(new MapLocation(message[4], message[5]));
+				mapTracker.soupLocations.add(new MapLocation(message[1], message[2]));
 				break;
 			case SOUPGONE_SIGNATURE:
-				mapTracker.soupLocations.remove(new MapLocation(message[4], message[5]));
+				mapTracker.soupLocations.remove(new MapLocation(message[1], message[2]));
 				break;
 			case NEWLANDSCAPER_SIGNATURE:
 				landscapersBuilt++;
@@ -205,10 +205,10 @@ public class SharedInfo {
 				dronesReady++;
 				break;
 			case ATTACK_STATE_SIGNATURE:
-				setAttackState(message[5]);
+				setAttackState(message[1]);
 				break;
 			case OURHQ_UNITCOUNT_SIGNATURE:
-				setOurHQUnitCount(message[4], message[5]);
+				setOurHQUnitCount(message[1], message[2]);
 				break;
 			case VAPORATOR_COUNT_INCREMENT_SIGNATURE:
 				vaporatorCount++;
