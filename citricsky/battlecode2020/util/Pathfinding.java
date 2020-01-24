@@ -220,9 +220,13 @@ public class Pathfinding {
 					}
 				}
 			}
-			// TODO: Miners and Landscapers should not move next to drones
+			// Miners and Landscapers should not move next to drones
 			if (Cache.ROBOT_TYPE == RobotType.MINER || Cache.ROBOT_TYPE == RobotType.LANDSCAPER) {
-				// TODO
+				for (RobotInfo enemy : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
+					if (enemy.getType() == RobotType.DELIVERY_DRONE && enemy.getLocation().isAdjacentTo(location)) {
+						return false;
+					}
+				}
 			}
 		}
 		if (controller.canMove(direction)) {

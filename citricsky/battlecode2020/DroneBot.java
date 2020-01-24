@@ -107,6 +107,7 @@ public class DroneBot implements RunnableBot {
 						return;
 					}
 				}
+				// TODO: Use water location in SharedInfo
 				Util.randomExplore();
 			}
 		} else {
@@ -152,7 +153,11 @@ public class DroneBot implements RunnableBot {
 				if (attackState != SharedInfo.ATTACK_STATE_NONE) {
 					goTowardsEnemyHQ();
 				} else {
-					Util.randomExplore();
+					if (SharedInfo.getOurHQState() != HQBot.NO_HELP_NEEDED) {
+						goTowardsOurHQ();
+					} else {
+						goTowardsEnemyHQ();
+					}
 				}
 			} else {
 				if (currentLocation.isAdjacentTo(target.getLocation())) {
@@ -164,6 +169,14 @@ public class DroneBot implements RunnableBot {
 					Pathfinding.execute(target.getLocation());
 				}
 			}
+		}
+	}
+	public void goTowardsOurHQ() throws GameActionException {
+		MapLocation ourHQ = SharedInfo.getOurHQLocation();
+		if (ourHQ == null) {
+			Util.randomExplore();
+		} else {
+			Pathfinding.execute(ourHQ);
 		}
 	}
 	public void goTowardsEnemyHQ() throws GameActionException {

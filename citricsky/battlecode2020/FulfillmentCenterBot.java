@@ -26,7 +26,7 @@ public class FulfillmentCenterBot implements RunnableBot {
 			return;
 		}
 		RobotInfo enemy = findEnemyMinerOrLandscaper();
-		if (enemy != null) {
+		if (enemy != null || SharedInfo.getOurHQState() == HQBot.NO_ADDITIONAL_HELP_NEEDED) {
 			if (controller.getTeamSoup() < RobotType.DELIVERY_DRONE.cost) {
 				return;
 			}
