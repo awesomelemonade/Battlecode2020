@@ -418,22 +418,33 @@ public class LandscaperBot implements RunnableBot {
 			if (Cache.controller.canSenseLocation(location)) {
 				RobotInfo robot = Cache.controller.senseRobotAtLocation(location);
 				if (robot != null) {
-					if (robot.getTeam() == Cache.OUR_TEAM) {
-						// Don't trap our own units
-						int elevation = Cache.controller.senseElevation(location);
-						if (elevation <= Math.min(getRealTargetElevation(), 100)) {
-							continue;
-						}
-					} else {
-						// Don't help the enemy team
-						if (robot.getType().isBuilding()) {
-							continue;
-						}
+					// Don't trap our own units or help the enemy team
+					if (robot.getTeam() == Cache.OUR_TEAM || robot.getType().isBuilding()) {
+						continue;
 					}
 				}
 				if (Cache.controller.canDigDirt(pitDirection)) {
 					Cache.controller.digDirt(pitDirection);
 					return true;
+				}
+			}
+		}
+		// Dig from very high elevations
+		int threshold = Math.min(getRealTargetElevation(), 100);
+		for (Direction direction : Direction.values()) {
+			MapLocation location = Cache.CURRENT_LOCATION.add(direction);
+			if (Cache.controller.canSenseLocation(location)) {
+				RobotInfo robot = Cache.controller.senseRobotAtLocation(location);
+				if (robot != null && robot.getTeam() == Cache.OPPONENT_TEAM && robot.getType().isBuilding()) {
+					// Don't help enemy team
+					continue;
+				}
+				int elevation = Cache.controller.senseElevation(location);
+				if (elevation > threshold) {
+					if (Cache.controller.canDigDirt(direction)) {
+						Cache.controller.digDirt(direction);
+						return true;
+					}
 				}
 			}
 		}

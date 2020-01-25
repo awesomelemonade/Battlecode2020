@@ -35,35 +35,39 @@ public class DesignSchoolBot implements RunnableBot {
 					return;
 				}
 			}
-			boolean shouldMassCreate = SharedInfo.getVaporatorCount() >= FulfillmentCenterBot.MASS_SPAWN_VAPORATOR_THRESHOLD;
-			if (!shouldMassCreate || Math.random() < 0.3) {
-				// Listen to distress signal
-				if (SharedInfo.getOurHQState() != HQBot.NEEDS_HELP) {
-					boolean buildInitialTwoLandscapers = SharedInfo.landscapersBuilt < 2;
-					boolean buildAfterThreeVaporators = SharedInfo.landscapersBuilt < 6 && SharedInfo.getVaporatorCount() >= 3;
-					boolean buildAfterFulfillmentCenterAndVaporators = SharedInfo.landscapersBuilt < 16 &&
-							SharedInfo.getFulfillmentCenterCount() > 0 && SharedInfo.getVaporatorCount() >= 3;
-					if (!(buildInitialTwoLandscapers || buildAfterThreeVaporators || buildAfterFulfillmentCenterAndVaporators)) {
-						if ((controller.getTeamSoup() < RobotType.VAPORATOR.cost + RobotType.LANDSCAPER.cost +
-								SharedInfo.getMissingBuildingsCost()) || Math.random() < 0.5) {
-							int friendlyLandscapersCount = 0;
-							int enemyLandscapersCount = 0;
-							boolean seeEnemyBuilding = false;
-							for (RobotInfo robot : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
-								if (robot.getType() == RobotType.LANDSCAPER) {
-									enemyLandscapersCount++;
-								} else if (robot.getType().isBuilding()) {
-									seeEnemyBuilding = true;
-								}
-							}
-							if (!seeEnemyBuilding) {
-								for (RobotInfo robot : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
+			// If we need to create walls, create landscapers
+			boolean needsWalls = SharedInfo.wallState == SharedInfo.WALL_STATE_NEEDS;
+			if (!needsWalls) {
+				boolean shouldMassCreate = SharedInfo.getVaporatorCount() >= FulfillmentCenterBot.MASS_SPAWN_VAPORATOR_THRESHOLD;
+				if (!shouldMassCreate || Math.random() < 0.3) {
+					// Listen to distress signal
+					if (SharedInfo.getOurHQState() != HQBot.NEEDS_HELP) {
+						boolean buildInitialTwoLandscapers = SharedInfo.landscapersBuilt < 2;
+						boolean buildAfterThreeVaporators = SharedInfo.landscapersBuilt < 6 && SharedInfo.getVaporatorCount() >= 3;
+						boolean buildAfterFulfillmentCenterAndVaporators = SharedInfo.landscapersBuilt < 12 &&
+								SharedInfo.getFulfillmentCenterCount() > 0 && SharedInfo.getVaporatorCount() >= 3 && SharedInfo.dronesBuilt > 0;
+						if (!(buildInitialTwoLandscapers || buildAfterThreeVaporators || buildAfterFulfillmentCenterAndVaporators)) {
+							if ((controller.getTeamSoup() < RobotType.VAPORATOR.cost + RobotType.LANDSCAPER.cost +
+									SharedInfo.getMissingBuildingsCost()) || Math.random() < 0.5) {
+								int friendlyLandscapersCount = 0;
+								int enemyLandscapersCount = 0;
+								boolean seeEnemyBuilding = false;
+								for (RobotInfo robot : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
 									if (robot.getType() == RobotType.LANDSCAPER) {
-										friendlyLandscapersCount++;
+										enemyLandscapersCount++;
+									} else if (robot.getType().isBuilding()) {
+										seeEnemyBuilding = true;
 									}
 								}
-								if (enemyLandscapersCount <= friendlyLandscapersCount) {
-									return;
+								if (!seeEnemyBuilding) {
+									for (RobotInfo robot : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
+										if (robot.getType() == RobotType.LANDSCAPER) {
+											friendlyLandscapersCount++;
+										}
+									}
+									if (enemyLandscapersCount <= friendlyLandscapersCount) {
+										return;
+									}
 								}
 							}
 						}

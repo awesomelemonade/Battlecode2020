@@ -174,9 +174,7 @@ public class HQBot implements RunnableBot {
 					return;
 				}
 			}
-			if (spawnCount < 3) {
-				tryBuildMiner();
-			}
+			tryBuildMiner();
 		}
 	}
 	public void tryBuildMiner() throws GameActionException {
