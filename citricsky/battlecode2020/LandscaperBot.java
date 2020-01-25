@@ -18,7 +18,7 @@ public class LandscaperBot implements RunnableBot {
 		// Order of behaviors to be executed
 		behaviors = new RobotBehavior[] {
 				this::tryEmergencyHealHQ,
-				this::tryKiting,
+				Util::tryKiting,
 				this::tryBuryAdjacentEnemyBuildings,
 				this::tryDefend,
 				() -> tryHeal(SharedInfo.getOurHQLocation()),
@@ -67,33 +67,6 @@ public class LandscaperBot implements RunnableBot {
 						tryDepositToPit();
 					}
 					return true;
-				}
-			}
-		}
-		return false;
-	}
-	public boolean tryKiting() throws GameActionException {
-		//more efficient to search Cache if not a lot nearby
-		if (Cache.ALL_NEARBY_ENEMY_ROBOTS.length > 8) {
-			for (RobotInfo enemy : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
-				//if the enemy is a drone and adjacent
-				if (enemy.getType() == RobotType.DELIVERY_DRONE) {
-					if (Cache.CURRENT_LOCATION.isAdjacentTo(enemy.getLocation())) {
-						Util.tryKiteAwayFrom(enemy.getLocation());
-						return true;
-					}
-				}
-			}
-		} else { //otherwise more efficient to check adjacent tiles
-			for (Direction direction : Util.ADJACENT_DIRECTIONS) {
-				MapLocation adjacentLocation = Cache.CURRENT_LOCATION.add(direction);
-				if (Util.onTheMap(adjacentLocation) && controller.canSenseLocation(adjacentLocation)) {
-					//if an enemy drone exists in adjacent tile
-					RobotInfo robot = controller.senseRobotAtLocation(adjacentLocation);
-					if (robot != null && robot.getType() == RobotType.DELIVERY_DRONE && robot.getTeam() == Cache.OPPONENT_TEAM) {
-						Util.tryKiteAwayFrom(robot.getLocation());
-						return true;
-					}
 				}
 			}
 		}
@@ -402,8 +375,11 @@ public class LandscaperBot implements RunnableBot {
 			MapLocation location = Cache.CURRENT_LOCATION.add(pitDirection);
 			if (Cache.controller.canSenseLocation(location)) {
 				RobotInfo robot = Cache.controller.senseRobotAtLocation(location);
-				if (robot != null && robot.getType().isBuilding() && robot.getTeam() == Cache.OPPONENT_TEAM) {
-					continue;
+				if (robot != null) {
+					// Don't trap our own units or help the enemy team
+					if (robot.getTeam() == Cache.OUR_TEAM || robot.getType().isBuilding()) {
+						continue;
+					}
 				}
 				if (Cache.controller.canDigDirt(pitDirection)) {
 					Cache.controller.digDirt(pitDirection);

@@ -172,8 +172,10 @@ public class Util {
 		return true;
 	}
 	public static void tryKiteAwayFrom(MapLocation location) throws GameActionException {
+		controller.setIndicatorDot(Cache.CURRENT_LOCATION, 255, 255, 0);
 		Direction awayDirection = location.directionTo(Cache.CURRENT_LOCATION);
-		Pathfinding.execute(Cache.CURRENT_LOCATION.add(awayDirection).add(awayDirection).add(awayDirection));
+		Pathfinding.execute(Cache.CURRENT_LOCATION.add(awayDirection).add(awayDirection)
+				.add(awayDirection).add(awayDirection).add(awayDirection));
 	}
 	public static final int[] TURNS_TO_FLOODED = {
 			0, 256, 464, 677, 931, 1210, 1413, 1546, 1640, 1713, 1771, 1819, 1861, 1897, 1929, 1957, 1983, 2007, 2028,
@@ -287,6 +289,33 @@ public class Util {
 			if (controller.canShootUnit(enemyId)) {
 				controller.shootUnit(enemyId);
 				return true;
+			}
+		}
+		return false;
+	}
+	public static boolean tryKiting() throws GameActionException {
+		//more efficient to search Cache if not a lot nearby
+		if (Cache.ALL_NEARBY_ENEMY_ROBOTS.length > 8) {
+			for (RobotInfo enemy : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
+				//if the enemy is a drone and adjacent
+				if (enemy.getType() == RobotType.DELIVERY_DRONE) {
+					if (Cache.CURRENT_LOCATION.isAdjacentTo(enemy.getLocation())) {
+						Util.tryKiteAwayFrom(enemy.getLocation());
+						return true;
+					}
+				}
+			}
+		} else { //otherwise more efficient to check adjacent tiles
+			for (Direction direction : Util.ADJACENT_DIRECTIONS) {
+				MapLocation adjacentLocation = Cache.CURRENT_LOCATION.add(direction);
+				if (Util.onTheMap(adjacentLocation) && controller.canSenseLocation(adjacentLocation)) {
+					//if an enemy drone exists in adjacent tile
+					RobotInfo robot = controller.senseRobotAtLocation(adjacentLocation);
+					if (robot != null && robot.getType() == RobotType.DELIVERY_DRONE && robot.getTeam() == Cache.OPPONENT_TEAM) {
+						Util.tryKiteAwayFrom(robot.getLocation());
+						return true;
+					}
+				}
 			}
 		}
 		return false;

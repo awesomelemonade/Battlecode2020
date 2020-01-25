@@ -197,11 +197,11 @@ public class Pathfinding {
 					}
 					// We're either too full of dirt, or have no dirt
 					// So deposit/dig from pit
-					if (currentElevation < lower && toElevation < lower) {
+					if (currentElevation < lower || toElevation < lower) {
 						LandscaperBot.tryDigFromPit();
 						return true;
 					}
-					if (currentElevation > upper && toElevation > upper) {
+					if (currentElevation > upper || toElevation > upper) {
 						LandscaperBot.tryDepositToPit();
 						return true;
 					}
@@ -241,7 +241,7 @@ public class Pathfinding {
 				controller.depositDirt(direction);
 				return true;
 			}
-		} else { // if (elevation > upper)
+		} else if (elevation > upper) {
 			if (controller.canDigDirt(direction)) {
 				controller.digDirt(direction);
 				return true;

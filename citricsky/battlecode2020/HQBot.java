@@ -133,8 +133,8 @@ public class HQBot implements RunnableBot {
 				SharedInfo.sendWallState(newWallState);
 			}
 		}
-		System.out.printf("Attack=%d; Wall=%d; HQ=%d; DB=%d; DR=%d\n",
-				SharedInfo.getAttackState(), SharedInfo.wallState, SharedInfo.getOurHQState(), SharedInfo.dronesBuilt, SharedInfo.dronesReady);
+		System.out.printf("Attack=%d; Wall=%d; HQ=%d; DBuilt=%d; DReady=%d; NetGun=%b\n",
+				SharedInfo.getAttackState(), SharedInfo.wallState, SharedInfo.getOurHQState(), SharedInfo.dronesBuilt, SharedInfo.dronesReady, SharedInfo.isSavingForNetgun);
 		
 		int designSchoolCount = 0;
 		int fulfillmentCenterCount = 0;

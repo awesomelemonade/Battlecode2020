@@ -26,6 +26,9 @@ public class MinerBot implements RunnableBot {
 			return;
 		}
 		MapLocation currentLocation = Cache.CURRENT_LOCATION;
+		if (tryDeposit()) {
+			return;
+		}
 		if (SharedInfo.wallState == SharedInfo.WALL_STATE_NEEDS) {
 			if (currentLocation.isAdjacentTo(hqLocation)) {
 				// Try move away
@@ -38,6 +41,10 @@ public class MinerBot implements RunnableBot {
 				// Last resort :/
 				controller.disintegrate();
 			}
+		}
+		// Kite drones
+		if (Util.tryKiting()) {
+			return;
 		}
 		// See if we should build net guns
 		if (tryBuildNetGun()) {
@@ -62,6 +69,7 @@ public class MinerBot implements RunnableBot {
 				return;
 			}
 		}
+		// Try mine soup
 		if (controller.getSoupCarrying() < RobotType.MINER.soupLimit) {
 			// Mine adjacent, broadcast location if new
 			for (Direction direction : Util.ALL_DIRECTIONS) {
@@ -99,67 +107,73 @@ public class MinerBot implements RunnableBot {
 					Util.randomExplore();
 				}
 			}
-		} else {
-			// Try to deposit soup
-			for (Direction direction : Direction.values()) {
-				if (controller.canDepositSoup(direction)) {
-					MapLocation location = currentLocation.add(direction);
-					if (controller.canSenseLocation(location)) {
-						RobotInfo robot = controller.senseRobotAtLocation(location);
-						if (robot != null && robot.getTeam() == controller.getTeam()) {
-							controller.depositSoup(direction, controller.getSoupCarrying());
-							return;
-						}
-					}
-				}
-			}
-			// Move towards HQ or refinery
-			MapLocation bestLocation = null;
-			int bestDistanceSquared = Integer.MAX_VALUE;
-
-			boolean hqAvailable = false;
-
-			for (Direction direction : Util.ADJACENT_DIRECTIONS) {
-				MapLocation location = hqLocation.add(direction);
+		}
+	}
+	public boolean tryDeposit() throws GameActionException {
+		if (controller.getSoupCarrying() < RobotType.MINER.soupLimit) {
+			return false;
+		}
+		MapLocation currentLocation = Cache.CURRENT_LOCATION;
+		// Try to deposit soup
+		for (Direction direction : Direction.values()) {
+			if (controller.canDepositSoup(direction)) {
+				MapLocation location = currentLocation.add(direction);
 				if (controller.canSenseLocation(location)) {
-					if (!controller.isLocationOccupied(location)) {
-						hqAvailable = true;
-					}
-				} else {
-					hqAvailable = true;
-				}
-			}
-			if (hqAvailable) {
-				bestLocation = hqLocation;
-				bestDistanceSquared  = currentLocation.distanceSquaredTo(hqLocation);
-			}
-			for (RobotInfo robot : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
-				if (robot.getType() == RobotType.REFINERY) {
-					MapLocation location = robot.getLocation();
-					int distanceSquared = currentLocation.distanceSquaredTo(location);
-					if (distanceSquared < bestDistanceSquared) {
-						bestDistanceSquared = distanceSquared;
-						bestLocation = location;
+					RobotInfo robot = controller.senseRobotAtLocation(location);
+					if (robot != null && robot.getTeam() == controller.getTeam()) {
+						controller.depositSoup(direction, controller.getSoupCarrying());
+						return true;
 					}
 				}
-			}
-			if (bestLocation == null) {
-				// Build a refinery
-				for (Direction direction : Util.ADJACENT_DIRECTIONS) {
-					MapLocation location = currentLocation.add(direction);
-					if (location.isWithinDistanceSquared(hqLocation, 2)) {
-						continue;
-					}
-					if (Util.canSafeBuildRobot(RobotType.REFINERY, direction)) {
-						controller.buildRobot(RobotType.REFINERY, direction);
-						return;
-					}
-				}
-				Util.randomExplore();
-			} else {
-				Pathfinding.execute(bestLocation);
 			}
 		}
+		// Move towards HQ or refinery
+		MapLocation bestLocation = null;
+		int bestDistanceSquared = Integer.MAX_VALUE;
+
+		boolean hqAvailable = false;
+
+		for (Direction direction : Util.ADJACENT_DIRECTIONS) {
+			MapLocation location = hqLocation.add(direction);
+			if (controller.canSenseLocation(location)) {
+				if (!controller.isLocationOccupied(location)) {
+					hqAvailable = true;
+				}
+			} else {
+				hqAvailable = true;
+			}
+		}
+		if (hqAvailable) {
+			bestLocation = hqLocation;
+			bestDistanceSquared  = currentLocation.distanceSquaredTo(hqLocation);
+		}
+		for (RobotInfo robot : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
+			if (robot.getType() == RobotType.REFINERY) {
+				MapLocation location = robot.getLocation();
+				int distanceSquared = currentLocation.distanceSquaredTo(location);
+				if (distanceSquared < bestDistanceSquared) {
+					bestDistanceSquared = distanceSquared;
+					bestLocation = location;
+				}
+			}
+		}
+		if (bestLocation == null) {
+			// Build a refinery
+			for (Direction direction : Util.ADJACENT_DIRECTIONS) {
+				MapLocation location = currentLocation.add(direction);
+				if (location.isWithinDistanceSquared(hqLocation, 2)) {
+					continue;
+				}
+				if (Util.canSafeBuildRobot(RobotType.REFINERY, direction)) {
+					controller.buildRobot(RobotType.REFINERY, direction);
+					return true;
+				}
+			}
+			Util.randomExplore();
+		} else {
+			Pathfinding.execute(bestLocation);
+		}
+		return true;
 	}
 	public int closestDistanceSquaredToOurNetGun(MapLocation location) {
 		int bestDistanceSquared = Integer.MAX_VALUE;
@@ -176,6 +190,17 @@ public class MinerBot implements RunnableBot {
 
 	private boolean localSaveForNetGun = true;
 	public boolean tryBuildNetGun() throws GameActionException {
+		// Only build net gun if there is something to protect
+		// Only if there is a friendly building nearby
+		boolean seeFriendlyBuilding = false;
+		for (RobotInfo ally : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
+			if (ally.getType().isBuilding()) {
+				seeFriendlyBuilding = true;
+			}
+		}
+		if (!seeFriendlyBuilding) {
+			return false;
+		}
 		// Find closest enemy drone
 		int bestDistanceSquared = Integer.MAX_VALUE;
 		RobotInfo bestEnemy = null;
