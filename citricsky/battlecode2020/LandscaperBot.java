@@ -418,9 +418,17 @@ public class LandscaperBot implements RunnableBot {
 			if (Cache.controller.canSenseLocation(location)) {
 				RobotInfo robot = Cache.controller.senseRobotAtLocation(location);
 				if (robot != null) {
-					// Don't trap our own units or help the enemy team
-					if (robot.getTeam() == Cache.OUR_TEAM || robot.getType().isBuilding()) {
-						continue;
+					if (robot.getTeam() == Cache.OUR_TEAM) {
+						// Don't trap our own units
+						int elevation = Cache.controller.senseElevation(location);
+						if (elevation <= Math.min(getRealTargetElevation(), 100)) {
+							continue;
+						}
+					} else {
+						// Don't help the enemy team
+						if (robot.getType().isBuilding()) {
+							continue;
+						}
 					}
 				}
 				if (Cache.controller.canDigDirt(pitDirection)) {
