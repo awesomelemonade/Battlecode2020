@@ -26,6 +26,14 @@ public class MinerBot implements RunnableBot {
 			return;
 		}
 		MapLocation currentLocation = Cache.CURRENT_LOCATION;
+		// Kite drones
+		if (Util.tryKiting()) {
+			return;
+		}
+		// See if we should build net guns
+		if (tryBuildNetGun()) {
+			return;
+		}
 		if (tryDeposit()) {
 			return;
 		}
@@ -41,14 +49,6 @@ public class MinerBot implements RunnableBot {
 				// Last resort :/
 				controller.disintegrate();
 			}
-		}
-		// Kite drones
-		if (Util.tryKiting()) {
-			return;
-		}
-		// See if we should build net guns
-		if (tryBuildNetGun()) {
-			return;
 		}
 		if (localSaveForNetGun) {
 			localSaveForNetGun = false;
@@ -390,6 +390,9 @@ public class MinerBot implements RunnableBot {
 				}
 			}
 		}*/
+		if (SharedInfo.isSavingForNetgun && teamSoup < RobotType.DESIGN_SCHOOL.cost + RobotType.NET_GUN.cost) {
+			return null;
+		}
 		designSchool: {
 			if (SharedInfo.getDesignSchoolCount() > 0 || teamSoup < RobotType.DESIGN_SCHOOL.cost) {
 				break designSchool;
