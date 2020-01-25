@@ -30,7 +30,7 @@ public class Communication {
 	}
 	private static final int RANDOM_MASK = 0b11111111111111111111000000000000;
 	public static void encryptMessage(int[] message) {
-		int footer = Util.getRandom().nextInt() % RANDOM_MASK ^ Cache.controller.getRoundNum();
+		int footer = (Util.getRandom().nextInt() & RANDOM_MASK) ^ Cache.controller.getRoundNum();
 		message[5] = footer; // footer
 		message[6] = Hash.hash(SEED, footer); // signature
 	}
