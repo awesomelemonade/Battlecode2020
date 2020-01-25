@@ -61,12 +61,14 @@ public class MinerBot implements RunnableBot {
 				controller.disintegrate();
 			}
 		}
-		// Check if we're on low elevation
-		if (hqLocation.isWithinDistanceSquared(Cache.CURRENT_LOCATION, RobotType.HQ.sensorRadiusSquared)) {
-			int elevation = controller.senseElevation(Cache.CURRENT_LOCATION);
-			if (Util.getTurnsToFlooded(elevation) - controller.getRoundNum() < 100) {
-				Pathfinding.execute(hqLocation);
-				return;
+		if (Util.hasLattice) {
+			// Check if we're on low elevation
+			if (hqLocation.isWithinDistanceSquared(Cache.CURRENT_LOCATION, RobotType.HQ.sensorRadiusSquared)) {
+				int elevation = controller.senseElevation(Cache.CURRENT_LOCATION);
+				if (Util.getTurnsToFlooded(elevation) - controller.getRoundNum() < 100) {
+					Pathfinding.execute(hqLocation);
+					return;
+				}
 			}
 		}
 		// Try mine soup

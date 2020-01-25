@@ -124,20 +124,13 @@ public class Pathfinding {
 
 		}*/
 	}
-	private static int designSchoolSpawnedTurn = -1;
 	public static boolean naiveMove(Direction direction) throws GameActionException {
 		MapLocation location = Cache.CURRENT_LOCATION.add(direction);
 		if (Util.isBlocked(location)) {
 			return false;
 		}
 		if (Cache.ROBOT_TYPE != RobotType.DELIVERY_DRONE && LatticeUtil.isPit(location)) {
-			if (SharedInfo.getDesignSchoolCount() > 0) {
-				if (designSchoolSpawnedTurn == -1) {
-					designSchoolSpawnedTurn = controller.getRoundNum();
-				}
-			}
-			if (Cache.ROBOT_TYPE != RobotType.MINER ||
-					(designSchoolSpawnedTurn != -1 && controller.getRoundNum() - designSchoolSpawnedTurn > 100)) {
+			if (Cache.ROBOT_TYPE != RobotType.MINER || Util.hasLattice) {
 				return false;
 			}
 		}

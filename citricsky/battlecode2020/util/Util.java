@@ -19,6 +19,8 @@ public class Util {
 			UnitsMap.init(controller);
 		}
 	}
+	public static boolean hasLattice = false; // Estimation of whether we have a lattice
+	private static int designSchoolSpawnedTurn = -1; // Helps with hasLattice
 	public static void loop() throws GameActionException {
 		Cache.loop();
 		CommunicationProcessor.processAll();
@@ -33,6 +35,15 @@ public class Util {
 		}
 		if (!Cache.ROBOT_TYPE.isBuilding()) {
 			UnitsMap.loop();
+		}
+		if (!hasLattice) {
+			if (SharedInfo.getDesignSchoolCount() > 0) {
+				if (designSchoolSpawnedTurn == -1) {
+					designSchoolSpawnedTurn = controller.getRoundNum();
+				} else {
+					hasLattice = controller.getRoundNum() - designSchoolSpawnedTurn > 100;
+				}
+			}
 		}
 	}
 	public static void postLoop() throws GameActionException {
