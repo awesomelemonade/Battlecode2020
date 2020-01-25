@@ -40,21 +40,23 @@ public class DroneBot implements RunnableBot {
 		}
 		MapLocation currentLocation = Cache.CURRENT_LOCATION;
 
-		// Try kite net guns if they are too close
-		int closestNetGunDistanceSquared = Integer.MAX_VALUE;
-		MapLocation closestNetGun = null;
-		for (int i = Cache.ALL_NEARBY_ENEMY_NET_GUNS_SIZE; --i >= 0;) {
-			MapLocation enemyNetGun = Cache.ALL_NEARBY_ENEMY_NET_GUNS[i];
-			int distanceSquared = currentLocation.distanceSquaredTo(enemyNetGun);
-			if (distanceSquared < closestNetGunDistanceSquared) {
-				closestNetGunDistanceSquared = distanceSquared;
-				closestNetGun = enemyNetGun;
+		if (!Pathfinding.ignoreNetGuns) {
+			// Try kite net guns if they are too close
+			int closestNetGunDistanceSquared = Integer.MAX_VALUE;
+			MapLocation closestNetGun = null;
+			for (int i = Cache.ALL_NEARBY_ENEMY_NET_GUNS_SIZE; --i >= 0; ) {
+				MapLocation enemyNetGun = Cache.ALL_NEARBY_ENEMY_NET_GUNS[i];
+				int distanceSquared = currentLocation.distanceSquaredTo(enemyNetGun);
+				if (distanceSquared < closestNetGunDistanceSquared) {
+					closestNetGunDistanceSquared = distanceSquared;
+					closestNetGun = enemyNetGun;
+				}
 			}
-		}
-		// If below this threshold, the drone cannot move anywhere because they would always be in range of a net gun
-		if (closestNetGunDistanceSquared <= 5) {
-			Util.tryKiteAwayFrom(closestNetGun);
-			return;
+			// If below this threshold, the drone cannot move anywhere because they would always be in range of a net gun
+			if (closestNetGunDistanceSquared <= 5) {
+				Util.tryKiteAwayFrom(closestNetGun);
+				return;
+			}
 		}
 
 		// AI logic
