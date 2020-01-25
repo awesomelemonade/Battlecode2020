@@ -274,6 +274,43 @@ public class LandscaperBot implements RunnableBot {
 	public static int getRealTargetElevation() {
 		return Math.max((targetElevation - targetElevation % 3) + 5, SharedInfo.getOurHQElevation());
 	}
+	public static boolean testStep(MapLocation location, int elevation, int targetStepElevation) throws GameActionException {
+		if (!Cache.controller.senseFlooding(location)) {
+			boolean flag = false;
+			for (Direction direction : Util.ADJACENT_DIRECTIONS) {
+				MapLocation adjacent = location.add(direction);
+				if (!Util.onTheMap(adjacent)) {
+					continue;
+				}
+				if (!Cache.controller.canSenseLocation(adjacent)) {
+					return false;
+				}
+				if (Cache.controller.senseFlooding(adjacent)) {
+					continue;
+				}
+				if (LatticeUtil.isPit(adjacent)) {
+					continue;
+				}
+				if (Cache.controller.senseRobotAtLocation(adjacent) != null) {
+					continue;
+				}
+				int adjacentElevation = Cache.controller.senseElevation(adjacent);
+				if (Math.abs(adjacentElevation - targetElevation) > LANDSCAPING_THRESHOLD) {
+					continue;
+				}
+				if (adjacentElevation < targetStepElevation) {
+					flag = true;
+					break;
+				}
+			}
+			if (flag && elevation >= targetStepElevation) {
+				Cache.controller.setIndicatorDot(location, 0, 0, 0);
+				return false;
+			}
+			Cache.controller.setIndicatorDot(location, 255, 255, 255);
+		}
+		return true;
+	}
 	public boolean tryTerraform() throws GameActionException {
 		MapLocation currentLocation = Cache.CURRENT_LOCATION;
 		MapLocation ourHQLocation = SharedInfo.getOurHQLocation();
@@ -282,6 +319,8 @@ public class LandscaperBot implements RunnableBot {
 		}
 		int targetElevation = getRealTargetElevation();
 		int upperTargetElevation = targetElevation + GameConstants.MAX_DIRT_DIFFERENCE;
+		int targetStepElevation = targetElevation - GameConstants.MAX_DIRT_DIFFERENCE;
+		boolean creatingWall = SharedInfo.wallState != SharedInfo.WALL_STATE_NONE;
 		MapLocation bestLocation = null;
 		int bestDistanceSquared = Integer.MAX_VALUE;
 		boolean bestRaise = false;
@@ -292,19 +331,22 @@ public class LandscaperBot implements RunnableBot {
 			if (!Util.onTheMap(location)) {
 				continue;
 			}
-			if (!controller.canSenseLocation(location)) {
+			if (!Cache.controller.canSenseLocation(location)) {
 				break;
 			}
 			if (!LatticeUtil.isPit(location)) {
-				int elevation = controller.senseElevation(location);
+				int elevation = Cache.controller.senseElevation(location);
 				// Fill up to target elevation or dig to targetElevation + 3
 				if (elevation < targetElevation) {
 					if (targetElevation - elevation <= LANDSCAPING_THRESHOLD) {
 						// Try to raise elevation
 						int distanceSquared = (int) (Math.sqrt(ourHQLocation.distanceSquaredTo(location)) + Math.sqrt(currentLocation.distanceSquaredTo(location)));
 						if (distanceSquared < bestDistanceSquared) {
-							RobotInfo robot = controller.senseRobotAtLocation(location);
+							RobotInfo robot = Cache.controller.senseRobotAtLocation(location);
 							if (robot != null && robot.getTeam() == Cache.OUR_TEAM && robot.getType().isBuilding()) {
+								continue;
+							}
+							if (targetElevation <= 8 && (!testStep(location, elevation, targetStepElevation))) {
 								continue;
 							}
 							bestDistanceSquared = distanceSquared;
@@ -314,14 +356,14 @@ public class LandscaperBot implements RunnableBot {
 					}
 				} else if (elevation > upperTargetElevation) {
 					// Check if we're next to hq and we don't want to do that anymore
-					if (ourHQLocation.isAdjacentTo(location) && SharedInfo.wallState != SharedInfo.WALL_STATE_NONE) {
+					if (creatingWall && ourHQLocation.isAdjacentTo(location)) {
 						continue;
 					}
 					if (elevation - upperTargetElevation <= LANDSCAPING_THRESHOLD) {
 						// Try to lower elevation
 						int distanceSquared = (int) (Math.sqrt(ourHQLocation.distanceSquaredTo(location)) + Math.sqrt(currentLocation.distanceSquaredTo(location)));
 						if (distanceSquared < bestDistanceSquared) {
-							RobotInfo robot = controller.senseRobotAtLocation(location);
+							RobotInfo robot = Cache.controller.senseRobotAtLocation(location);
 							if (robot != null && robot.getTeam() == Cache.OUR_TEAM && robot.getType().isBuilding()) {
 								continue;
 							}
@@ -334,7 +376,7 @@ public class LandscaperBot implements RunnableBot {
 			}
 		}
 		if (bestLocation != null) {
-			controller.setIndicatorDot(bestLocation, 0, 255, 255);
+			Cache.controller.setIndicatorDot(bestLocation, 0, 255, 255);
 			if (bestRaise) {
 				tryToRaise(bestLocation);
 			} else {
