@@ -4,6 +4,9 @@ import battlecode.common.RobotController;
 import battlecode.common.Team;
 
 public class Communication {
+	public static final int VERIFY_STATE_SUCCESS = 0;
+	public static final int VERIFY_STATE_UNKNOWN_HASH = 1;
+	public static final int VERIFY_STATE_REPLAY_ATTACK = 2;
 	private static int SEED = 51178234;
 
 	public static void init(RobotController controller) {
@@ -13,10 +16,10 @@ public class Communication {
 		SEED ^= gameAdjust;
 		// Also preloads static variables
 	}
-	public static boolean verifyMessage(int[] message) {
+	public static int verifyMessage(int[] message) {
 		int signature = message[6];
 		if (Hash.hash(SEED, message[5]) != signature) {
-			return false;
+			return VERIFY_STATE_UNKNOWN_HASH;
 		}
 		boolean verified = false; // ret = !mayContains
 		for (int i = BLOOM_FILTER_SEEDS.length; --i >= 0;) {
@@ -26,7 +29,7 @@ public class Communication {
 				verified = true;
 			}
 		}
-		return verified;
+		return verified ? VERIFY_STATE_SUCCESS : VERIFY_STATE_REPLAY_ATTACK;
 	}
 	private static final int RANDOM_MASK = 0b11111111111111111111000000000000;
 	public static void encryptMessage(int[] message) {

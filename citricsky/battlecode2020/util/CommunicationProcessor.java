@@ -61,8 +61,14 @@ public class CommunicationProcessor {
 			return; // Not worth bytecode (for now)
 		}
 		int[] message = transaction.getMessage();
-		if (Communication.verifyMessage(message)) {
-			SharedInfo.processMessage(message);
+		int verifyState = Communication.verifyMessage(message);
+		switch (verifyState) {
+			case Communication.VERIFY_STATE_UNKNOWN_HASH:
+				CommunicationAttacks.addEnemyMessage(message);
+				break;
+			case Communication.VERIFY_STATE_SUCCESS:
+				SharedInfo.processMessage(message);
+				break;
 		}
 	}
 }
