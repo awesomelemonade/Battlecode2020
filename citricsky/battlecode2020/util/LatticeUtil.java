@@ -5,8 +5,9 @@ import battlecode.common.MapLocation;
 
 public class LatticeUtil {
 	public static boolean isPit(MapLocation location) {
-		return location.x % 2 == SharedInfo.getOurHQParityX() &&
-				location.y % 2 == SharedInfo.getOurHQParityY();
+		return (location.x % 2 == SharedInfo.getOurHQParityX() &&
+				location.y % 2 == SharedInfo.getOurHQParityY()) ||
+				(SharedInfo.ourHQNearCorner && Util.isInCorner(location));
 	}
 	public static boolean isBuildLocation(MapLocation location) {
 		return (location.x % 2 != SharedInfo.getOurHQParityX()) &&

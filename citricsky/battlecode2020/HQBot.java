@@ -117,6 +117,9 @@ public class HQBot implements RunnableBot {
 					for (Direction direction : Util.ADJACENT_DIRECTIONS) {
 						MapLocation location = currentLocation.add(direction);
 						if (Util.onTheMap(location)) {
+							if (SharedInfo.ourHQNearCorner && Util.isInCorner(location)) {
+								continue;
+							}
 							RobotInfo robot = controller.senseRobotAtLocation(location);
 							if (robot == null || robot.getTeam() == Cache.OPPONENT_TEAM || robot.getType() != RobotType.LANDSCAPER) {
 								allNeighborsOccupied = false;

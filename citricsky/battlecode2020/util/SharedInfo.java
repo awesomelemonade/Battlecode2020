@@ -28,6 +28,7 @@ public class SharedInfo {
 	private static int ourHQElevation;
 	private static int ourHQParityX = -1;
 	private static int ourHQParityY = -1;
+	public static boolean ourHQNearCorner = false;
 	private static MapLocation enemyHQLocation;
 	private static int enemyHQGuesserMode = EnemyHQGuesser.UNKNOWN_MODE;
 	private static int ourHQState = HQBot.NO_HELP_NEEDED;
@@ -258,6 +259,7 @@ public class SharedInfo {
 		ourHQParityX = location.x % 2;
 		ourHQParityY = location.y % 2;
 		ourHQElevation = elevation;
+		ourHQNearCorner = Util.isNearCorner(location);
 	}
 	public static MapLocation getOurHQLocation() {
 		return ourHQLocation;

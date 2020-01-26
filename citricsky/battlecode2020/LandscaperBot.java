@@ -448,6 +448,7 @@ public class LandscaperBot implements RunnableBot {
 				}
 			}
 		}
+		// TODO: Dig from corner
 		return false;
 	}
 	public static boolean tryDepositToPit() throws GameActionException {

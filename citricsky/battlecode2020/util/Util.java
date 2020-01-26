@@ -381,4 +381,12 @@ public class Util {
 			}
 		}
 	}
+	public static boolean isNearCorner(MapLocation location) {
+		return (location.x <= 1 || location.x >= Cache.controller.getMapWidth() - 2) &&
+				(location.y <= 1 || location.y >= Cache.controller.getMapHeight() - 2);
+	}
+	public static boolean isInCorner(MapLocation location) {
+		return (location.x == 0 || location.x == Cache.controller.getMapWidth() - 1) &&
+				(location.y == 0 || location.y == Cache.controller.getMapHeight() - 1);
+	}
 }
