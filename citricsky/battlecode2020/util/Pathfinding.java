@@ -126,6 +126,9 @@ public class Pathfinding {
 	}
 	public static boolean naiveMove(Direction direction) throws GameActionException {
 		MapLocation location = Cache.CURRENT_LOCATION.add(direction);
+		if (!controller.canSenseLocation(location)) {
+			return false;
+		}
 		if (Util.isBlocked(location)) {
 			return false;
 		}
@@ -134,7 +137,8 @@ public class Pathfinding {
 				return false;
 			}
 		}
-		if (!controller.canSenseLocation(location)) {
+		// Don't move towards lots of pollution
+		if (controller.sensePollution(location) > 24000) {
 			return false;
 		}
 		if (Cache.ROBOT_TYPE == RobotType.DELIVERY_DRONE) {
@@ -146,6 +150,7 @@ public class Pathfinding {
 					case SOUTHWEST:
 						return false; // don't allow diagonal moves if not ignoring net guns
 				}
+				// Don't move towards net guns
 				for (int i = Cache.ALL_NEARBY_ENEMY_NET_GUNS_SIZE; --i >= 0;) {
 					MapLocation netgunLocation = Cache.ALL_NEARBY_ENEMY_NET_GUNS[i];
 					if (location.isWithinDistanceSquared(netgunLocation, GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED)) {
@@ -205,7 +210,7 @@ public class Pathfinding {
 				// Check if toLocation is within hq vision range
 				if (!MinerBot.hqLocation.isWithinDistanceSquared(location, RobotType.HQ.sensorRadiusSquared)) {
 					// Check if toElevation is lower than lower bound
-					if (toElevation < lower || toElevation <= 5) {
+					if (toElevation < lower - 3) {
 						// If it's not within vision range AND elevation is lower
 						return false;
 					}

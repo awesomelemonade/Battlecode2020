@@ -181,7 +181,7 @@ public class LandscaperBot implements RunnableBot {
 					// Shuffle around
 					Direction direction = Util.randomAdjacentDirection();
 					MapLocation location = Cache.CURRENT_LOCATION.add(direction);
-					if (location.isAdjacentTo(hqLocation) && Util.canSafeMove(direction)) {
+					if (location.isAdjacentTo(hqLocation) && Util.canSafeMove(direction) && (!Util.isInCorner(location))) {
 						controller.move(direction);
 					}
 				} else {
@@ -194,7 +194,8 @@ public class LandscaperBot implements RunnableBot {
 					int lowestElevation = Integer.MAX_VALUE;
 					for (Direction direction : Util.ALL_DIRECTIONS) {
 						MapLocation location = Cache.CURRENT_LOCATION.add(direction);
-						if (controller.canSenseLocation(location) && location.isAdjacentTo(hqLocation) && (!location.equals(hqLocation))) {
+						if (controller.canSenseLocation(location) && location.isAdjacentTo(hqLocation) &&
+								(!location.equals(hqLocation)) && (!Util.isInCorner(location))) {
 							int elevation = controller.senseElevation(location);
 							if (Util.canPotentiallyBeFlooded(elevation)) {
 								if (controller.canDepositDirt(direction)) {
@@ -429,21 +430,28 @@ public class LandscaperBot implements RunnableBot {
 				}
 			}
 		}
-		// Dig from very high elevations
+		// Dig from very high elevations (but not around our hq)
 		int threshold = Math.min(getRealTargetElevation(), 100);
-		for (Direction direction : Direction.values()) {
-			MapLocation location = Cache.CURRENT_LOCATION.add(direction);
-			if (Cache.controller.canSenseLocation(location)) {
-				RobotInfo robot = Cache.controller.senseRobotAtLocation(location);
-				if (robot != null && robot.getTeam() == Cache.OPPONENT_TEAM && robot.getType().isBuilding()) {
-					// Don't help enemy team
-					continue;
-				}
-				int elevation = Cache.controller.senseElevation(location);
-				if (elevation > threshold) {
-					if (Cache.controller.canDigDirt(direction)) {
-						Cache.controller.digDirt(direction);
-						return true;
+		MapLocation ourHQ = SharedInfo.getOurHQLocation();
+		if (ourHQ != null) {
+			for (Direction direction : Direction.values()) {
+				MapLocation location = Cache.CURRENT_LOCATION.add(direction);
+				if (Cache.controller.canSenseLocation(location)) {
+					// Don't destroy our own wall
+					if (ourHQ.isAdjacentTo(location)) {
+						continue;
+					}
+					RobotInfo robot = Cache.controller.senseRobotAtLocation(location);
+					if (robot != null && robot.getTeam() == Cache.OPPONENT_TEAM && robot.getType().isBuilding()) {
+						// Don't help enemy team
+						continue;
+					}
+					int elevation = Cache.controller.senseElevation(location);
+					if (elevation > threshold) {
+						if (Cache.controller.canDigDirt(direction)) {
+							Cache.controller.digDirt(direction);
+							return true;
+						}
 					}
 				}
 			}

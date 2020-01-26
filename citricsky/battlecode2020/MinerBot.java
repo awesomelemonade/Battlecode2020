@@ -65,7 +65,7 @@ public class MinerBot implements RunnableBot {
 			// Check if we're on low elevation
 			if (hqLocation.isWithinDistanceSquared(Cache.CURRENT_LOCATION, RobotType.HQ.sensorRadiusSquared)) {
 				int elevation = controller.senseElevation(Cache.CURRENT_LOCATION);
-				if (Util.getTurnsToFlooded(elevation) - controller.getRoundNum() < 100) {
+				if (Util.getTurnsToFlooded(elevation) - controller.getRoundNum() < 50) {
 					Pathfinding.execute(hqLocation);
 					return;
 				}
@@ -335,7 +335,7 @@ public class MinerBot implements RunnableBot {
 					continue;
 				}
 			}
-			int distanceSquared = (int) (Math.sqrt(hqDistanceSquared) + Math.sqrt(currentLocation.distanceSquaredTo(location)));
+			int distanceSquared = (int) (Math.sqrt(hqDistanceSquared) * 3 + Math.sqrt(currentLocation.distanceSquaredTo(location)));
 			int elevation = Cache.controller.senseElevation(location);
 			if (Math.abs(currentElevation - elevation) > GameConstants.MAX_DIRT_DIFFERENCE) {
 				continue;
