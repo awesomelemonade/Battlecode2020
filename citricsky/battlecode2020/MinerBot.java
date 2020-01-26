@@ -352,8 +352,12 @@ public class MinerBot implements RunnableBot {
 				if (Cache.ALL_NEARBY_ENEMY_ROBOTS.length > 8) {
 					for (Direction direction : Util.ADJACENT_DIRECTIONS) {
 						MapLocation adjacent = location.add(direction);
-						RobotInfo robot = Cache.controller.senseRobotAtLocation(adjacent);
-						if (robot != null && robot.getTeam() == Cache.OPPONENT_TEAM && robot.getType() == RobotType.LANDSCAPER) {
+						if (controller.canSenseLocation(adjacent)) {
+							RobotInfo robot = Cache.controller.senseRobotAtLocation(adjacent);
+							if (robot != null && robot.getTeam() == Cache.OPPONENT_TEAM && robot.getType() == RobotType.LANDSCAPER) {
+								continue mainLoop;
+							}
+						} else {
 							continue mainLoop;
 						}
 					}
