@@ -13,6 +13,7 @@ public class CommunicationProcessor {
 	private static int[] costQueue;
 	private static int queueIndex;
 	private static int queueSize;
+	private static int minTransactionsCost;
 
 	public static void init(RobotController controller) {
 		CommunicationProcessor.controller = controller;
@@ -50,16 +51,15 @@ public class CommunicationProcessor {
 	public static void processAll() throws GameActionException {
 		while (turn < controller.getRoundNum()) {
 			Transaction[] transactions = controller.getBlock(turn);
+			minTransactionsCost = transactions.length == GameConstants.NUMBER_OF_TRANSACTIONS_PER_BLOCK ? Integer.MAX_VALUE : 1;
 			for (int i = transactions.length; --i >= 0;) {
-				processTransaction(transactions[i], turn);
+				processTransaction(transactions[i]);
+				minTransactionsCost = Math.min(minTransactionsCost, transactions[i].getCost());
 			}
 			turn++;
 		}
 	}
-	public static void processTransaction(Transaction transaction, int turn) {
-		if (transaction.getCost() < SharedInfo.TRANSACTION_COST) {
-			return; // Not worth bytecode (for now)
-		}
+	public static void processTransaction(Transaction transaction) {
 		int[] message = transaction.getMessage();
 		int verifyState = Communication.verifyMessage(message);
 		switch (verifyState) {
@@ -70,5 +70,8 @@ public class CommunicationProcessor {
 				SharedInfo.processMessage(message);
 				break;
 		}
+	}
+	public static int getMinTransactionsCost() {
+		return minTransactionsCost;
 	}
 }
