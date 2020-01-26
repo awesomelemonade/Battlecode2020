@@ -36,10 +36,31 @@ public class DroneBot implements RunnableBot {
 				isReadyForAttack = true;
 			}
 		}
+		MapLocation currentLocation = Cache.CURRENT_LOCATION;
+		// Check MapTracker
+		MapLocation closestWaterInVision = null;
+		for (int i = 1; i < Util.FLOOD_FILL_DX.length; i++) { // Don't look for water directly underneath
+			int dx = Util.FLOOD_FILL_DX[i];
+			int dy = Util.FLOOD_FILL_DY[i];
+			MapLocation location = currentLocation.translate(dx, dy);
+			if (!Util.onTheMap(location)) {
+				continue;
+			}
+			if (!controller.canSenseLocation(location)) {
+				break;
+			}
+			if (controller.senseFlooding(location)) {
+				if (closestWaterInVision == null) {
+					closestWaterInVision = location;
+				}
+				MapTracker.addWaterLocation(location);
+			}
+		}
+
+
 		if (!controller.isReady()) {
 			return;
 		}
-		MapLocation currentLocation = Cache.CURRENT_LOCATION;
 
 		if (!Pathfinding.ignoreNetGuns) {
 			// Try kite net guns if they are too close
@@ -88,33 +109,22 @@ public class DroneBot implements RunnableBot {
 						if (Util.onTheMap(location) && controller.senseFlooding(location)) {
 							if (controller.canDropUnit(direction)) {
 								controller.dropUnit(direction);
+								MapTracker.addSharedWaterLocation(location);
 								return;
 							}
 						}
 					}
 				}
-				// Find Water
-				for (int i = 1; i < Util.FLOOD_FILL_DX.length; i++) { // Don't look for water directly underneath
-					int dx = Util.FLOOD_FILL_DX[i];
-					int dy = Util.FLOOD_FILL_DY[i];
-					MapLocation location = currentLocation.translate(dx, dy);
-					if (!Util.onTheMap(location)) {
-						continue;
-					}
-					if (!controller.canSenseLocation(location)) {
-						break;
-					}
-					if (controller.senseFlooding(location)) {
-						// Move towards location
-						Pathfinding.execute(location);
-						return;
-					}
+				if (closestWaterInVision != null) {
+					Pathfinding.execute(closestWaterInVision);
+					return;
 				}
-				//Use water location in SharedInfo
-				if (findClosestWaterTile() == null) {
-					Util.randomExplore();
+				// Use water location in MapTracker
+				MapLocation location = findClosestStoredWaterTile();
+				if (location == null) {
+					Util.randomWalk();
 				} else {
-					Pathfinding.execute(findClosestWaterTile());
+					Pathfinding.execute(location);
 				}
 			}
 		} else {
@@ -244,20 +254,37 @@ public class DroneBot implements RunnableBot {
 				return 0;
 		}
 	}
-	public MapLocation findClosestWaterTile() {
-		if (MapTracker.closestWaterToEnemyHQ == null && MapTracker.closestWaterToHQ == null) {
-			return null;
-		} else if (MapTracker.closestWaterToEnemyHQ == null) {
-			return MapTracker.closestWaterToHQ;
-		} else if (MapTracker.closestWaterToHQ == null) {
-			return MapTracker.closestWaterToEnemyHQ;
-		} else {
-			if (Cache.CURRENT_LOCATION.distanceSquaredTo(MapTracker.closestWaterToEnemyHQ) > Cache.CURRENT_LOCATION.distanceSquaredTo(MapTracker.closestWaterToHQ)) {
-				return MapTracker.closestWaterToHQ;
-			}
-			else {
-				return MapTracker.closestWaterToEnemyHQ;
+	public MapLocation findClosestStoredWaterTile() {
+		MapLocation closestLocation = null;
+		int closestDistanceSquared = Integer.MAX_VALUE;
+		if (MapTracker.closestWaterToHQ != null) {
+			int distanceSquared = MapTracker.closestWaterToHQ.distanceSquaredTo(Cache.CURRENT_LOCATION);
+			if (distanceSquared < closestDistanceSquared) {
+				closestLocation = MapTracker.closestWaterToHQ;
+				closestDistanceSquared = distanceSquared;
 			}
 		}
+		if (MapTracker.closestWaterToEnemyHQ != null) {
+			int distanceSquared = MapTracker.closestWaterToEnemyHQ.distanceSquaredTo(Cache.CURRENT_LOCATION);
+			if (distanceSquared < closestDistanceSquared) {
+				closestLocation = MapTracker.closestWaterToEnemyHQ;
+				closestDistanceSquared = distanceSquared;
+			}
+		}
+		if (MapTracker.sharedClosestWaterToHQ != null) {
+			int distanceSquared = MapTracker.sharedClosestWaterToHQ.distanceSquaredTo(Cache.CURRENT_LOCATION);
+			if (distanceSquared < closestDistanceSquared) {
+				closestLocation = MapTracker.sharedClosestWaterToHQ;
+				closestDistanceSquared = distanceSquared;
+			}
+		}
+		if (MapTracker.sharedClosestWaterToEnemyHQ != null) {
+			int distanceSquared = MapTracker.sharedClosestWaterToEnemyHQ.distanceSquaredTo(Cache.CURRENT_LOCATION);
+			if (distanceSquared < closestDistanceSquared) {
+				closestLocation = MapTracker.sharedClosestWaterToEnemyHQ;
+				closestDistanceSquared = distanceSquared;
+			}
+		}
+		return closestLocation;
 	}
 }

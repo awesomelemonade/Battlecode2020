@@ -164,14 +164,13 @@ public class SharedInfo {
 		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
 	}
-	public static void sendWaterState(MapLocation location, int waterState, int team) {
+	public static void sendWaterState(boolean flooding, MapLocation location) {
 		int[] message = new int[] {
-				WATER_SIGNATURE, team, location.x, location.y, waterState, 0, 0
+				WATER_SIGNATURE, flooding ? 1 : 0, 0, location.x, location.y, 0, 0
 		};
 		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
 	}
-	
 	public static void processMessage(int[] message) {
 		switch(message[0]) {
 			case ENEMYHQ_SIGNATURE:
@@ -187,10 +186,10 @@ public class SharedInfo {
 				setOurHQState(message[1]);
 				break;
 			case NEWSOUP_SIGNATURE:
-				MapTracker.soupLocations.add(new MapLocation(message[1], message[2]));
+				MapTracker.sharedSoupLocations.add(new MapLocation(message[1], message[2]));
 				break;
 			case SOUPGONE_SIGNATURE:
-				MapTracker.soupLocations.remove(new MapLocation(message[1], message[2]));
+				MapTracker.sharedSoupLocations.remove(new MapLocation(message[1], message[2]));
 				break;
 			case NEWLANDSCAPER_SIGNATURE:
 				landscapersBuilt++;
@@ -217,7 +216,39 @@ public class SharedInfo {
 				wallState = message[4];
 				break;
 			case WATER_SIGNATURE:
-				updateWaterLocations(new MapLocation(message[2], message[3]), message[4] == 1, message[1] == 1);
+				MapLocation location = new MapLocation(message[3], message[4]);
+				// water state
+				if (message[1] == 1) {
+					// add water state
+					if (MapTracker.sharedClosestWaterToHQ == null) {
+						MapTracker.sharedClosestWaterToHQ = location;
+					} else {
+						MapLocation hqLocation = SharedInfo.getOurHQLocation();
+						if (hqLocation != null) {
+							if (location.distanceSquaredTo(hqLocation) < MapTracker.sharedClosestWaterToHQ.distanceSquaredTo(hqLocation)) {
+								MapTracker.sharedClosestWaterToHQ = location;
+							}
+						}
+					}
+					if (MapTracker.sharedClosestWaterToEnemyHQ == null) {
+						MapTracker.sharedClosestWaterToEnemyHQ = location;
+					} else {
+						MapLocation enemyHQLocation = SharedInfo.getEnemyHQLocation();
+						if (enemyHQLocation != null) {
+							if (location.distanceSquaredTo(enemyHQLocation) < MapTracker.sharedClosestWaterToEnemyHQ.distanceSquaredTo(enemyHQLocation)) {
+								MapTracker.sharedClosestWaterToEnemyHQ = location;
+							}
+						}
+					}
+				} else {
+					// clear water state
+					if (location.equals(MapTracker.sharedClosestWaterToHQ)) {
+						MapTracker.sharedClosestWaterToHQ = null;
+					}
+					if (location.equals(MapTracker.sharedClosestWaterToEnemyHQ)) {
+						MapTracker.sharedClosestWaterToEnemyHQ = null;
+					}
+				}
 				break;
 		}
 	}
@@ -275,23 +306,6 @@ public class SharedInfo {
 		return (SharedInfo.getDesignSchoolCount() == 0 ? RobotType.DESIGN_SCHOOL.cost : 0) +
 				(SharedInfo.getFulfillmentCenterCount() == 0 ? RobotType.FULFILLMENT_CENTER.cost : 0) +
 				(SharedInfo.isSavingForNetgun ? RobotType.NET_GUN.cost : 0);
-	}
-	public static void updateWaterLocations(MapLocation location, boolean waterState, boolean isCloserToUs) {
-		if (waterState) {
-			if (isCloserToUs) {
-				MapTracker.closestWaterToHQ = location;
-			}
-			else {
-				MapTracker.closestWaterToEnemyHQ = location;
-			}
-		} else {
-			if (isCloserToUs) {
-				MapTracker.closestWaterToHQ = null;
-			}
-			else {
-				MapTracker.closestWaterToEnemyHQ = null;
-			}
-		}
 	}
 	private static void setAttackState(int attackState) {
 		SharedInfo.attackState = attackState;

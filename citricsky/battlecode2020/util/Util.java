@@ -36,7 +36,7 @@ public class Util {
 		if (!Cache.ROBOT_TYPE.isBuilding()) {
 			UnitsMap.loop();
 		}
-		MapTracker.updateWaterLocations();
+		MapTracker.checkValidityOfWaterLocations();
 		if (!hasLattice) {
 			if (SharedInfo.getDesignSchoolCount() > 0) {
 				if (designSchoolSpawnedTurn == -1) {
