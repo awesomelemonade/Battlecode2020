@@ -264,14 +264,18 @@ public class MinerBot implements RunnableBot {
 		return false;
 	}
 	public MapLocation findSoupLocation() throws GameActionException {
-		MapLocation currentLocation = Cache.CURRENT_LOCATION;
+		int currentElevation = Cache.controller.senseElevation(Cache.CURRENT_LOCATION);
 		for (int i = 0; i < Util.FLOOD_FILL_DX.length; i++) {
-			MapLocation location = currentLocation.translate(Util.FLOOD_FILL_DX[i], Util.FLOOD_FILL_DY[i]);
-			if (!controller.canSenseLocation(location)) {
+			MapLocation location = Cache.CURRENT_LOCATION.translate(Util.FLOOD_FILL_DX[i], Util.FLOOD_FILL_DY[i]);
+			if (!Cache.controller.canSenseLocation(location)) {
 				break;
 			}
-			if (controller.senseSoup(location) > 0) {
-				return location;
+			if (Cache.controller.senseSoup(location) > 0) {
+				int elevationDifference = Math.abs(Cache.controller.senseElevation(location) - currentElevation);
+				// elevationDifference / 3 < distance + 2 (buffer)
+				if (elevationDifference / 3.0 < Math.sqrt(Cache.CURRENT_LOCATION.distanceSquaredTo(location)) + 2) {
+					return location;
+				}
 			}
 		}
 		return null;
@@ -306,20 +310,20 @@ public class MinerBot implements RunnableBot {
 		MapLocation currentLocation = Cache.CURRENT_LOCATION;
 		MapLocation bestLocation = null;
 		int bestDistanceSquared = Integer.MAX_VALUE;
-		int currentElevation = controller.senseElevation(Cache.CURRENT_LOCATION);
+		int currentElevation = Cache.controller.senseElevation(Cache.CURRENT_LOCATION);
 		int targetElevation = LandscaperBot.getRealTargetElevation();
 		// Do not consider the location where the unit currently is (starts at i = 1)
-		for (int i = 1; i < Util.FLOOD_FILL_DX.length; i++) {
+		mainLoop: for (int i = 1; i < Util.FLOOD_FILL_DX.length; i++) {
 			int dx = Util.FLOOD_FILL_DX[i];
 			int dy = Util.FLOOD_FILL_DY[i];
 			MapLocation location = currentLocation.translate(dx, dy);
 			if (!Util.onTheMap(location)) {
 				continue;
 			}
-			if (!controller.canSenseLocation(location)) {
+			if (!Cache.controller.canSenseLocation(location)) {
 				break;
 			}
-			if (controller.senseFlooding(location)) {
+			if (Cache.controller.senseFlooding(location)) {
 				continue;
 			}
 			if (!LatticeUtil.isBuildLocation(location)) {
@@ -344,9 +348,25 @@ public class MinerBot implements RunnableBot {
 				distanceSquared -= 1000; // Artificially increase the score
 			}
 			if (distanceSquared < bestDistanceSquared/* && willNotGetFloodedSoon(location)*/) {
+				// Ensure there are no surrounding enemy landscapers
+				if (Cache.ALL_NEARBY_ENEMY_ROBOTS.length > 8) {
+					for (Direction direction : Util.ADJACENT_DIRECTIONS) {
+						MapLocation adjacent = location.add(direction);
+						RobotInfo robot = Cache.controller.senseRobotAtLocation(adjacent);
+						if (robot != null && robot.getTeam() == Cache.OPPONENT_TEAM && robot.getType() == RobotType.LANDSCAPER) {
+							continue mainLoop;
+						}
+					}
+				} else {
+					for (RobotInfo enemy : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
+						if (enemy.getType() == RobotType.LANDSCAPER && enemy.getLocation().isAdjacentTo(location)) {
+							continue mainLoop;
+						}
+					}
+				}
 				// Check for elevation difference
 				if (type != RobotType.DESIGN_SCHOOL || isValidDesignSchoolLocation(location, elevation)) {
-					RobotInfo robot = controller.senseRobotAtLocation(location);
+					RobotInfo robot = Cache.controller.senseRobotAtLocation(location);
 					if (robot == null) {
 						bestDistanceSquared = distanceSquared;
 						bestLocation = location;
