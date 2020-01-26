@@ -231,14 +231,24 @@ public class DroneBot implements RunnableBot {
 		return best;
 	}
 	public RobotInfo findCowTarget() {
+		MapLocation ourHQ = SharedInfo.getOurHQLocation();
+		MapLocation enemyHQ = SharedInfo.getEnemyHQLocation();
+		if (ourHQ == null || enemyHQ == null) {
+			return null;
+		}
 		RobotInfo best = null;
-		int bestDistanceSquared = -1;
+		int bestDistanceSquared = Integer.MAX_VALUE;
 		for (RobotInfo robot : Cache.ALL_NEARBY_ROBOTS) {
 			if (robot.getTeam() == Team.NEUTRAL) {
+				MapLocation location = robot.getLocation();
 				int distanceSquared = Cache.CURRENT_LOCATION.distanceSquaredTo(robot.getLocation());
-				if (best == null || distanceSquared < bestDistanceSquared) {
-					best = robot;
-					bestDistanceSquared = distanceSquared;
+				if (distanceSquared < bestDistanceSquared) {
+					// Only pick up cows on our side of the map
+					if (Cache.controller.getRoundNum() > 1000 ||
+							(ourHQ.distanceSquaredTo(location) < enemyHQ.distanceSquaredTo(location))) {
+						best = robot;
+						bestDistanceSquared = distanceSquared;
+					}
 				}
 			}
 		}
