@@ -18,7 +18,7 @@ public class LandscaperBot implements RunnableBot {
 		// Order of behaviors to be executed
 		behaviors = new RobotBehavior[] {
 				this::tryEmergencyHealHQ,
-				Util::tryKiting,
+				Util::tryKiteFromAdjacentDrones,
 				this::tryBuryAdjacentEnemyBuildings,
 				this::tryDefend,
 				() -> tryHeal(SharedInfo.getOurHQLocation()),

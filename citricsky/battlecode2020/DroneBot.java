@@ -76,7 +76,8 @@ public class DroneBot implements RunnableBot {
 			}
 			// If below this threshold, the drone cannot move anywhere because they would always be in range of a net gun
 			if (closestNetGunDistanceSquared <= 5) {
-				Util.tryKiteAwayFrom(closestNetGun);
+				// Don't pathfind because all directions are not pathfindable
+				Util.tryKiteAwayFrom(closestNetGun, false);
 				return;
 			}
 		}

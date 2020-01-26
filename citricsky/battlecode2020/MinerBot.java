@@ -27,7 +27,7 @@ public class MinerBot implements RunnableBot {
 		}
 		MapLocation currentLocation = Cache.CURRENT_LOCATION;
 		// Kite drones
-		if (Util.tryKiting()) {
+		if (Util.tryKiteFromAdjacentDrones()) {
 			return;
 		}
 		// See if we should build net guns
@@ -236,7 +236,7 @@ public class MinerBot implements RunnableBot {
 				// Kite away
 				if (Cache.CURRENT_LOCATION.isWithinDistanceSquared(enemyLocation, Util.ADJACENT_DISTANCE_SQUARED)) {
 					// Move away
-					Util.tryKiteAwayFrom(enemyLocation);
+					Util.tryKiteAwayFrom(enemyLocation, true);
 				}
 				// do we have enough money
 				if (controller.getTeamSoup() >= RobotType.NET_GUN.cost) {
