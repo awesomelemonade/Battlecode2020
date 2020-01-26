@@ -112,11 +112,8 @@ public class DroneBot implements RunnableBot {
 				}
 				//Use water location in SharedInfo
 				if (findClosestWaterTile() == null) {
-					System.out.println("im wandering because i am dumb");
 					Util.randomExplore();
-				}
-				else {
-					System.out.println("I'm trying to go to the tile at " + findClosestWaterTile().x + " " + findClosestWaterTile().y);
+				} else {
 					Pathfinding.execute(findClosestWaterTile());
 				}
 			}
@@ -250,14 +247,11 @@ public class DroneBot implements RunnableBot {
 	public MapLocation findClosestWaterTile() {
 		if (MapTracker.closestWaterToEnemyHQ == null && MapTracker.closestWaterToHQ == null) {
 			return null;
-		}
-		else if (MapTracker.closestWaterToEnemyHQ == null) {
+		} else if (MapTracker.closestWaterToEnemyHQ == null) {
 			return MapTracker.closestWaterToHQ;
-		}
-		else if (MapTracker.closestWaterToHQ == null) {
+		} else if (MapTracker.closestWaterToHQ == null) {
 			return MapTracker.closestWaterToEnemyHQ;
-		}
-		else {
+		} else {
 			if (Cache.CURRENT_LOCATION.distanceSquaredTo(MapTracker.closestWaterToEnemyHQ) > Cache.CURRENT_LOCATION.distanceSquaredTo(MapTracker.closestWaterToHQ)) {
 				return MapTracker.closestWaterToHQ;
 			}

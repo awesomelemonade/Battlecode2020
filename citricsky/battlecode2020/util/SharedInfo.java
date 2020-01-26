@@ -34,8 +34,6 @@ public class SharedInfo {
 
 	public static int landscapersBuilt = 0;
 	
-	public static MapTracker mapTracker = new MapTracker();
-	
 	// Attack with drones info
 	public static int dronesBuilt = 0;
 	public static int dronesReady = 0;
@@ -189,10 +187,10 @@ public class SharedInfo {
 				setOurHQState(message[1]);
 				break;
 			case NEWSOUP_SIGNATURE:
-				mapTracker.soupLocations.add(new MapLocation(message[1], message[2]));
+				MapTracker.soupLocations.add(new MapLocation(message[1], message[2]));
 				break;
 			case SOUPGONE_SIGNATURE:
-				mapTracker.soupLocations.remove(new MapLocation(message[1], message[2]));
+				MapTracker.soupLocations.remove(new MapLocation(message[1], message[2]));
 				break;
 			case NEWLANDSCAPER_SIGNATURE:
 				landscapersBuilt++;
