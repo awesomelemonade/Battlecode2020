@@ -25,10 +25,8 @@ public class EnemyHQGuesser {
 	 */
 	public static void setGuesses(int x, int y) {
 		guesses = new MapLocation[3];
-		int width = controller.getMapWidth();
-		int height = controller.getMapHeight();
-		int a = width - x - 1;
-		int b = height - y - 1;
+		int a = Cache.MAP_WIDTH - x - 1;
+		int b = Cache.MAP_HEIGHT - y - 1;
 		// Symmetric around x axis
 		guesses[0] = new MapLocation(x, b);
 		// Symmetric around y axis

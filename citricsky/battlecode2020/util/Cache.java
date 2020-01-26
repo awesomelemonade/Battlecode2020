@@ -12,6 +12,8 @@ public class Cache {
 	public static MapLocation MAP_CENTER_LOCATION;
 	public static MapLocation CURRENT_LOCATION;
 	public static RobotType ROBOT_TYPE;
+	public static int MAP_WIDTH;
+	public static int MAP_HEIGHT;
 	// RobotType specific
 	public static MapLocation[] ALL_NEARBY_ENEMY_NET_GUNS;
 	public static int ALL_NEARBY_ENEMY_NET_GUNS_SIZE;
@@ -19,7 +21,9 @@ public class Cache {
 		Cache.controller = controller;
 		OUR_TEAM = controller.getTeam();
 		OPPONENT_TEAM = OUR_TEAM.opponent();
-		MAP_CENTER_LOCATION = new MapLocation(controller.getMapWidth() / 2, controller.getMapHeight() / 2);
+		MAP_WIDTH = controller.getMapWidth();
+		MAP_HEIGHT = controller.getMapHeight();
+		MAP_CENTER_LOCATION = new MapLocation(MAP_WIDTH / 2, MAP_HEIGHT / 2);
 		ROBOT_TYPE = controller.getType();
 		CURRENT_LOCATION = controller.getLocation();
 		if (ROBOT_TYPE == RobotType.DELIVERY_DRONE || ROBOT_TYPE == RobotType.MINER ||

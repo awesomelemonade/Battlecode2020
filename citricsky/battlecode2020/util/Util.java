@@ -382,11 +382,16 @@ public class Util {
 		}
 	}
 	public static boolean isNearCorner(MapLocation location) {
-		return (location.x <= 1 || location.x >= Cache.controller.getMapWidth() - 2) &&
-				(location.y <= 1 || location.y >= Cache.controller.getMapHeight() - 2);
+		return (location.x <= 1 || location.x >= Cache.MAP_WIDTH - 2) &&
+				(location.y <= 1 || location.y >= Cache.MAP_HEIGHT - 2);
 	}
 	public static boolean isInCorner(MapLocation location) {
-		return (location.x == 0 || location.x == Cache.controller.getMapWidth() - 1) &&
-				(location.y == 0 || location.y == Cache.controller.getMapHeight() - 1);
+		return (location.x == 0 || location.x == Cache.MAP_WIDTH - 1) &&
+				(location.y == 0 || location.y == Cache.MAP_HEIGHT - 1);
+	}
+	public static Direction directionToNearestCorner(MapLocation location) {
+		return location.directionTo(
+				new MapLocation((location.x / Cache.MAP_CENTER_LOCATION.x) * Cache.MAP_WIDTH,
+						(location.y / Cache.MAP_CENTER_LOCATION.y) * Cache.MAP_HEIGHT));
 	}
 }

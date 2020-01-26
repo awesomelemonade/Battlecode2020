@@ -19,7 +19,7 @@ public class Pathfinding {
 
 	public static void init(RobotController controller) {
 		Pathfinding.controller = controller;
-		visitedSet = new FastIntCounter2D(controller.getMapWidth(), controller.getMapHeight());
+		visitedSet = new FastIntCounter2D(Cache.MAP_WIDTH, Cache.MAP_HEIGHT);
 	}
 	public static void execute(MapLocation target) throws GameActionException {
 		if (lastTarget == null || !lastTarget.equals(target)) {

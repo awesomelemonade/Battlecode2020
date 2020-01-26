@@ -8,7 +8,7 @@ public class Communication {
 
 	public static void init(RobotController controller) {
 		// xor the seed by map size
-		int gameAdjust = (controller.getMapWidth() << 6) | controller.getMapHeight();
+		int gameAdjust = (Cache.MAP_WIDTH << 6) | Cache.MAP_HEIGHT;
 		gameAdjust = (gameAdjust << 1) | ((controller.getTeam() == Team.A) ? 0 : 1);
 		SEED ^= gameAdjust;
 		// Also preloads static variables

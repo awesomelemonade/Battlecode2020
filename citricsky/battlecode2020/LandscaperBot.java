@@ -448,7 +448,16 @@ public class LandscaperBot implements RunnableBot {
 				}
 			}
 		}
-		// TODO: Dig from corner
+		// Dig from corner
+		if (SharedInfo.ourHQNearCorner) {
+			if (Util.isNearCorner(Cache.CURRENT_LOCATION)) {
+				Direction direction = Util.directionToNearestCorner(Cache.CURRENT_LOCATION);
+				if (Cache.controller.canDigDirt(direction)) {
+					Cache.controller.digDirt(direction);
+					return true;
+				}
+			}
+		}
 		return false;
 	}
 	public static boolean tryDepositToPit() throws GameActionException {
