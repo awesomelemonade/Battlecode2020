@@ -196,7 +196,8 @@ public class MinerBot implements RunnableBot {
 		// Only if there is a friendly building nearby
 		boolean seeFriendlyBuilding = false;
 		for (RobotInfo ally : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
-			if (ally.getType().isBuilding()) {
+			if (ally.getType().isBuilding() &&
+					(ally.getType() != RobotType.NET_GUN || SharedInfo.getVaporatorCount() >= 5)) {
 				seeFriendlyBuilding = true;
 			}
 		}
