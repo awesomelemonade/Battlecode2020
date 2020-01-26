@@ -43,9 +43,9 @@ public class DesignSchoolBot implements RunnableBot {
 					// Listen to distress signal
 					if (SharedInfo.getOurHQState() != HQBot.NEEDS_HELP) {
 						boolean buildInitialTwoLandscapers = SharedInfo.landscapersBuilt < 2;
-						boolean buildAfterThreeVaporators = SharedInfo.landscapersBuilt < 6 && SharedInfo.getVaporatorCount() >= 3;
+						boolean buildAfterThreeVaporators = SharedInfo.landscapersBuilt < 4 && SharedInfo.getVaporatorCount() >= 3;
 						boolean buildAfterFulfillmentCenterAndVaporators = SharedInfo.landscapersBuilt < 12 &&
-								SharedInfo.getFulfillmentCenterCount() > 0 && SharedInfo.getVaporatorCount() >= 3 && SharedInfo.dronesBuilt > 0;
+								SharedInfo.getFulfillmentCenterCount() > 0 && SharedInfo.getVaporatorCount() >= 3 && SharedInfo.dronesBuilt >= 3;
 						if (!(buildInitialTwoLandscapers || buildAfterThreeVaporators || buildAfterFulfillmentCenterAndVaporators)) {
 							if ((controller.getTeamSoup() < RobotType.VAPORATOR.cost + RobotType.LANDSCAPER.cost +
 									SharedInfo.getMissingBuildingsCost()) || Math.random() < 0.5) {
