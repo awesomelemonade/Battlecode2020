@@ -21,6 +21,9 @@ public class Pathfinding {
 		Pathfinding.controller = controller;
 		visitedSet = new FastIntCounter2D(Cache.MAP_WIDTH, Cache.MAP_HEIGHT);
 	}
+	public static int getTurnsSpentSoFar() {
+		return visitedSet.getCounter();
+	}
 	public static void execute(MapLocation target) throws GameActionException {
 		if (lastTarget == null || !lastTarget.equals(target)) {
 			lastTarget = target;

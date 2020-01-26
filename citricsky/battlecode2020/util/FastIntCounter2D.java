@@ -25,4 +25,7 @@ public class FastIntCounter2D {
 		int num = this.array[x][y] - base;
 		return num < 0 ? -1 : num;
 	}
+	public int getCounter() {
+		return counter - base;
+	}
 }

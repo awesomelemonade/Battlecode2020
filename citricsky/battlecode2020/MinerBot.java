@@ -146,8 +146,10 @@ public class MinerBot implements RunnableBot {
 			}
 		}
 		if (hqAvailable) {
-			bestLocation = hqLocation;
-			bestDistanceSquared  = currentLocation.distanceSquaredTo(hqLocation);
+			if (Pathfinding.getTurnsSpentSoFar() < 70) {
+				bestLocation = hqLocation;
+				bestDistanceSquared = currentLocation.distanceSquaredTo(hqLocation);
+			}
 		}
 		for (RobotInfo robot : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
 			if (robot.getType() == RobotType.REFINERY) {
