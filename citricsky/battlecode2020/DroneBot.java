@@ -3,6 +3,7 @@ package citricsky.battlecode2020;
 import battlecode.common.*;
 import citricsky.RunnableBot;
 import citricsky.battlecode2020.util.Cache;
+import citricsky.battlecode2020.util.MapTracker;
 import citricsky.battlecode2020.util.Pathfinding;
 import citricsky.battlecode2020.util.SharedInfo;
 import citricsky.battlecode2020.util.Util;
@@ -109,8 +110,15 @@ public class DroneBot implements RunnableBot {
 						return;
 					}
 				}
-				// TODO: Use water location in SharedInfo
-				Util.randomExplore();
+				//Use water location in SharedInfo
+				if (findClosestWaterTile() == null) {
+					System.out.println("im wandering because i am dumb");
+					Util.randomExplore();
+				}
+				else {
+					System.out.println("I'm trying to go to the tile at " + findClosestWaterTile().x + " " + findClosestWaterTile().y);
+					Pathfinding.execute(findClosestWaterTile());
+				}
 			}
 		} else {
 			// Not currently holding any unit
@@ -217,10 +225,10 @@ public class DroneBot implements RunnableBot {
 	public RobotInfo findCowTarget() {
 		RobotInfo best = null;
 		int bestDistanceSquared = -1;
-		for(RobotInfo robot : Cache.ALL_NEARBY_ROBOTS) {
-			if(robot.getTeam() == Team.NEUTRAL) {
+		for (RobotInfo robot : Cache.ALL_NEARBY_ROBOTS) {
+			if (robot.getTeam() == Team.NEUTRAL) {
 				int distanceSquared = Cache.CURRENT_LOCATION.distanceSquaredTo(robot.getLocation());
-				if(best == null || distanceSquared < bestDistanceSquared) {
+				if (best == null || distanceSquared < bestDistanceSquared) {
 					best = robot;
 					bestDistanceSquared = distanceSquared;
 				}
@@ -237,6 +245,25 @@ public class DroneBot implements RunnableBot {
 			default:
 				// Cannot pick up
 				return 0;
+		}
+	}
+	public MapLocation findClosestWaterTile() {
+		if (MapTracker.closestWaterToEnemyHQ == null && MapTracker.closestWaterToHQ == null) {
+			return null;
+		}
+		else if (MapTracker.closestWaterToEnemyHQ == null) {
+			return MapTracker.closestWaterToHQ;
+		}
+		else if (MapTracker.closestWaterToHQ == null) {
+			return MapTracker.closestWaterToEnemyHQ;
+		}
+		else {
+			if (Cache.CURRENT_LOCATION.distanceSquaredTo(MapTracker.closestWaterToEnemyHQ) > Cache.CURRENT_LOCATION.distanceSquaredTo(MapTracker.closestWaterToHQ)) {
+				return MapTracker.closestWaterToHQ;
+			}
+			else {
+				return MapTracker.closestWaterToEnemyHQ;
+			}
 		}
 	}
 }

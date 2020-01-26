@@ -34,7 +34,7 @@ public class SharedInfo {
 
 	public static int landscapersBuilt = 0;
 	
-	public static MapTracker mapTracker;
+	public static MapTracker mapTracker = new MapTracker();
 	
 	// Attack with drones info
 	public static int dronesBuilt = 0;
@@ -61,7 +61,6 @@ public class SharedInfo {
 	public static void init(RobotController controller) {
 		SharedInfo.controller = controller;
 		EnemyHQGuesser.init(controller);
-		mapTracker = new MapTracker(controller);
 	}
 	public static void sendEnemyHQ(MapLocation location) {
 		setEnemyHQLocation(location);
@@ -167,9 +166,9 @@ public class SharedInfo {
 		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
 	}
-	public static void sendWaterState(MapLocation location, int waterState) {
+	public static void sendWaterState(MapLocation location, int waterState, int team) {
 		int[] message = new int[] {
-				WATER_SIGNATURE, 0, location.x, location.y, waterState, 0, 0
+				WATER_SIGNATURE, team, location.x, location.y, waterState, 0, 0
 		};
 		Communication.encryptMessage(message);
 		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
@@ -220,7 +219,7 @@ public class SharedInfo {
 				wallState = message[4];
 				break;
 			case WATER_SIGNATURE:
-				updateWaterLocations(new MapLocation(message[2], 3), message[4] == 1);
+				updateWaterLocations(new MapLocation(message[2], message[3]), message[4] == 1, message[1] == 1);
 				break;
 		}
 	}
@@ -279,11 +278,21 @@ public class SharedInfo {
 				(SharedInfo.getFulfillmentCenterCount() == 0 ? RobotType.FULFILLMENT_CENTER.cost : 0) +
 				(SharedInfo.isSavingForNetgun ? RobotType.NET_GUN.cost : 0);
 	}
-	public static void updateWaterLocations(MapLocation location, boolean waterState) {
-		if(waterState) {
-			mapTracker.waterLocations.add(location);
+	public static void updateWaterLocations(MapLocation location, boolean waterState, boolean isCloserToUs) {
+		if (waterState) {
+			if (isCloserToUs) {
+				MapTracker.closestWaterToHQ = location;
+			}
+			else {
+				MapTracker.closestWaterToEnemyHQ = location;
+			}
 		} else {
-			mapTracker.waterLocations.remove(location);
+			if (isCloserToUs) {
+				MapTracker.closestWaterToHQ = null;
+			}
+			else {
+				MapTracker.closestWaterToEnemyHQ = null;
+			}
 		}
 	}
 	private static void setAttackState(int attackState) {

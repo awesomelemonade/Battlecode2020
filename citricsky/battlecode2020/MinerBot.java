@@ -77,7 +77,7 @@ public class MinerBot implements RunnableBot {
 			for (Direction direction : Util.ALL_DIRECTIONS) {
 				if (controller.canMineSoup(direction)) {
 					controller.mineSoup(direction);
-					if(!SharedInfo.mapTracker.soupLocations.contains(currentLocation.add(direction))) {
+					if (!SharedInfo.mapTracker.soupLocations.contains(currentLocation.add(direction))) {
 						SharedInfo.sendSoup(currentLocation.add(direction));
 					}
 					return;
@@ -92,12 +92,12 @@ public class MinerBot implements RunnableBot {
 					MapLocation nearestSoup = SharedInfo.mapTracker.soupLocations.nearestSoup(currentLocation);
 					if (currentLocation.isAdjacentTo(nearestSoup)) {
 						// if the soup is gone
-						if(controller.senseSoup(nearestSoup) == 0) {
+						if (controller.senseSoup(nearestSoup) == 0) {
 							SharedInfo.sendSoupGone(nearestSoup);
 							return;
 						} else { // mine if there is still soup
 							Direction directionToSoup = currentLocation.directionTo(nearestSoup);
-							if(controller.canMineSoup(directionToSoup)) {
+							if (controller.canMineSoup(directionToSoup)) {
 								controller.mineSoup(directionToSoup);
 								return;
 							}

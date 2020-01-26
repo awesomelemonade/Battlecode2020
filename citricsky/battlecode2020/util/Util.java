@@ -12,6 +12,7 @@ public class Util {
 		random = new Random(Hash.hash(1532135, controller.getID()));
 		Cache.init(controller);
 		SharedInfo.init(controller);
+		MapTracker.init(controller);
 		Communication.init(controller); // 5k bytecodes
 		CommunicationProcessor.init(controller);
 		if (!Cache.ROBOT_TYPE.isBuilding()) {
@@ -36,6 +37,7 @@ public class Util {
 		if (!Cache.ROBOT_TYPE.isBuilding()) {
 			UnitsMap.loop();
 		}
+		MapTracker.updateWaterLocations();
 		if (!hasLattice) {
 			if (SharedInfo.getDesignSchoolCount() > 0) {
 				if (designSchoolSpawnedTurn == -1) {
