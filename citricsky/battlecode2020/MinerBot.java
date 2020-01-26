@@ -263,7 +263,7 @@ public class MinerBot implements RunnableBot {
 		}
 		return false;
 	}
-	public MapLocation findSoupLocation() throws GameActionException {
+	public static MapLocation findSoupLocation() throws GameActionException {
 		int currentElevation = Cache.controller.senseElevation(Cache.CURRENT_LOCATION);
 		for (int i = 0; i < Util.FLOOD_FILL_DX.length; i++) {
 			MapLocation location = Cache.CURRENT_LOCATION.translate(Util.FLOOD_FILL_DX[i], Util.FLOOD_FILL_DY[i]);
@@ -271,9 +271,16 @@ public class MinerBot implements RunnableBot {
 				break;
 			}
 			if (Cache.controller.senseSoup(location) > 0) {
-				int elevationDifference = Math.abs(Cache.controller.senseElevation(location) - currentElevation);
+				int lowestElevationDifference = Integer.MAX_VALUE;
+				for (Direction direction : Direction.values()) {
+					MapLocation adjacent = location.add(direction);
+					if (Cache.controller.canSenseLocation(adjacent)) {
+						lowestElevationDifference =
+								Math.min(lowestElevationDifference, Math.abs(Cache.controller.senseElevation(adjacent) - currentElevation));
+					}
+				}
 				// elevationDifference / 3 < distance + 2 (buffer)
-				if (elevationDifference / 3.0 < Math.sqrt(Cache.CURRENT_LOCATION.distanceSquaredTo(location)) + 2) {
+				if (lowestElevationDifference / 3.0 < Math.sqrt(Cache.CURRENT_LOCATION.distanceSquaredTo(location)) + 2) {
 					return location;
 				}
 			}
