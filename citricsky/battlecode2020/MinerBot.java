@@ -30,6 +30,16 @@ public class MinerBot implements RunnableBot {
 		if (Util.tryKiteFromAdjacentDrones()) {
 			return;
 		}
+		if (Util.hasLattice) {
+			// Check if we're on low elevation - flee to lattice
+			if (!hqLocation.isWithinDistanceSquared(Cache.CURRENT_LOCATION, RobotType.HQ.sensorRadiusSquared)) {
+				int elevation = controller.senseElevation(Cache.CURRENT_LOCATION);
+				if (Util.getTurnsToFlooded(elevation) - controller.getRoundNum() < 50) {
+					Pathfinding.execute(hqLocation);
+					return;
+				}
+			}
+		}
 		// See if we should build net guns
 		if (tryBuildNetGun()) {
 			return;
@@ -59,16 +69,6 @@ public class MinerBot implements RunnableBot {
 				}
 				// Last resort :/
 				controller.disintegrate();
-			}
-		}
-		if (Util.hasLattice) {
-			// Check if we're on low elevation
-			if (hqLocation.isWithinDistanceSquared(Cache.CURRENT_LOCATION, RobotType.HQ.sensorRadiusSquared)) {
-				int elevation = controller.senseElevation(Cache.CURRENT_LOCATION);
-				if (Util.getTurnsToFlooded(elevation) - controller.getRoundNum() < 50) {
-					Pathfinding.execute(hqLocation);
-					return;
-				}
 			}
 		}
 		// Try mine soup
