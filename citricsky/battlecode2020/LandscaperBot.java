@@ -165,7 +165,9 @@ public class LandscaperBot implements RunnableBot {
 			if (controller.canDigDirt(direction)) {
 				controller.digDirt(direction);
 			} else {
-				tryWall();
+				if (!tryWall()) {
+					tryDepositToPit();
+				}
 			}
 			return true;
 		} else {
