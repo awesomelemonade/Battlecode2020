@@ -130,43 +130,46 @@ public class DroneBot implements RunnableBot {
 			}
 		} else {
 			// Not currently holding any unit
-			int attackState = SharedInfo.getAttackState();
-			if (attackState == SharedInfo.ATTACK_STATE_ENEMYHQ_WITH_LANDSCAPERS) {
-				int bestDistanceSquared = Integer.MAX_VALUE;
-				RobotInfo best = null;
-				MapLocation ourHQLocation = SharedInfo.getOurHQLocation();
-				if (ourHQLocation != null) {
-					for (RobotInfo ally : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
-						if (!ally.getType().equals(RobotType.LANDSCAPER)) {
-							continue;
-						}
-						MapLocation allyLocation = ally.getLocation();
-						if (ourHQLocation.isAdjacentTo(allyLocation)) {
-							continue;
-						}
-						int distanceSquared = Cache.CURRENT_LOCATION.distanceSquaredTo(allyLocation);
-						if (distanceSquared < bestDistanceSquared) {
-							best = ally;
-							bestDistanceSquared = distanceSquared;
-						}
-					}
-					if (best != null) {
-						if (currentLocation.isAdjacentTo(best.getLocation())) {
-							if (controller.canPickUpUnit(best.getID())) {
-								controller.pickUpUnit(best.getID());
-								carryingAllyLandscaper = true;
-							}
-						} else {
-							Pathfinding.execute(best.getLocation());
-						}
-						return;
-					}
-				}
-			}
 			RobotInfo target = findBestEnemyTarget();
 			if (SharedInfo.getOurHQState() == HQBot.NO_HELP_NEEDED) {
 				if (target == null) {
 					target = findCowTarget();
+				}
+			}
+			int attackState = SharedInfo.getAttackState();
+			if (target == null) {
+				// Pick up our own landscapers for attack
+				if (attackState == SharedInfo.ATTACK_STATE_ENEMYHQ_WITH_LANDSCAPERS) {
+					int bestDistanceSquared = Integer.MAX_VALUE;
+					RobotInfo best = null;
+					MapLocation ourHQLocation = SharedInfo.getOurHQLocation();
+					if (ourHQLocation != null) {
+						for (RobotInfo ally : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
+							if (!ally.getType().equals(RobotType.LANDSCAPER)) {
+								continue;
+							}
+							MapLocation allyLocation = ally.getLocation();
+							if (ourHQLocation.isAdjacentTo(allyLocation)) {
+								continue;
+							}
+							int distanceSquared = Cache.CURRENT_LOCATION.distanceSquaredTo(allyLocation);
+							if (distanceSquared < bestDistanceSquared) {
+								best = ally;
+								bestDistanceSquared = distanceSquared;
+							}
+						}
+						if (best != null) {
+							if (currentLocation.isAdjacentTo(best.getLocation())) {
+								if (controller.canPickUpUnit(best.getID())) {
+									controller.pickUpUnit(best.getID());
+									carryingAllyLandscaper = true;
+								}
+							} else {
+								Pathfinding.execute(best.getLocation());
+							}
+							return;
+						}
+					}
 				}
 			}
 			if (target == null) {
