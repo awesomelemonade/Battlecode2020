@@ -1,6 +1,7 @@
 package citricsky.battlecode2020.util;
 
 import battlecode.common.*;
+import citricsky.battlecode2020.HQBot;
 
 import java.util.Random;
 
@@ -305,12 +306,21 @@ public class Util {
 	public static boolean tryShootDrone() throws GameActionException {
 		RobotInfo[] enemies = controller.senseNearbyRobots(Cache.CURRENT_LOCATION,
 				GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED, controller.getTeam().opponent());
+		int bestDistance = 1738;
+		RobotInfo bestTarget = null;
 		for (RobotInfo enemy : enemies) {
-			int enemyId = enemy.getID();
-			if (controller.canShootUnit(enemyId)) {
-				controller.shootUnit(enemyId);
-				return true;
+			int enemyID = enemy.getID();
+			int enemyDistance = Cache.CURRENT_LOCATION.distanceSquaredTo(enemy.getLocation());
+			if(enemyDistance < bestDistance) {
+				if (controller.canShootUnit(enemyID)) {
+					bestDistance = enemyDistance;
+					bestTarget = enemy;
+				}
 			}
+		}
+		if(bestTarget != null) {
+			controller.shootUnit(bestTarget.getID());
+			return true;
 		}
 		return false;
 	}

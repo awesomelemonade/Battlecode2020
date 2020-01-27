@@ -16,6 +16,7 @@ public class HQBot implements RunnableBot {
 	private int turnTimer = 0;
 	private int turnsToPickupLandscapers = 0;
 	private int attackWaves = 0;
+	private boolean allNeighborsOccupied = false;
 
 
 	public HQBot(RobotController controller) {
@@ -68,36 +69,33 @@ public class HQBot implements RunnableBot {
 				}
 			}
 		}
+		if (controller.canSenseRadiusSquared(Util.ADJACENT_DISTANCE_SQUARED)) { // If we can see all adjacent locations
+			int hqElevation = controller.senseElevation(Cache.CURRENT_LOCATION);
+			allNeighborsOccupied = true;
+			for (Direction direction : Util.ADJACENT_DIRECTIONS) {
+				MapLocation location = currentLocation.add(direction);
+				if (controller.onTheMap(location)) {
+					int elevation = controller.senseElevation(location);
+					if (!controller.isLocationOccupied(location) && Math.abs(hqElevation - elevation) <= 15) {
+						allNeighborsOccupied = false;
+						break;
+					}
+				}
+			}
+		}
 		// Calculates state
 		int state;
 		if (FulfillmentCenterBot.findEnemyMinerOrLandscaper() != null) {
-			if (controller.canSenseRadiusSquared(Util.ADJACENT_DISTANCE_SQUARED)) { // If we can see all adjacent locations
-				int hqElevation = controller.senseElevation(Cache.CURRENT_LOCATION);
-				boolean allNeighborsOccupied = true;
-				for (Direction direction : Util.ADJACENT_DIRECTIONS) {
-					MapLocation location = currentLocation.add(direction);
-					if (controller.onTheMap(location)) {
-						int elevation = controller.senseElevation(location);
-						if (!controller.isLocationOccupied(location) && Math.abs(hqElevation - elevation) <= 15) {
-							allNeighborsOccupied = false;
-							break;
-						}
-					}
-				}
-				if (allNeighborsOccupied) {
-					state = NO_ADDITIONAL_HELP_NEEDED;
-				} else {
-					int count = 0;
-					for (RobotInfo robot : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
-						if (robot.getLocation().isAdjacentTo(currentLocation) && robot.getType() == RobotType.LANDSCAPER) {
-							count++;
-						}
-					}
-					state = count >= 4 ? NO_ADDITIONAL_HELP_NEEDED : NEEDS_HELP;
-				}
-			} else {
-				// This really shouldn't happen
+			if (allNeighborsOccupied) {
 				state = NO_ADDITIONAL_HELP_NEEDED;
+			} else {
+				int count = 0;
+				for (RobotInfo robot : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
+					if (robot.getLocation().isAdjacentTo(currentLocation) && robot.getType() == RobotType.LANDSCAPER) {
+						count++;
+					}
+				}
+				state = count >= 4 ? NO_ADDITIONAL_HELP_NEEDED : NEEDS_HELP;
 			}
 		} else {
 			state = NO_HELP_NEEDED;
@@ -156,7 +154,7 @@ public class HQBot implements RunnableBot {
 		if (!controller.isReady()) {
 			return;
 		}
-		if (Util.tryShootDrone()) {
+		if (tryHQShootDrone()) {
 			return;
 		}
 		if (spawnCount < 5) { // Math.min(5, Math.max(2, initialSoupCount * 2 / RobotType.MINER.cost / 3))
@@ -186,5 +184,47 @@ public class HQBot implements RunnableBot {
 			controller.buildRobot(RobotType.MINER, direction);
 			this.spawnCount++;
 		}
+	}
+	public boolean tryHQShootDrone() throws GameActionException {
+		RobotInfo[] enemies = controller.senseNearbyRobots(Cache.CURRENT_LOCATION,
+				GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED, controller.getTeam().opponent());
+		int bestPriority = 0;
+		int bestDistanceSquared = 1337;
+		RobotInfo bestTarget = null;
+		for (RobotInfo enemy : enemies) {
+			int enemyID = enemy.getID();
+			int enemyPriority = getPriority(enemyID);
+			int enemyDistance = Cache.CURRENT_LOCATION.distanceSquaredTo(enemy.getLocation());
+			if(enemyPriority >= bestPriority && enemyDistance <= bestDistanceSquared) {
+				if(controller.canShootUnit(enemyID)) {
+					bestPriority = enemyPriority;
+					bestDistanceSquared = enemyDistance;
+					bestTarget = enemy;
+				}
+			}
+		}
+		if (bestTarget != null) {
+			controller.shootUnit(bestTarget.getID());
+			return true;
+		}
+		return false;
+	}
+	public int getPriority(int id) throws GameActionException {
+		if (controller.canSenseRobot(id)) {
+			if (controller.senseRobot(id).isCurrentlyHoldingUnit()) {
+				if (allNeighborsOccupied) {
+					return 1;
+				} else {
+					return 2;
+				}
+			} else {
+				if (allNeighborsOccupied) {
+					return 2;
+				} else {
+					return 1;
+				}
+			}
+		}
+		return -1;
 	}
 }
