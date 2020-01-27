@@ -74,8 +74,8 @@ public class DroneBot implements RunnableBot {
 					closestNetGun = enemyNetGun;
 				}
 			}
-			// If below this threshold, the drone cannot move anywhere because they would always be in range of a net gun
-			if (closestNetGunDistanceSquared <= 5) {
+			// Kiting
+			if (closestNetGunDistanceSquared <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED) {
 				// Don't pathfind because all directions are not pathfindable
 				Util.tryKiteAwayFrom(closestNetGun, false);
 				return;
@@ -213,7 +213,7 @@ public class DroneBot implements RunnableBot {
 		int bestPriority = -1;
 		int bestDistanceSquared = -1;
 		for (RobotInfo enemy : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
-			int priority = getPriority(enemy.getType());
+			int priority = getPriority(enemy.getLocation(), enemy.getType());
 			if (priority == 0) {
 				// Cannot pick up
 				continue;
@@ -254,7 +254,22 @@ public class DroneBot implements RunnableBot {
 		}
 		return best;
 	}
-	public int getPriority(RobotType type) {
+	public int getPriority(MapLocation location, RobotType type) {
+		MapLocation ourHQ = SharedInfo.getOurHQLocation();
+		MapLocation enemyHQ = SharedInfo.getEnemyHQLocation();
+		if (ourHQ != null && enemyHQ != null) {
+			if (enemyHQ.distanceSquaredTo(location) < ourHQ.distanceSquaredTo(location)) {
+				switch (type) {
+					case MINER:
+						return 2;
+					case LANDSCAPER:
+						return 1;
+					default:
+						// Cannot pick up
+						return 0;
+				}
+			}
+		}
 		switch (type) {
 			case LANDSCAPER:
 				return 2;
