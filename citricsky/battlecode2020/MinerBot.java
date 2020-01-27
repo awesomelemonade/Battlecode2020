@@ -248,6 +248,14 @@ public class MinerBot implements RunnableBot {
 						if (!location.isWithinDistanceSquared(enemyLocation, GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED)) {
 							continue;
 						}
+						// Ensure it is not too close to our HQ
+						if (location.isWithinDistanceSquared(hqLocation, Util.ADJACENT_DISTANCE_SQUARED)) {
+							continue;
+						}
+						// Don't build in pit
+						if (LatticeUtil.isPit(location)) {
+							continue;
+						}
 						if (Util.canSafeBuildRobot(RobotType.NET_GUN, direction)) {
 							controller.buildRobot(RobotType.NET_GUN, direction);
 							saveForNetGun = false;

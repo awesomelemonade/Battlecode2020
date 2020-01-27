@@ -31,7 +31,7 @@ public class HQBot implements RunnableBot {
 	@Override
 	public void turn() throws GameActionException {
 		MapLocation currentLocation = Cache.CURRENT_LOCATION;
-		if (controller.getRoundNum() > 1000) {
+		if (controller.getRoundNum() > 800) {
 			turnTimer++;
 			turnsToPickupLandscapers++;
 			int newAttackState = -1;
