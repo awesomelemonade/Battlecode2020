@@ -16,6 +16,9 @@ public class HQBot implements RunnableBot {
 	private int turnsToPickupLandscapers = 0;
 	private int attackWaves = 0;
 	private boolean allNeighborsOccupied = false;
+	private MapLocation[] vaporatorLocations = new MapLocation[20];
+	private int vaporatorLocationsIndex = 0;
+	private boolean hasSeenVaporatorFlooded = false;
 
 	public HQBot(RobotController controller) {
 		this.controller = controller;
@@ -56,6 +59,29 @@ public class HQBot implements RunnableBot {
 				}
 			}
 		}
+		//If we haven't seen a vaporator flood, then check previous array of vaporator locations for any flooding
+		if (!hasSeenVaporatorFlooded) {
+			for (int i = 0; i < vaporatorLocationsIndex; i++) {
+				if (controller.canSenseLocation(vaporatorLocations[i])) {
+					if (controller.senseFlooding(vaporatorLocations[i])) {
+						hasSeenVaporatorFlooded = true;
+						break;
+					}
+				}
+			}
+			//update vaporator locations array
+			vaporatorLocationsIndex = 0;
+			for (RobotInfo ally : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
+				if (ally.getType() == RobotType.VAPORATOR) {
+					vaporatorLocations[vaporatorLocationsIndex] = ally.getLocation();
+					vaporatorLocationsIndex++;
+					if (vaporatorLocationsIndex == vaporatorLocations.length) {
+						break;
+					}
+				}
+			}
+		}
+		
 		if (controller.canSenseRadiusSquared(Util.ADJACENT_DISTANCE_SQUARED)) { // If we can see all adjacent locations
 			int hqElevation = controller.senseElevation(Cache.CURRENT_LOCATION);
 			allNeighborsOccupied = true;
@@ -92,7 +118,7 @@ public class HQBot implements RunnableBot {
 				SharedInfo.sendOurHQState(state);
 			}
 			//Landscaper wall state
-			if (SharedInfo.getVaporatorCount() >= 8) {
+			if (SharedInfo.getVaporatorCount() >= 8 || hasSeenVaporatorFlooded) {
 				int newWallState = SharedInfo.wallState;
 				if (SharedInfo.wallState == SharedInfo.WALL_STATE_NONE) {
 					newWallState = SharedInfo.WALL_STATE_NEEDS;
@@ -122,6 +148,7 @@ public class HQBot implements RunnableBot {
 					SharedInfo.sendWallState(newWallState);
 				}
 			}
+			
 			System.out.printf("Attack=%d; Wall=%d; HQ=%d; DBuilt=%d; DReady=%d; NetGun=%b\n",
 					SharedInfo.getAttackState(), SharedInfo.wallState, SharedInfo.getOurHQState(), SharedInfo.dronesBuilt, SharedInfo.dronesReady, SharedInfo.isSavingForNetgun);
 
