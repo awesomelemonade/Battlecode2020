@@ -178,17 +178,19 @@ public class HQBot implements RunnableBot {
 		RobotInfo[] enemies = controller.senseNearbyRobots(Cache.CURRENT_LOCATION,
 				GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED, controller.getTeam().opponent());
 		int bestPriority = 0;
-		int bestDistanceSquared = 1337;
+		int bestDistanceSquared = Integer.MAX_VALUE;
 		RobotInfo bestTarget = null;
 		for (RobotInfo enemy : enemies) {
-			int enemyID = enemy.getID();
-			int enemyPriority = getPriority(enemyID);
-			int enemyDistance = Cache.CURRENT_LOCATION.distanceSquaredTo(enemy.getLocation());
-			if(enemyPriority >= bestPriority && enemyDistance <= bestDistanceSquared) {
-				if(controller.canShootUnit(enemyID)) {
-					bestPriority = enemyPriority;
-					bestDistanceSquared = enemyDistance;
-					bestTarget = enemy;
+			if (enemy.getType() == RobotType.DELIVERY_DRONE) {
+				int enemyID = enemy.getID();
+				int enemyPriority = getPriority(enemy);
+				int enemyDistance = Cache.CURRENT_LOCATION.distanceSquaredTo(enemy.getLocation());
+				if (enemyPriority > bestPriority || ((enemyPriority == bestPriority) && enemyDistance < bestDistanceSquared)) {
+					if (controller.canShootUnit(enemyID)) {
+						bestPriority = enemyPriority;
+						bestDistanceSquared = enemyDistance;
+						bestTarget = enemy;
+					}
 				}
 			}
 		}
@@ -198,22 +200,19 @@ public class HQBot implements RunnableBot {
 		}
 		return false;
 	}
-	public int getPriority(int id) throws GameActionException {
-		if (controller.canSenseRobot(id)) {
-			if (controller.senseRobot(id).isCurrentlyHoldingUnit()) {
-				if (allNeighborsOccupied) {
-					return 1;
-				} else {
-					return 2;
-				}
+	public int getPriority(RobotInfo enemy) throws GameActionException {
+		if (enemy.isCurrentlyHoldingUnit()) {
+			if (allNeighborsOccupied) {
+				return 1;
 			} else {
-				if (allNeighborsOccupied) {
-					return 2;
-				} else {
-					return 1;
-				}
+				return 2;
+			}
+		} else {
+			if (allNeighborsOccupied) {
+				return 2;
+			} else {
+				return 1;
 			}
 		}
-		return -1;
 	}
 }
