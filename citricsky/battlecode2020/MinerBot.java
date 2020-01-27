@@ -413,63 +413,29 @@ public class MinerBot implements RunnableBot {
 	}
 	public RobotType getBuildTypeTarget() throws GameActionException {
 		int teamSoup = controller.getTeamSoup();
-		int missingBuildingsCost = SharedInfo.getMissingBuildingsCost();
-		/* TODO: only place net guns near enemy drones
-		netGun: {
-			if (teamSoup < RobotType.NET_GUN.cost) {
-				break netGun;
+		RobotType target = BuildOrder.getNextRobotType();
+		if (target == RobotType.LANDSCAPER && SharedInfo.getDesignSchoolCount() <= 0) {
+			// Build design school
+			if (teamSoup >= BuildOrder.getSoupThreshold(RobotType.LANDSCAPER)) {
+				return RobotType.DESIGN_SCHOOL;
+			} else {
+				return null;
 			}
-			// Check if there are drones
-			for (RobotInfo robot : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
-				if (robot.getType() == RobotType.DELIVERY_DRONE) {
-					return RobotType.NET_GUN;
-				}
+		}
+		if (target == RobotType.DELIVERY_DRONE && SharedInfo.getFulfillmentCenterCount() <= 0) {
+			// Build fulfillment center
+			if (teamSoup >= BuildOrder.getSoupThreshold(RobotType.DELIVERY_DRONE)) {
+				return RobotType.FULFILLMENT_CENTER;
+			} else {
+				return null;
 			}
-		}*/
-		if (SharedInfo.isSavingForNetgun && teamSoup < RobotType.DESIGN_SCHOOL.cost + RobotType.NET_GUN.cost) {
+		}
+		// try building vaporators
+		if (teamSoup >= BuildOrder.getSoupThreshold(RobotType.VAPORATOR)) {
+			return RobotType.VAPORATOR;
+		} else {
 			return null;
 		}
-		designSchool: {
-			if (SharedInfo.getDesignSchoolCount() > 0 || teamSoup < RobotType.DESIGN_SCHOOL.cost) {
-				break designSchool;
-			}
-			return RobotType.DESIGN_SCHOOL;
-		}
-		fulfillmentCenter: {
-			if (SharedInfo.getOurHQState() == HQBot.NEEDS_HELP) {
-				break fulfillmentCenter;
-			}
-			if (SharedInfo.getFulfillmentCenterCount() > 0 || teamSoup < missingBuildingsCost + 15) {
-				break fulfillmentCenter;
-			}
-			if (netGunIsClose()) {
-				break fulfillmentCenter;
-			}
-			// Check if we built 3 vaporators or there are enemies nearby
-			if (SharedInfo.getVaporatorCount() >= 3 || seeEnemyMinerOrLandscaper()) {
-				return RobotType.FULFILLMENT_CENTER;
-			}
-		}
-		vaporator: {
-			if (Cache.ALL_NEARBY_ENEMY_ROBOTS.length > 0) {
-				// Don't build vaporator when you see enemies
-				break vaporator;
-			}
-			if (SharedInfo.getVaporatorCount() > 120) {
-				break vaporator;
-			}
-			if (SharedInfo.getVaporatorCount() > 3) {
-				if (teamSoup < RobotType.VAPORATOR.cost + missingBuildingsCost) {
-					break vaporator;
-				}
-			} else {
-				if (teamSoup < RobotType.VAPORATOR.cost) {
-					break vaporator;
-				}
-			}
-			return RobotType.VAPORATOR;
-		}
-		return null;
 	}
 	public static boolean seeEnemyMinerOrLandscaper() {
 		for (RobotInfo enemy : Cache.ALL_NEARBY_ENEMY_ROBOTS) {

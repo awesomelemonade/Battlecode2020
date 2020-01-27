@@ -2,12 +2,12 @@ package citricsky.battlecode2020;
 
 import battlecode.common.*;
 import citricsky.RunnableBot;
+import citricsky.battlecode2020.util.BuildOrder;
 import citricsky.battlecode2020.util.Cache;
 import citricsky.battlecode2020.util.SharedInfo;
 import citricsky.battlecode2020.util.Util;
 
 public class FulfillmentCenterBot implements RunnableBot {
-	public static final int MASS_SPAWN_VAPORATOR_THRESHOLD = 15;
 	private RobotController controller;
 	public FulfillmentCenterBot(RobotController controller) {
 		this.controller = controller;
@@ -21,29 +21,17 @@ public class FulfillmentCenterBot implements RunnableBot {
 		if (!controller.isReady()) {
 			return;
 		}
-		if (SharedInfo.getOurHQState() == HQBot.NEEDS_HELP) {
-			// If hq is in distress, we should probably build landscapers instead
+		if (controller.getTeamSoup() < RobotType.DELIVERY_DRONE.cost) {
 			return;
-		}
-		RobotInfo enemy = findEnemyMinerOrLandscaper();
-		if (enemy != null || SharedInfo.getOurHQState() == HQBot.NO_ADDITIONAL_HELP_NEEDED) {
-			if (controller.getTeamSoup() < RobotType.DELIVERY_DRONE.cost) {
-				return;
-			}
-		} else {
-			if (SharedInfo.getVaporatorCount() >= MASS_SPAWN_VAPORATOR_THRESHOLD) {
-				if (controller.getTeamSoup() < RobotType.DELIVERY_DRONE.cost || Math.random() < 0.5) {
-					return;
-				}
-			} else {
-				if (controller.getTeamSoup() < RobotType.VAPORATOR.cost + SharedInfo.getMissingBuildingsCost() +
-						RobotType.DELIVERY_DRONE.cost || Math.random() < 0.5) {
-					return;
-				}
-			}
 		}
 		if (seeEnemyNetGun()) {
 			return;
+		}
+		RobotInfo enemy = findEnemyMinerOrLandscaper();
+		if (enemy == null) {
+			if (controller.getTeamSoup() < BuildOrder.getSoupThreshold(RobotType.DELIVERY_DRONE)) {
+				return;
+			}
 		}
 		MapLocation location;
 		if (enemy != null) {

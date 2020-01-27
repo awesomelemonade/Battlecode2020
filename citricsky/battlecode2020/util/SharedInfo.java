@@ -36,6 +36,7 @@ public class SharedInfo {
 	public static int landscapersBuilt = 0;
 	
 	// Attack with drones info
+	public static int totalDronesBuilt = 0;
 	public static int dronesBuilt = 0;
 	public static int dronesReady = 0;
 	public static final int ATTACK_STATE_NONE = 0;
@@ -197,6 +198,7 @@ public class SharedInfo {
 				break;
 			case NEWDRONE_SIGNATURE:
 				dronesBuilt++;
+				totalDronesBuilt++;
 				break;
 			case DRONE_READY_SIGNATURE:
 				dronesReady++;
