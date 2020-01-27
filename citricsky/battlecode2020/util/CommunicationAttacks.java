@@ -23,7 +23,10 @@ public class CommunicationAttacks {
 		return 0b1 << Util.getRandom().nextInt(32);
 	}
 	private static int attackCounter;
-	public static void sendRandomAttack() {
+	public static int getAttackCount() {
+		return attackCounter;
+	}
+	public static void sendAttack() {
 		// Communication attack in a set order
 		switch (attackCounter) {
 			case 0:
@@ -43,7 +46,7 @@ public class CommunicationAttacks {
 			case 3:
 				sendBytecodeDOS();
 			default:
-				switch(Util.getRandom().nextInt(3)) {
+				switch(Util.getRandom().nextInt(6)) {
 					case 0:
 						sendRecentDOSAttack();
 						break;
@@ -51,13 +54,23 @@ public class CommunicationAttacks {
 						sendBytecodeDOS();
 						break;
 					case 2:
+					case 3:
+					case 4:
 						sendRandomBitFlipAttack();
 						sendRandomBitFlipAttack();
 						sendRandomBitFlipAttack();
 						break;
+					case 5:
+						sendRecentAttack();
+						break;
 				}
 		}
 		attackCounter++;
+	}
+	public static void sendRecentAttack() {
+		if (mostRecentCost <= 2) {
+			CommunicationProcessor.queueMessage(mostRecentMessage, mostRecentCost);
+		}
 	}
 	public static void sendRecentDOSAttack() {
 		if (mostRecentCost <= 2) {

@@ -62,12 +62,25 @@ public class CommunicationProcessor {
 			turn++;
 		}
 	}
+	private static int immediateReplayAttackCount = 0;
 	public static void processTransaction(Transaction transaction) {
 		int[] message = transaction.getMessage();
 		int verifyState = Communication.verifyMessage(message);
 		switch (verifyState) {
 			case Communication.VERIFY_STATE_UNKNOWN_HASH:
 				CommunicationAttacks.addEnemyMessage(message, transaction.getCost());
+				if (controller.getType() == RobotType.HQ &&
+						SharedInfo.getVaporatorCount() >= 5) {
+					if (CommunicationAttacks.getAttackCount() < 10 &&
+							Util.getRandom().nextInt(10) == 0) {
+						controller.setIndicatorDot(Cache.CURRENT_LOCATION, 128, 128, 128);
+						if (immediateReplayAttackCount < 5) {
+							CommunicationAttacks.sendRecentAttack();
+						} else {
+							CommunicationAttacks.sendAttack();
+						}
+					}
+				}
 				break;
 			case Communication.VERIFY_STATE_SUCCESS:
 				SharedInfo.processMessage(message);
