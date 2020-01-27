@@ -400,6 +400,10 @@ public class LandscaperBot implements RunnableBot {
 					}
 				}
 			}
+			// TODO: Bytecode control
+			if (bestLocation != null && Clock.getBytecodesLeft() < 1000) {
+				break;
+			}
 		}
 		if (bestLocation != null) {
 			Cache.controller.setIndicatorDot(bestLocation, 0, 255, 255);
