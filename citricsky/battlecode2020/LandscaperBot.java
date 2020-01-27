@@ -40,15 +40,18 @@ public class LandscaperBot implements RunnableBot {
 		for (Direction direction : Direction.values()) {
 			MapLocation location = Cache.CURRENT_LOCATION.add(direction);
 			if (Util.onTheMap(location) && Cache.controller.canSenseLocation(location)) {
-				if (location.isAdjacentTo(ourHQ)) {
+				if (location.isAdjacentTo(ourHQ) && (!location.equals(ourHQ))) {
 					int elevation = Cache.controller.senseElevation(location);
-					if (elevation < targetElevation) {
-						if (controller.canDepositDirt(direction)) {
-							controller.depositDirt(direction);
-						} else {
-							tryDigFromPit();
+					if (!LatticeUtil.isPit(location)) {
+						if (elevation < targetElevation) {
+							if (controller.canDepositDirt(direction)) {
+								controller.depositDirt(direction);
+								controller.setIndicatorLine(Cache.CURRENT_LOCATION, location, 128, 128, 128);
+							} else {
+								tryDigFromPit();
+							}
+							return true;
 						}
-						return true;
 					}
 				}
 			}
