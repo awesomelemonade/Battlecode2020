@@ -58,6 +58,7 @@ public class Util {
 		return random;
 	}
 	public static final int ADJACENT_DISTANCE_SQUARED = 2;
+	public static final int OUTER_LAYER_ADJACENT_DISTANCE_SQUARED = 8;
 	public static final Direction[] ALL_DIRECTIONS = Direction.values();
 	public static final Direction[] ADJACENT_DIRECTIONS = new Direction[] {
 			Direction.NORTH, Direction.NORTHEAST, Direction.EAST, Direction.SOUTHEAST,
@@ -401,6 +402,28 @@ public class Util {
 				return DIRECTIONS_TO[2];
 			}
 		}
+	}
+	public static MapLocation[] getOuterAdjacentTiles(MapLocation location) {
+		MapLocation[] ret = new MapLocation[16];
+		ret[0] = location.add(Direction.NORTHWEST).add(Direction.NORTHWEST);
+		ret[1] = location.add(Direction.NORTHWEST).add(Direction.NORTH);
+		ret[2] = location.add(Direction.NORTH).add(Direction.NORTH);
+		ret[3] = location.add(Direction.NORTHEAST).add(Direction.NORTH);
+		ret[4] = location.add(Direction.NORTHEAST).add(Direction.NORTHEAST);
+		ret[5] = location.add(Direction.EAST).add(Direction.NORTHEAST);
+		ret[6] = location.add(Direction.EAST).add(Direction.EAST);
+		ret[7] = location.add(Direction.EAST).add(Direction.SOUTHEAST);
+		ret[8] = location.add(Direction.SOUTHEAST).add(Direction.SOUTHEAST);
+		ret[9] = location.add(Direction.SOUTHEAST).add(Direction.SOUTH);
+		ret[10] = location.add(Direction.SOUTH).add(Direction.SOUTH);
+		ret[11] = location.add(Direction.SOUTH).add(Direction.SOUTHWEST);
+		ret[12] = location.add(Direction.SOUTHWEST).add(Direction.SOUTHWEST);
+		ret[13] = location.add(Direction.SOUTHWEST).add(Direction.WEST);
+		ret[14] = location.add(Direction.WEST).add(Direction.WEST);
+		ret[15] = location.add(Direction.WEST).add(Direction.NORTHWEST);
+		
+		return ret;
+		
 	}
 	public static boolean isNearCorner(MapLocation location) {
 		return (location.x <= 1 || location.x >= Cache.MAP_WIDTH - 2) &&

@@ -149,7 +149,7 @@ public class DroneBot implements RunnableBot {
 								continue;
 							}
 							MapLocation allyLocation = ally.getLocation();
-							if (ourHQLocation.isAdjacentTo(allyLocation)) {
+							if (ourHQLocation.isWithinDistanceSquared(allyLocation, Util.OUTER_LAYER_ADJACENT_DISTANCE_SQUARED)) {
 								continue;
 							}
 							int distanceSquared = Cache.CURRENT_LOCATION.distanceSquaredTo(allyLocation);

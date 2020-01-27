@@ -57,6 +57,8 @@ public class SharedInfo {
 	public static final int WALL_STATE_NONE = 0;
 	public static final int WALL_STATE_NEEDS = 1;
 	public static final int WALL_STATE_STAYS = 2;
+	public static final int WALL_STATE_NEEDS_LARGER = 3;
+	public static final int WALL_STATE_STAYS_LARGER = 4;
 
 	public static void init(RobotController controller) {
 		SharedInfo.controller = controller;

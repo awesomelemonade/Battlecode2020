@@ -3,6 +3,7 @@ package citricsky.battlecode2020;
 import battlecode.common.*;
 import citricsky.RunnableBot;
 import citricsky.battlecode2020.util.Cache;
+import citricsky.battlecode2020.util.LatticeUtil;
 import citricsky.battlecode2020.util.SharedInfo;
 import citricsky.battlecode2020.util.Util;
 
@@ -147,6 +148,34 @@ public class HQBot implements RunnableBot {
 						if (allWallSpotsOccupied) {
 							newWallState = SharedInfo.WALL_STATE_STAYS;
 						}
+					}
+				}
+				if (SharedInfo.wallState != newWallState) {
+					SharedInfo.sendWallState(newWallState);
+				}
+			}
+			
+			if (hasSeenVaporatorFlooded) {
+				int newWallState = SharedInfo.wallState;
+				if (SharedInfo.wallState == SharedInfo.WALL_STATE_STAYS) {
+					newWallState = SharedInfo.WALL_STATE_NEEDS_LARGER;
+				}
+				if (newWallState == SharedInfo.WALL_STATE_NEEDS_LARGER) {
+					boolean allOuterNeighborsOccupied = true;
+					MapLocation[] outerNeighborLocations = Util.getOuterAdjacentTiles(currentLocation);
+					for (MapLocation location : outerNeighborLocations) {
+						if (Util.onTheMap(location)) {
+							RobotInfo robot = controller.senseRobotAtLocation(location);
+							if ((robot == null && !controller.senseFlooding(location) && !LatticeUtil.isPit(location)) || robot != null && (robot.getTeam() == Cache.OPPONENT_TEAM || (robot.getType() != RobotType.LANDSCAPER && !robot.getType().isBuilding()))) {
+								System.out.println("Location " + location.x + " " + location.y + " is empty");
+								allOuterNeighborsOccupied = false;
+								break;
+							}
+							
+						}
+					}
+					if (allOuterNeighborsOccupied) {
+						newWallState = SharedInfo.WALL_STATE_STAYS_LARGER;
 					}
 				}
 				if (SharedInfo.wallState != newWallState) {

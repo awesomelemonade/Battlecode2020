@@ -218,33 +218,36 @@ public class LandscaperBot implements RunnableBot {
 				return true;
 			case SharedInfo.WALL_STATE_STAYS:
 				if (hqLocation.isAdjacentTo(Cache.CURRENT_LOCATION)) {
-					Direction lowestDirection = null;
-					int lowestElevation = Integer.MAX_VALUE;
-					for (Direction direction : Util.ALL_DIRECTIONS) {
-						MapLocation location = Cache.CURRENT_LOCATION.add(direction);
-						if (controller.canSenseLocation(location) && location.isAdjacentTo(hqLocation) &&
-								(!location.equals(hqLocation)) && (!Util.isInCorner(location))) {
-							int elevation = controller.senseElevation(location);
-							if (Util.canPotentiallyBeFlooded(elevation)) {
-								if (controller.canDepositDirt(direction)) {
-									controller.depositDirt(direction);
-									return true;
-								}
-							}
-							if (elevation < lowestElevation) {
-								lowestDirection = direction;
-								lowestElevation = elevation;
-							}
-						}
+					if (tryBuildWall()) {
+						return true;
 					}
-					if (!tryDigFromPit()) {
-						if (lowestDirection != null) {
-							if (controller.canDepositDirt(lowestDirection)) {
-								controller.depositDirt(lowestDirection);
-							}
-						}
+				}
+				break;
+			case SharedInfo.WALL_STATE_NEEDS_LARGER:
+				if (hqLocation.isAdjacentTo(Cache.CURRENT_LOCATION)) {
+					if (tryBuildWall()) {
+						return true;
 					}
-					return true;
+				}
+				if (Cache.CURRENT_LOCATION.isWithinDistanceSquared(hqLocation, Util.OUTER_LAYER_ADJACENT_DISTANCE_SQUARED)) {
+					/*// Shuffle around
+					Direction direction = Util.randomAdjacentDirection();
+					MapLocation location = Cache.CURRENT_LOCATION.add(direction);
+					if (location.isWithinDistanceSquared(hqLocation, Util.OUTER_LAYER_ADJACENT_DISTANCE_SQUARED) && Util.canSafeMove(direction)) {
+						controller.move(direction);
+					}*/
+					if (tryBuildWall()) {
+						return true;
+					}
+				} else {
+					Pathfinding.execute(hqLocation);
+				}
+				return true;
+			case SharedInfo.WALL_STATE_STAYS_LARGER:
+				if (hqLocation.isWithinDistanceSquared(Cache.CURRENT_LOCATION, Util.OUTER_LAYER_ADJACENT_DISTANCE_SQUARED)) {
+					if (tryBuildWall()) {
+						return true;
+					}
 				}
 				break;
 		}
@@ -515,5 +518,42 @@ public class LandscaperBot implements RunnableBot {
 			}
 		}
 		return false;
+	}
+	private boolean tryBuildWall() throws GameActionException{
+		Direction lowestDirection = null;
+		MapLocation hqLocation = SharedInfo.getOurHQLocation();
+		int lowestElevation = Integer.MAX_VALUE;
+		if (Util.getTurnsToFlooded(controller.senseElevation(Cache.CURRENT_LOCATION)) <= 5) {
+			if (controller.canDepositDirt(Direction.CENTER)) {
+				controller.depositDirt(Direction.CENTER);
+			}
+		}
+		else {
+			for (Direction direction : Util.ALL_DIRECTIONS) {
+				MapLocation location = Cache.CURRENT_LOCATION.add(direction);
+				if (controller.canSenseLocation(location) && location.isAdjacentTo(hqLocation) &&
+						(!location.equals(hqLocation)) && (!Util.isInCorner(location))) {
+					int elevation = controller.senseElevation(location);
+					if (Util.canPotentiallyBeFlooded(elevation)) {
+						if (controller.canDepositDirt(direction)) {
+							controller.depositDirt(direction);
+							return true;
+						}
+					}
+					if (elevation < lowestElevation) {
+						lowestDirection = direction;
+						lowestElevation = elevation;
+					}
+				}
+			}
+		}
+		if (!tryDigFromPit()) {
+			if (lowestDirection != null) {
+				if (controller.canDepositDirt(lowestDirection)) {
+					controller.depositDirt(lowestDirection);
+				}
+			}
+		}
+		return true;
 	}
 }
