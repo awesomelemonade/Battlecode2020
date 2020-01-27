@@ -5,7 +5,7 @@ import citricsky.battlecode2020.DroneBot;
 import citricsky.battlecode2020.HQBot;
 
 public class SharedInfo {
-	public static final int OURHQ_TRANSACTION_COST = 1;
+	public static final int OURHQ_TRANSACTION_COST = 3;
 
 	private static final int OURHQ_STATE_SIGNATURE = 8963124;
 	private static final int ENEMYHQ_SIGNATURE = 2130985;

@@ -12,12 +12,10 @@ public class HQBot implements RunnableBot {
 	public static final int NEEDS_HELP = 2;
 	private RobotController controller;
 	private int spawnCount;
-	private int initialSoupCount = 0;
 	private int turnTimer = 0;
 	private int turnsToPickupLandscapers = 0;
 	private int attackWaves = 0;
 	private boolean allNeighborsOccupied = false;
-
 
 	public HQBot(RobotController controller) {
 		this.controller = controller;
@@ -25,18 +23,7 @@ public class HQBot implements RunnableBot {
 	}
 	@Override
 	public void init() throws GameActionException {
-		MapLocation currentLocation = Cache.CURRENT_LOCATION;
-		for (int i = 0; i < Util.FLOOD_FILL_DX.length; i++) {
-			int dx = Util.FLOOD_FILL_DX[i];
-			int dy = Util.FLOOD_FILL_DY[i];
-			MapLocation location = currentLocation.translate(dx, dy);
-			if (controller.canSenseLocation(location)) {
-				initialSoupCount += controller.senseSoup(location);
-			} else {
-				break;
-			}
-		}
-		SharedInfo.sendOurHQ(currentLocation, controller.senseElevation(currentLocation));
+		SharedInfo.sendOurHQ(Cache.CURRENT_LOCATION, controller.senseElevation(Cache.CURRENT_LOCATION));
 	}
 	@Override
 	public void turn() throws GameActionException {
@@ -83,73 +70,75 @@ public class HQBot implements RunnableBot {
 				}
 			}
 		}
-		// Calculates state
-		int state;
-		if (FulfillmentCenterBot.findEnemyMinerOrLandscaper() != null) {
-			if (allNeighborsOccupied) {
-				state = NO_ADDITIONAL_HELP_NEEDED;
-			} else {
-				int count = 0;
-				for (RobotInfo robot : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
-					if (robot.getLocation().isAdjacentTo(currentLocation) && robot.getType() == RobotType.LANDSCAPER) {
-						count++;
-					}
-				}
-				state = count >= 4 ? NO_ADDITIONAL_HELP_NEEDED : NEEDS_HELP;
-			}
-		} else {
-			state = NO_HELP_NEEDED;
-		}
-		if (SharedInfo.getOurHQState() != state) {
-			SharedInfo.sendOurHQState(state);
-		}
-		//Landscaper wall state
-		if (SharedInfo.getVaporatorCount() >= 8) {
-			int newWallState = SharedInfo.wallState;
-			if (SharedInfo.wallState == SharedInfo.WALL_STATE_NONE) {
-				newWallState = SharedInfo.WALL_STATE_NEEDS;
-			}
-			if (newWallState == SharedInfo.WALL_STATE_NEEDS) {
-				if (controller.canSenseRadiusSquared(Util.ADJACENT_DISTANCE_SQUARED)) {
-					boolean allNeighborsOccupied = true;
-					for (Direction direction : Util.ADJACENT_DIRECTIONS) {
-						MapLocation location = currentLocation.add(direction);
-						if (Util.onTheMap(location)) {
-							if (SharedInfo.ourHQNearCorner && Util.isInCorner(location)) {
-								continue;
-							}
-							RobotInfo robot = controller.senseRobotAtLocation(location);
-							if (robot == null || robot.getTeam() == Cache.OPPONENT_TEAM || robot.getType() != RobotType.LANDSCAPER) {
-								allNeighborsOccupied = false;
-								break;
-							}
+		if (controller.getRoundNum() >= 3) { // Makes first turn take less bytecodes
+			// Calculates state
+			int state;
+			if (FulfillmentCenterBot.findEnemyMinerOrLandscaper() != null) {
+				if (allNeighborsOccupied) {
+					state = NO_ADDITIONAL_HELP_NEEDED;
+				} else {
+					int count = 0;
+					for (RobotInfo robot : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
+						if (robot.getLocation().isAdjacentTo(currentLocation) && robot.getType() == RobotType.LANDSCAPER) {
+							count++;
 						}
 					}
-					if (allNeighborsOccupied) {
-						newWallState = SharedInfo.WALL_STATE_STAYS;
+					state = count >= 4 ? NO_ADDITIONAL_HELP_NEEDED : NEEDS_HELP;
+				}
+			} else {
+				state = NO_HELP_NEEDED;
+			}
+			if (SharedInfo.getOurHQState() != state) {
+				SharedInfo.sendOurHQState(state);
+			}
+			//Landscaper wall state
+			if (SharedInfo.getVaporatorCount() >= 8) {
+				int newWallState = SharedInfo.wallState;
+				if (SharedInfo.wallState == SharedInfo.WALL_STATE_NONE) {
+					newWallState = SharedInfo.WALL_STATE_NEEDS;
+				}
+				if (newWallState == SharedInfo.WALL_STATE_NEEDS) {
+					if (controller.canSenseRadiusSquared(Util.ADJACENT_DISTANCE_SQUARED)) {
+						boolean allNeighborsOccupied = true;
+						for (Direction direction : Util.ADJACENT_DIRECTIONS) {
+							MapLocation location = currentLocation.add(direction);
+							if (Util.onTheMap(location)) {
+								if (SharedInfo.ourHQNearCorner && Util.isInCorner(location)) {
+									continue;
+								}
+								RobotInfo robot = controller.senseRobotAtLocation(location);
+								if (robot == null || robot.getTeam() == Cache.OPPONENT_TEAM || robot.getType() != RobotType.LANDSCAPER) {
+									allNeighborsOccupied = false;
+									break;
+								}
+							}
+						}
+						if (allNeighborsOccupied) {
+							newWallState = SharedInfo.WALL_STATE_STAYS;
+						}
 					}
 				}
+				if (SharedInfo.wallState != newWallState) {
+					SharedInfo.sendWallState(newWallState);
+				}
 			}
-			if (SharedInfo.wallState != newWallState) {
-				SharedInfo.sendWallState(newWallState);
+			System.out.printf("Attack=%d; Wall=%d; HQ=%d; DBuilt=%d; DReady=%d; NetGun=%b\n",
+					SharedInfo.getAttackState(), SharedInfo.wallState, SharedInfo.getOurHQState(), SharedInfo.dronesBuilt, SharedInfo.dronesReady, SharedInfo.isSavingForNetgun);
+
+			int designSchoolCount = 0;
+			int fulfillmentCenterCount = 0;
+			for (RobotInfo robot : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
+				if (robot.getType() == RobotType.DESIGN_SCHOOL) {
+					designSchoolCount++;
+				}
+				if (robot.getType() == RobotType.FULFILLMENT_CENTER) {
+					fulfillmentCenterCount++;
+				}
 			}
-		}
-		System.out.printf("Attack=%d; Wall=%d; HQ=%d; DBuilt=%d; DReady=%d; NetGun=%b\n",
-				SharedInfo.getAttackState(), SharedInfo.wallState, SharedInfo.getOurHQState(), SharedInfo.dronesBuilt, SharedInfo.dronesReady, SharedInfo.isSavingForNetgun);
-		
-		int designSchoolCount = 0;
-		int fulfillmentCenterCount = 0;
-		for (RobotInfo robot : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
-			if (robot.getType() == RobotType.DESIGN_SCHOOL) {
-				designSchoolCount++;
+			if (designSchoolCount != SharedInfo.getDesignSchoolCount() ||
+					fulfillmentCenterCount != SharedInfo.getFulfillmentCenterCount()) {
+				SharedInfo.sendOurHQUnitCount(designSchoolCount, fulfillmentCenterCount);
 			}
-			if (robot.getType() == RobotType.FULFILLMENT_CENTER) {
-				fulfillmentCenterCount++;
-			}
-		}
-		if (designSchoolCount != SharedInfo.getDesignSchoolCount() ||
-				fulfillmentCenterCount != SharedInfo.getFulfillmentCenterCount()) {
-			SharedInfo.sendOurHQUnitCount(designSchoolCount, fulfillmentCenterCount);
 		}
 		if (!controller.isReady()) {
 			return;

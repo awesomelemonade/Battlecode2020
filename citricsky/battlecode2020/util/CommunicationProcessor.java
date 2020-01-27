@@ -22,6 +22,7 @@ public class CommunicationProcessor {
 		costQueue = new int[QUEUE_LENGTH];
 		queueIndex = 0;
 		queueSize = 0;
+		minTransactionsCost = 1;
 	}
 	public static void queueMessage(int[] message) {
 		queueMessage(message, minTransactionsCost);
@@ -40,12 +41,12 @@ public class CommunicationProcessor {
 				int[] message = messageQueue[index];
 				if (controller.canSubmitTransaction(message, cost)) {
 					controller.submitTransaction(message, cost);
-					queueIndex++;
-					queueSize--;
 				} else {
+					Cache.controller.setIndicatorDot(Cache.CURRENT_LOCATION, 255, 0, 0);
 					System.out.println("Unable to send message?" + Arrays.toString(message) + " w/ cost=" + cost);
-					break;
 				}
+				queueIndex++;
+				queueSize--;
 			} else {
 				break;
 			}
@@ -68,16 +69,17 @@ public class CommunicationProcessor {
 		int verifyState = Communication.verifyMessage(message);
 		switch (verifyState) {
 			case Communication.VERIFY_STATE_UNKNOWN_HASH:
-				CommunicationAttacks.addEnemyMessage(message, transaction.getCost());
-				if (controller.getType() == RobotType.HQ &&
-						SharedInfo.getVaporatorCount() >= 5) {
-					if (CommunicationAttacks.getAttackCount() < 10 &&
-							Util.getRandom().nextInt(10) == 0) {
-						controller.setIndicatorDot(Cache.CURRENT_LOCATION, 128, 128, 128);
-						if (immediateReplayAttackCount < 5) {
-							CommunicationAttacks.sendRecentAttack();
-						} else {
-							CommunicationAttacks.sendAttack();
+				if (Cache.ROBOT_TYPE == RobotType.HQ) {
+					CommunicationAttacks.addEnemyMessage(message, transaction.getCost());
+					if (SharedInfo.getVaporatorCount() >= 5) {
+						if (CommunicationAttacks.getAttackCount() < 10 &&
+								Util.getRandom().nextInt(10) == 0) {
+							controller.setIndicatorDot(Cache.CURRENT_LOCATION, 128, 128, 128);
+							if (immediateReplayAttackCount < 5) {
+								CommunicationAttacks.sendRecentAttack();
+							} else {
+								CommunicationAttacks.sendAttack();
+							}
 						}
 					}
 				}
