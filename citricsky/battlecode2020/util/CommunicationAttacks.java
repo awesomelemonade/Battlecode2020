@@ -5,6 +5,8 @@ import battlecode.common.GameConstants;
 public class CommunicationAttacks {
 	private static final int QUEUE_LENGTH = 20;
 	private static int[][] messageQueue;
+	private static int[] mostRecentMessage;
+	private static int mostRecentCost;
 	private static int[] costQueue;
 	private static int queueSize;
 	private static int queueIndex;
@@ -12,12 +14,16 @@ public class CommunicationAttacks {
 		messageQueue = new int[QUEUE_LENGTH][];
 		costQueue = new int[QUEUE_LENGTH];
 		attackCounter = 0;
+		mostRecentMessage = null;
+		mostRecentCost = Integer.MAX_VALUE;
+		queueSize = 0;
+		queueIndex = 0;
 	}
 	private static int randomOneBit() {
 		return 0b1 << Util.getRandom().nextInt(32);
 	}
 	private static int attackCounter;
-	public static void sendAttacks() {
+	public static void sendRandomAttack() {
 		// Communication attack in a set order
 		switch (attackCounter) {
 			case 0:
@@ -30,27 +36,44 @@ public class CommunicationAttacks {
 				sendRandomBitFlipAttack();
 				break;
 			case 1:
-				sendBytecodeDDOS();
+				sendRecentDOSAttack();
 			case 2:
 				sendRandomBitFlipAttack();
 				sendRandomBitFlipAttack();
 			case 3:
-				sendBytecodeDDOS();
+				sendBytecodeDOS();
 			default:
-				if (Util.getRandom().nextBoolean()) {
-					sendBytecodeDDOS();
-				} else {
-					sendRandomBitFlipAttack();
-					sendRandomBitFlipAttack();
-					sendRandomBitFlipAttack();
+				switch(Util.getRandom().nextInt(3)) {
+					case 0:
+						sendRecentDOSAttack();
+						break;
+					case 1:
+						sendBytecodeDOS();
+						break;
+					case 2:
+						sendRandomBitFlipAttack();
+						sendRandomBitFlipAttack();
+						sendRandomBitFlipAttack();
+						break;
 				}
 		}
 		attackCounter++;
 	}
+	public static void sendRecentDOSAttack() {
+		if (mostRecentCost <= 2) {
+			CommunicationProcessor.queueMessage(mostRecentMessage, mostRecentCost);
+			CommunicationProcessor.queueMessage(mostRecentMessage, mostRecentCost);
+			CommunicationProcessor.queueMessage(mostRecentMessage, mostRecentCost);
+			CommunicationProcessor.queueMessage(mostRecentMessage, mostRecentCost);
+			CommunicationProcessor.queueMessage(mostRecentMessage, mostRecentCost);
+			CommunicationProcessor.queueMessage(mostRecentMessage, mostRecentCost);
+			CommunicationProcessor.queueMessage(mostRecentMessage, mostRecentCost);
+		}
+	}
 	public static void sendRandomBitFlipAttack() {
 		CommunicationProcessor.queueMessage(getBitFlipAttack(getRandomEnemyMessage()), 1);
 	}
-	public static void sendBytecodeDDOS() {
+	public static void sendBytecodeDOS() {
 		// Sends a bunch of replay attacks - block from random offset
 		if (queueSize >= GameConstants.NUMBER_OF_TRANSACTIONS_PER_BLOCK) {
 			int randomOffset = Util.getRandom().nextInt(queueSize);
@@ -65,6 +88,8 @@ public class CommunicationAttacks {
 			messageQueue[(queueIndex + queueSize) % QUEUE_LENGTH] = message;
 			costQueue[(queueIndex + queueSize++) % QUEUE_LENGTH] = cost;
 		}
+		mostRecentMessage = message;
+		mostRecentCost = cost;
 	}
 	public static int[] getNthEnemyMessage(int n) {
 		return messageQueue[(queueIndex + n) % QUEUE_LENGTH];
