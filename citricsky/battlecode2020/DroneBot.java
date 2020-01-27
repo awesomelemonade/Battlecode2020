@@ -255,18 +255,20 @@ public class DroneBot implements RunnableBot {
 		return best;
 	}
 	public int getPriority(MapLocation location, RobotType type) {
-		MapLocation ourHQ = SharedInfo.getOurHQLocation();
-		MapLocation enemyHQ = SharedInfo.getEnemyHQLocation();
-		if (ourHQ != null && enemyHQ != null) {
-			if (enemyHQ.distanceSquaredTo(location) < ourHQ.distanceSquaredTo(location)) {
-				switch (type) {
-					case MINER:
-						return 2;
-					case LANDSCAPER:
-						return 1;
-					default:
-						// Cannot pick up
-						return 0;
+		if (controller.getRoundNum() < 2500) {
+			MapLocation ourHQ = SharedInfo.getOurHQLocation();
+			MapLocation enemyHQ = SharedInfo.getEnemyHQLocation();
+			if (ourHQ != null && enemyHQ != null) {
+				if (enemyHQ.distanceSquaredTo(location) < ourHQ.distanceSquaredTo(location)) {
+					switch (type) {
+						case MINER:
+							return 2;
+						case LANDSCAPER:
+							return 1;
+						default:
+							// Cannot pick up
+							return 0;
+					}
 				}
 			}
 		}
