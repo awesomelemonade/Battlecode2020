@@ -7,7 +7,7 @@ public class Communication {
 	public static final int VERIFY_STATE_SUCCESS = 0;
 	public static final int VERIFY_STATE_UNKNOWN_HASH = 1;
 	public static final int VERIFY_STATE_REPLAY_ATTACK = 2;
-	private static int SEED = 51178234;
+	private static int SEED = 20851893;
 
 	public static void init(RobotController controller) {
 		// xor the seed by map size

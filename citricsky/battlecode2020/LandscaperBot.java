@@ -21,14 +21,39 @@ public class LandscaperBot implements RunnableBot {
 				Util::tryKiteFromAdjacentDrones,
 				this::tryBuryAdjacentEnemyBuildings,
 				this::tryDefend,
-				() -> tryHeal(SharedInfo.getOurHQLocation()),
-				() -> tryHeal(getNearestBuilding(Cache.ALL_NEARBY_FRIENDLY_ROBOTS)),
+				() -> tryHealAdjacent(SharedInfo.getOurHQLocation()),
+				() -> tryHealAdjacent(getNearestBuilding(Cache.ALL_NEARBY_FRIENDLY_ROBOTS)),
+				this::tryFillUpAdjacentHQ,
 				this::tryWall,
 				this::tryTerraform,
 				() -> tryGoToAttack(getNearestBuilding(Cache.ALL_NEARBY_ENEMY_ROBOTS)),
 				() -> tryGoToAttack(SharedInfo.getEnemyHQLocation()),
 				Util::randomExplore
 		};
+	}
+	public boolean tryFillUpAdjacentHQ() throws GameActionException {
+		if (SharedInfo.getOurHQLocation() == null) {
+			return false;
+		}
+		int targetElevation = getRealTargetElevation();
+		MapLocation ourHQ = SharedInfo.getOurHQLocation();
+		for (Direction direction : Direction.values()) {
+			MapLocation location = Cache.CURRENT_LOCATION.add(direction);
+			if (Util.onTheMap(location) && Cache.controller.canSenseLocation(location)) {
+				if (location.isAdjacentTo(ourHQ)) {
+					int elevation = Cache.controller.senseElevation(location);
+					if (elevation < targetElevation) {
+						if (controller.canDepositDirt(direction)) {
+							controller.depositDirt(direction);
+						} else {
+							tryDigFromPit();
+						}
+						return true;
+					}
+				}
+			}
+		}
+		return false;
 	}
 	private static int targetElevation = 1;
 	@Override
@@ -222,7 +247,7 @@ public class LandscaperBot implements RunnableBot {
 		}
 		return false;
 	}
-	public boolean tryHeal(MapLocation location) throws GameActionException {
+	public boolean tryHealAdjacent(MapLocation location) throws GameActionException {
 		// TODO: Consider depositing dirt if full?
 		if (location != null) {
 			MapLocation currentLocation = Cache.CURRENT_LOCATION;

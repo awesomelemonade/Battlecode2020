@@ -125,21 +125,26 @@ public class HQBot implements RunnableBot {
 				}
 				if (newWallState == SharedInfo.WALL_STATE_NEEDS) {
 					if (controller.canSenseRadiusSquared(Util.ADJACENT_DISTANCE_SQUARED)) {
-						boolean allNeighborsOccupied = true;
+						boolean allWallSpotsOccupied = true;
 						for (Direction direction : Util.ADJACENT_DIRECTIONS) {
 							MapLocation location = currentLocation.add(direction);
 							if (Util.onTheMap(location)) {
 								if (SharedInfo.ourHQNearCorner && Util.isInCorner(location)) {
 									continue;
 								}
+								int elevation = controller.senseElevation(location);
+								if (elevation > 200) {
+									// TODO
+									continue;
+								}
 								RobotInfo robot = controller.senseRobotAtLocation(location);
 								if (robot == null || robot.getTeam() == Cache.OPPONENT_TEAM || robot.getType() != RobotType.LANDSCAPER) {
-									allNeighborsOccupied = false;
+									allWallSpotsOccupied = false;
 									break;
 								}
 							}
 						}
-						if (allNeighborsOccupied) {
+						if (allWallSpotsOccupied) {
 							newWallState = SharedInfo.WALL_STATE_STAYS;
 						}
 					}

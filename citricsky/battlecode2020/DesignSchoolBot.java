@@ -26,13 +26,16 @@ public class DesignSchoolBot implements RunnableBot {
 		if (controller.getTeamSoup() < RobotType.LANDSCAPER.cost) {
 			return;
 		}
-		if (shouldLocalBuildLandscaper()) {
+		if (controller.getTeamSoup() >= BuildOrder.getSoupThreshold(RobotType.LANDSCAPER)) {
+			tryBuildLandscaper();
+		}
+		/*if (shouldLocalBuildLandscaper()) {
 			tryBuildLandscaper();
 		} else {
 			if (controller.getTeamSoup() >= BuildOrder.getSoupThreshold(RobotType.LANDSCAPER)) {
 				tryBuildLandscaper();
 			}
-		}
+		}*/
 	}
 	public static boolean shouldLocalBuildLandscaper() {
 		int friendlyLandscapersCount = 0;
