@@ -23,6 +23,9 @@ public class CommunicationProcessor {
 		queueIndex = 0;
 		queueSize = 0;
 	}
+	public static void queueMessage(int[] message) {
+		queueMessage(message, minTransactionsCost);
+	}
 	public static void queueMessage(int[] message, int cost) {
 		int index = (queueIndex + queueSize) % QUEUE_LENGTH;
 		messageQueue[index] = message;
@@ -64,7 +67,7 @@ public class CommunicationProcessor {
 		int verifyState = Communication.verifyMessage(message);
 		switch (verifyState) {
 			case Communication.VERIFY_STATE_UNKNOWN_HASH:
-				CommunicationAttacks.addEnemyMessage(message);
+				CommunicationAttacks.addEnemyMessage(message, transaction.getCost());
 				break;
 			case Communication.VERIFY_STATE_SUCCESS:
 				SharedInfo.processMessage(message);

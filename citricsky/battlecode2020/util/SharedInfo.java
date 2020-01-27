@@ -5,7 +5,7 @@ import citricsky.battlecode2020.DroneBot;
 import citricsky.battlecode2020.HQBot;
 
 public class SharedInfo {
-	public static final int TRANSACTION_COST = 1;
+	public static final int OURHQ_TRANSACTION_COST = 1;
 
 	private static final int OURHQ_STATE_SIGNATURE = 8963124;
 	private static final int ENEMYHQ_SIGNATURE = 2130985;
@@ -67,7 +67,7 @@ public class SharedInfo {
 				ENEMYHQ_SIGNATURE, enemyHQLocation.x, enemyHQLocation.y, 0, 0, 0, 0
 		};
 		Communication.encryptMessage(message);
-		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
+		CommunicationProcessor.queueMessage(message);
 	}
 	public static void sendOurHQ(MapLocation location, int elevation) {
 		setOurHQLocation(location, elevation);
@@ -75,7 +75,7 @@ public class SharedInfo {
 				OURHQ_SIGNATURE, location.x, location.y, elevation, 0, 0, 0
 		};
 		Communication.encryptMessage(message);
-		CommunicationProcessor.queueMessage(message, TRANSACTION_COST + 2);
+		CommunicationProcessor.queueMessage(message, OURHQ_TRANSACTION_COST);
 	}
 	public static void sendEnemyGuessMode(int mode) {
 		setEnemyHQGuesserMode(mode);
@@ -83,7 +83,7 @@ public class SharedInfo {
 				ENEMYHQ_MODE_SIGNATURE, mode, 0, 0, 0, 0, 0
 		};
 		Communication.encryptMessage(message);
-		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
+		CommunicationProcessor.queueMessage(message);
 	}
 	public static void sendOurHQState(int state) {
 		setOurHQState(state);
@@ -91,42 +91,42 @@ public class SharedInfo {
 				OURHQ_STATE_SIGNATURE, state, 0, 0, 0, 0, 0
 		};
 		Communication.encryptMessage(message);
-		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
+		CommunicationProcessor.queueMessage(message);
 	}
 	public static void sendSoup(MapLocation location) {
 		int[] message = new int[] {
 				NEWSOUP_SIGNATURE, location.x, location.y, 0, 0, 0, 0
 		};
 		Communication.encryptMessage(message);
-		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
+		CommunicationProcessor.queueMessage(message);
 	}
 	public static void sendSoupGone(MapLocation location) {
 		int[] message = new int[] {
 				SOUPGONE_SIGNATURE, location.x, location.y, 0, 0, 0, 0
 		};
 		Communication.encryptMessage(message);
-		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
+		CommunicationProcessor.queueMessage(message);
 	}
 	public static void builtNewLandscaper() {
 		int[] message = new int[] {
 				NEWLANDSCAPER_SIGNATURE, 0, 0, 0, 0, 0, 0
 		};
 		Communication.encryptMessage(message);
-		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
+		CommunicationProcessor.queueMessage(message);
 	}
 	public static void builtNewDrone() {
 		int[] message = new int[] {
 				NEWDRONE_SIGNATURE, 0, 0, 0, 0, 0, 0
 		};
 		Communication.encryptMessage(message);
-		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
+		CommunicationProcessor.queueMessage(message);
 	}
 	public static void sendDroneReady() {
 		int[] message = new int[] {
 				DRONE_READY_SIGNATURE, 0, 0, 0, 0, 0, 0
 		};
 		Communication.encryptMessage(message);
-		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
+		CommunicationProcessor.queueMessage(message);
 	}
 	public static void sendAttackState(int attackState) {
 		setAttackState(attackState);
@@ -134,7 +134,7 @@ public class SharedInfo {
 				ATTACK_STATE_SIGNATURE, attackState, 0, 0, 0, 0, 0
 		};
 		Communication.encryptMessage(message);
-		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
+		CommunicationProcessor.queueMessage(message);
 	}
 	public static void sendOurHQUnitCount(int designSchoolCount, int fulfillmentCenterCount) {
 		setOurHQUnitCount(designSchoolCount, fulfillmentCenterCount);
@@ -142,35 +142,35 @@ public class SharedInfo {
 				OURHQ_UNITCOUNT_SIGNATURE, designSchoolCount, fulfillmentCenterCount, 0, 0, 0, 0
 		};
 		Communication.encryptMessage(message);
-		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
+		CommunicationProcessor.queueMessage(message);
 	}
 	public static void sendVaporatorCountIncrement() {
 		int[] message = new int[] {
 				VAPORATOR_COUNT_INCREMENT_SIGNATURE, 0, 0, 0, 0, 0, 0
 		};
 		Communication.encryptMessage(message);
-		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
+		CommunicationProcessor.queueMessage(message);
 	}
 	public static void sendSaveForNetgunSignal(boolean saving) {
 		int[] message = new int[] {
 				TOGGLE_SAVEFOR_NETGUN_SIGNATURE, 0, 0, (saving ? 1 : 0), 0, 0, 0
 		};
 		Communication.encryptMessage(message);
-		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
+		CommunicationProcessor.queueMessage(message);
 	}
 	public static void sendWallState(int state) {
 		int[] message = new int[] {
 				WALLSTATE_CHANGE_SIGNATURE, 0, 0, 0, state, 0, 0
 		};
 		Communication.encryptMessage(message);
-		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
+		CommunicationProcessor.queueMessage(message);
 	}
 	public static void sendWaterState(boolean flooding, MapLocation location) {
 		int[] message = new int[] {
 				WATER_SIGNATURE, flooding ? 1 : 0, 0, location.x, location.y, 0, 0
 		};
 		Communication.encryptMessage(message);
-		CommunicationProcessor.queueMessage(message, TRANSACTION_COST);
+		CommunicationProcessor.queueMessage(message);
 	}
 	public static void processMessage(int[] message) {
 		switch(message[0]) {
