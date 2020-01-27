@@ -14,6 +14,7 @@ public class Util {
 		SharedInfo.init(controller);
 		Communication.init(controller); // 5k bytecodes
 		CommunicationProcessor.init(controller);
+		CommunicationAttacks.init();
 		if (!Cache.ROBOT_TYPE.isBuilding()) {
 			Pathfinding.init(controller);
 			UnitsMap.init(controller);
