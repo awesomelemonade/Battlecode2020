@@ -13,7 +13,11 @@ public class BuildOrder {
 			case HQBot.NO_ADDITIONAL_HELP_NEEDED:
 				return RobotType.DELIVERY_DRONE;
 			case HQBot.NEEDS_HELP:
-				return RobotType.LANDSCAPER;
+				if (SharedInfo.landscapersBuilt >= 10 && SharedInfo.totalDronesBuilt == 0) {
+					return RobotType.DELIVERY_DRONE;
+				} else {
+					return RobotType.LANDSCAPER;
+				}
 		}
 		if (SharedInfo.wallState == SharedInfo.WALL_STATE_NEEDS) {
 			return RobotType.LANDSCAPER;
@@ -64,12 +68,22 @@ public class BuildOrder {
 				}
 				break;
 			case HQBot.NEEDS_HELP:
-				if (!addedLandscaperCost) {
-					threshold += RobotType.LANDSCAPER.cost;
-					addedLandscaperCost = true;
-				}
-				if (type == RobotType.LANDSCAPER) {
-					return threshold;
+				if (SharedInfo.landscapersBuilt >= 10 && SharedInfo.totalDronesBuilt == 0) {
+					if (!addedDroneCost) {
+						threshold += RobotType.DELIVERY_DRONE.cost;
+						addedDroneCost = true;
+					}
+					if (type == RobotType.DELIVERY_DRONE) {
+						return threshold;
+					}
+				} else {
+					if (!addedLandscaperCost) {
+						threshold += RobotType.LANDSCAPER.cost;
+						addedLandscaperCost = true;
+					}
+					if (type == RobotType.LANDSCAPER) {
+						return threshold;
+					}
 				}
 				break;
 		}
