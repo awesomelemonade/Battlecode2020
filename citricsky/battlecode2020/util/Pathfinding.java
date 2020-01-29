@@ -208,17 +208,14 @@ public class Pathfinding {
 					return false;
 				}
 			}
-			// Miners should not move outside of union(lattice, hq vision range)
+			// Miners should not move outside of union(lattice, hq vision range) - or at least it used to
 			if (Cache.ROBOT_TYPE == RobotType.MINER) {
 				// Don't move lower
 				if (toElevation < currentElevation) {
-					// Check if toLocation is within hq vision range
-					if (!MinerBot.hqLocation.isWithinDistanceSquared(location, RobotType.HQ.sensorRadiusSquared)) {
-						// Check if toElevation is lower than lower bound
-						if (toElevation < GameConstants.getWaterLevel(Cache.controller.getRoundNum()) + 1) {
-							// If it's not within vision range AND elevation is lower
-							return false;
-						}
+					// Check if toElevation is lower than lower bound
+					if (toElevation < GameConstants.getWaterLevel(Cache.controller.getRoundNum()) + 1) {
+						// If it's not within vision range AND elevation is lower
+						return false;
 					}
 				}
 			}
