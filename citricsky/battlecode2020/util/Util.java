@@ -12,41 +12,45 @@ public class Util {
 		Util.controller = controller;
 		random = new Random(Hash.hash(1532135, controller.getID()));
 		Cache.init(controller);
-		SharedInfo.init(controller);
-		Communication.init(controller); // 5k bytecodes
-		CommunicationProcessor.init(controller);
-		if (Cache.ROBOT_TYPE == RobotType.HQ) {
-			CommunicationAttacks.init();
-		}
-		if (!Cache.ROBOT_TYPE.isBuilding()) {
-			Pathfinding.init(controller);
-			UnitsMap.init(controller);
+		if (Cache.ROBOT_TYPE != RobotType.NET_GUN) {
+			SharedInfo.init(controller);
+			Communication.init(controller); // 5k bytecodes
+			CommunicationProcessor.init(controller);
+			if (Cache.ROBOT_TYPE == RobotType.HQ) {
+				CommunicationAttacks.init();
+			}
+			if (!Cache.ROBOT_TYPE.isBuilding()) {
+				Pathfinding.init(controller);
+				UnitsMap.init(controller);
+			}
 		}
 	}
 	public static boolean hasLattice = false; // Estimation of whether we have a lattice
 	private static int designSchoolSpawnedTurn = -1; // Helps with hasLattice
 	public static void loop() throws GameActionException {
 		Cache.loop();
-		CommunicationProcessor.processAll();
-		if (SharedInfo.getEnemyHQLocation() == null) {
-			for (RobotInfo enemy : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
-				if (enemy.getType() == RobotType.HQ) {
-					SharedInfo.sendEnemyHQ(enemy.getLocation());
-					return;
+		if (Cache.ROBOT_TYPE != RobotType.NET_GUN) {
+			CommunicationProcessor.processAll();
+			if (SharedInfo.getEnemyHQLocation() == null) {
+				for (RobotInfo enemy : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
+					if (enemy.getType() == RobotType.HQ) {
+						SharedInfo.sendEnemyHQ(enemy.getLocation());
+						return;
+					}
 				}
+				EnemyHQGuesser.loop();
 			}
-			EnemyHQGuesser.loop();
-		}
-		if (!Cache.ROBOT_TYPE.isBuilding()) {
-			UnitsMap.loop();
-		}
-		MapTracker.checkValidityOfWaterLocations();
-		if (!hasLattice) {
-			if (SharedInfo.getDesignSchoolCount() > 0) {
-				if (designSchoolSpawnedTurn == -1) {
-					designSchoolSpawnedTurn = controller.getRoundNum();
-				} else {
-					hasLattice = controller.getRoundNum() - designSchoolSpawnedTurn > 100;
+			if (!Cache.ROBOT_TYPE.isBuilding()) {
+				UnitsMap.loop();
+			}
+			MapTracker.checkValidityOfWaterLocations();
+			if (!hasLattice) {
+				if (SharedInfo.getDesignSchoolCount() > 0) {
+					if (designSchoolSpawnedTurn == -1) {
+						designSchoolSpawnedTurn = controller.getRoundNum();
+					} else {
+						hasLattice = controller.getRoundNum() - designSchoolSpawnedTurn > 100;
+					}
 				}
 			}
 		}
@@ -304,27 +308,6 @@ public class Util {
 	}
 	public static boolean canPotentiallyBeFlooded(int elevation) {
 		return controller.getRoundNum() + 1 >= getTurnsToFlooded(elevation);
-	}
-	public static boolean tryShootDrone() throws GameActionException {
-		RobotInfo[] enemies = controller.senseNearbyRobots(Cache.CURRENT_LOCATION,
-				GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED, controller.getTeam().opponent());
-		int bestDistance = 1738;
-		RobotInfo bestTarget = null;
-		for (RobotInfo enemy : enemies) {
-			int enemyID = enemy.getID();
-			int enemyDistance = Cache.CURRENT_LOCATION.distanceSquaredTo(enemy.getLocation());
-			if(enemyDistance < bestDistance) {
-				if (controller.canShootUnit(enemyID)) {
-					bestDistance = enemyDistance;
-					bestTarget = enemy;
-				}
-			}
-		}
-		if(bestTarget != null) {
-			controller.shootUnit(bestTarget.getID());
-			return true;
-		}
-		return false;
 	}
 	public static boolean tryKiteFromAdjacentDrones() throws GameActionException {
 		//more efficient to search Cache if not a lot nearby
