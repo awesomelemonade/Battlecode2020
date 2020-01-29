@@ -163,12 +163,15 @@ public class BuildOrder {
 		}
 		// We must have so much money that we can build more vaporators
 		if (SharedInfo.getVaporatorCount() < 120) {
-			if (!addedVaporatorCost) {
-				threshold += RobotType.VAPORATOR.cost;
-				addedVaporatorCost = true;
-			}
-			if (type == RobotType.VAPORATOR) {
-				return threshold;
+			// Don't make more vaporators if we have a ton of money already
+			if (Cache.controller.getTeamSoup() < 800) {
+				if (!addedVaporatorCost) {
+					threshold += RobotType.VAPORATOR.cost;
+					addedVaporatorCost = true;
+				}
+				if (type == RobotType.VAPORATOR) {
+					return threshold;
+				}
 			}
 		}
 		// mooooore landscapers

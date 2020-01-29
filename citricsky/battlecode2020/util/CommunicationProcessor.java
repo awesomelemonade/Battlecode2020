@@ -28,6 +28,9 @@ public class CommunicationProcessor {
 		queueMessage(message, minTransactionsCost);
 	}
 	public static void queueMessage(int[] message, int cost) {
+		if (message == null) {
+			return;
+		}
 		int index = (queueIndex + queueSize) % QUEUE_LENGTH;
 		messageQueue[index] = message;
 		costQueue[index] = cost;
@@ -72,8 +75,7 @@ public class CommunicationProcessor {
 				if (Cache.ROBOT_TYPE == RobotType.HQ) {
 					CommunicationAttacks.addEnemyMessage(message, transaction.getCost());
 					if (SharedInfo.getVaporatorCount() >= 5) {
-						if (CommunicationAttacks.getAttackCount() < 10 &&
-								Util.getRandom().nextInt(10) == 0) {
+						if (CommunicationAttacks.getAttackCount() < 10) {
 							controller.setIndicatorDot(Cache.CURRENT_LOCATION, 128, 128, 128);
 							if (immediateReplayAttackCount < 5) {
 								CommunicationAttacks.sendRecentAttack();

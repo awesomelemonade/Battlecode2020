@@ -31,10 +31,10 @@ public class CommunicationAttacks {
 		switch (attackCounter) {
 			case 0:
 				CommunicationProcessor.queueMessage(getBitFlipAttack(getNthEnemyMessage(0)), 1);
-				CommunicationProcessor.queueMessage(getBitFlipAttack(getNthEnemyMessage(0)), 1);
-				CommunicationProcessor.queueMessage(getBitFlipAttack(getNthEnemyMessage(0)), 1);
 				CommunicationProcessor.queueMessage(getBitFlipAttack(getNthEnemyMessage(1)), 1);
-				CommunicationProcessor.queueMessage(getBitFlipAttack(getNthEnemyMessage(1)), 1);
+				CommunicationProcessor.queueMessage(getBitFlipAttack(getNthEnemyMessage(2)), 1);
+				CommunicationProcessor.queueMessage(getBitFlipAttack(getNthEnemyMessage(3)), 1);
+				CommunicationProcessor.queueMessage(getBitFlipAttack(getNthEnemyMessage(4)), 1);
 				sendRandomBitFlipAttack();
 				sendRandomBitFlipAttack();
 				break;
@@ -111,6 +111,9 @@ public class CommunicationAttacks {
 		return messageQueue[(queueIndex + Util.getRandom().nextInt(queueSize)) % QUEUE_LENGTH];
 	}
 	public static int[] getBitFlipAttack(int[] message) {
+		if (message == null) {
+			return null;
+		}
 		int i = Util.getRandom().nextInt(message.length);
 		int[] newMessage = copy(message);
 		newMessage[i] = newMessage[i] ^ randomOneBit();
