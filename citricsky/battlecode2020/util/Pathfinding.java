@@ -212,10 +212,12 @@ public class Pathfinding {
 			if (Cache.ROBOT_TYPE == RobotType.MINER) {
 				// Don't move lower
 				if (toElevation < currentElevation) {
-					// Check if toElevation is lower than lower bound
-					if (toElevation < GameConstants.getWaterLevel(Cache.controller.getRoundNum()) + 1) {
-						// If it's not within vision range AND elevation is lower
-						return false;
+					if (controller.getRoundNum() > 180) {
+						// Check if toElevation is lower than lower bound
+						if (toElevation < GameConstants.getWaterLevel(Cache.controller.getRoundNum()) + 1) {
+							// If it's not within vision range AND elevation is lower
+							return false;
+						}
 					}
 				}
 			}
