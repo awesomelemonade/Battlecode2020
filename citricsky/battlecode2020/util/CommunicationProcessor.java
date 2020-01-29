@@ -79,6 +79,7 @@ public class CommunicationProcessor {
 							controller.setIndicatorDot(Cache.CURRENT_LOCATION, 128, 128, 128);
 							if (immediateReplayAttackCount < 5) {
 								CommunicationAttacks.sendRecentAttack();
+								immediateReplayAttackCount++;
 							} else {
 								CommunicationAttacks.sendAttack();
 							}
