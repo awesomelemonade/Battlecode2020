@@ -22,6 +22,7 @@ public class NetGunBot implements RunnableBot {
 		if (!controller.isReady()) {
 			return;
 		}
+		tryShootDrone();
 	}
 	public boolean tryShootDrone() throws GameActionException {
 		RobotInfo[] enemies = controller.senseNearbyRobots(Cache.CURRENT_LOCATION,

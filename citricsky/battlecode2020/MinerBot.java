@@ -182,7 +182,7 @@ public class MinerBot implements RunnableBot {
 	public int closestDistanceSquaredToOurNetGun(MapLocation location) {
 		int bestDistanceSquared = Integer.MAX_VALUE;
 		for (RobotInfo ally : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
-			if (ally.getType() == RobotType.NET_GUN) {
+			if (ally.getType() == RobotType.NET_GUN || ally.getType() == RobotType.HQ) {
 				int distanceSquared = ally.getLocation().distanceSquaredTo(location);
 				if (distanceSquared < bestDistanceSquared) {
 					bestDistanceSquared = distanceSquared;
@@ -197,13 +197,29 @@ public class MinerBot implements RunnableBot {
 		// Only build net gun if there is something to protect
 		// Only if there is a friendly building nearby
 		boolean seeFriendlyBuilding = false;
+		boolean seeEnemyHQOrFulfillmentCenter = false;
 		for (RobotInfo ally : Cache.ALL_NEARBY_FRIENDLY_ROBOTS) {
-			if (ally.getType().isBuilding() &&
-					(ally.getType() != RobotType.NET_GUN || SharedInfo.getVaporatorCount() >= 5)) {
-				seeFriendlyBuilding = true;
+			if (ally.getType().isBuilding()) {
+				if (ally.getType() == RobotType.NET_GUN) {
+					if (SharedInfo.getVaporatorCount() < 8) {
+						if (ally.getLocation().isWithinDistanceSquared(Cache.CURRENT_LOCATION, 5)) {
+							return false;
+						}
+					} else {
+						seeFriendlyBuilding = true;
+					}
+				} else {
+					seeFriendlyBuilding = true;
+				}
 			}
 		}
-		if (!seeFriendlyBuilding) {
+		for (RobotInfo enemy : Cache.ALL_NEARBY_ENEMY_ROBOTS) {
+			if (enemy.getType() == RobotType.HQ || enemy.getType() == RobotType.FULFILLMENT_CENTER) {
+				seeEnemyHQOrFulfillmentCenter = true;
+				break;
+			}
+		}
+		if ((!seeEnemyHQOrFulfillmentCenter) && (!seeFriendlyBuilding)) {
 			return false;
 		}
 		// Find closest enemy drone
